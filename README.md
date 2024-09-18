@@ -4,7 +4,7 @@ A parking application created with Go and Svelte.
 
 ## Getting Started
 
-To install all of the packages, run `npm run install`.
+To install all of the packages, run `npm install`.
 After that, you can:
 - Run production: `npm start`
 - Bring up the frontend: `npm run frontend`
