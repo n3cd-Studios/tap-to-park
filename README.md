@@ -1,6 +1,16 @@
 # tap-to-park
 
-This application can be built and ran with `npm start`.
+A parking application created with Go and Svelte.
 
-To bring up the frontend, run `npm run frontend`.
-To bring up the backend, run `npm run backend`.
+## Getting Started
+
+To install all of the packages, run `npm run install`.
+After that, you can:
+- Run production: `npm start`
+- Bring up the frontend: `npm run frontend`
+- Bring up the backend: `npm run backend`
+
+## Important Links
+
+- [Google Drive](https://drive.google.com/drive/u/0/folders/1sLmxW9ZR5giioXCH832F8guUtJmecOBy)
+- [Project Board](https://github.com/orgs/n3cd-Studios/projects/1/)

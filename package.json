@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "install": "go get && npm i",
     "start": "vite build && go run .",
     "frontend": "vite",
     "backend": "go run .",
