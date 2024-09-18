@@ -1,6 +1,8 @@
 package api
 
 import (
+	"os"
+
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
@@ -15,5 +17,5 @@ func Server() {
 	// serve static files
 	router.Use(static.Serve("/", static.LocalFile("./dist", true)))
 
-	router.Run("localhost:8080")
+	router.Run(os.Getenv("HOST"))
 }
