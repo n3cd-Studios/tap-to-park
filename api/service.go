@@ -11,8 +11,5 @@ type Service struct {
 
 // getAlbums responds with the list of all albums as JSON.
 func (*Service) getAlbums(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, User{
-		email:         "test",
-		password_hash: "asd",
-	})
+	c.IndentedJSON(http.StatusOK, gin.H{})
 }
