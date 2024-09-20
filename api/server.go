@@ -2,6 +2,7 @@ package api
 
 import (
 	"os"
+	"tap-to-park/api/services"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -10,10 +11,14 @@ import (
 func Server() {
 
 	router := gin.Default()
-	service := Service{}
 
 	api := router.Group("/api")
-	api.GET("/test", service.getAlbums) // api: /api/test
+
+	reservations := api.Group("/reservations")
+	{
+		service := services.ReservationService{}
+		reservations.GET("/:id", service.getReservationByID)
+	}
 
 	// serve static files
 	router.Use(static.Serve("/", static.LocalFile("./dist", true)))
