@@ -1,4 +1,4 @@
-package services
+package api
 
 import (
 	"tap-to-park/api/database"
@@ -6,9 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ReservationService struct{}
+type Service struct{}
 
-func (*ReservationService) getReservationByID(c *gin.Context) {
+func (*Service) getReservationByID(c *gin.Context) {
+
 	id := c.Param("id")
 
 	var reservation database.Reservation
