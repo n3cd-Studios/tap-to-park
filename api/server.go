@@ -16,6 +16,7 @@ func Server() {
 
 	reservations := api.Group("/reservations")
 	{
+		reservations.POST("/", service.postReservation)
 		reservations.GET("/:id", service.getReservationByID)
 	}
 
