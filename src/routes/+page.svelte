@@ -1,6 +1,6 @@
 <script>
     import Button from "../components/Button.svelte";
-import Map from "../components/Map.svelte";
+    import Map from "../components/Map.svelte";
 
 </script>
 
@@ -10,7 +10,7 @@ import Map from "../components/Map.svelte";
             <Map />
         </div>
         <div class="flex flex-row justify-between">
-            <Button>Find Nearest</Button>
+            <Button click={() => console.log("Find nearest")}>Find Nearest</Button>
             <div>
                 <Button>{'<'}</Button>
                 <Button>{'>'}</Button>
