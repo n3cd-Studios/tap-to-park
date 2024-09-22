@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"install": "cd api && go get",
-		"frontend": "vite dev",
+		"frontend": "vite dev --port 8081",
 		"backend": "cd api && go run .",
 		"start": "concurrently --kill-others \"npm run backend\" \"vite build && vite preview\"",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -15,6 +15,7 @@
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@types/leaflet": "^1.9.12",
+		"@vitejs/plugin-basic-ssl": "^1.1.0",
 		"autoprefixer": "^10.4.20",
 		"concurrently": "^9.0.1",
 		"leaflet": "^1.9.4",

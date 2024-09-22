@@ -32,8 +32,7 @@ type Reservation struct {
 
 type Spot struct {
 	gorm.Model
-	Longitude      float64
-	Latitude       float64
+	Coords         Point `gorm:"type:Point; index:coords_gist_idx, type:gist"`
 	Handicap       bool
 	OrganizationID uint
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"tap-to-park/database"
+	"tap-to-park/routes"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -23,12 +24,18 @@ func main() {
 	router := gin.Default()
 
 	api := router.Group("/api")
-	service := Service{}
 
 	reservations := api.Group("/reservations")
 	{
-		reservations.POST("/", service.postReservation)
-		reservations.GET("/:id", service.getReservationByID)
+		routes := routes.ReservationRoutes{}
+		reservations.POST("/", routes.CreateReservation)
+		reservations.GET("/:id", routes.GetReservationByID)
+	}
+
+	spots := api.Group("/spots")
+	{
+		routes := routes.SpotRoutes{}
+		spots.GET("/near", routes.GetSpotsNear)
 	}
 
 	router.Run(os.Getenv("BACKEND_HOST"))

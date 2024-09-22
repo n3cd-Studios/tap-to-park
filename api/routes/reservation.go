@@ -1,4 +1,4 @@
-package main
+package routes
 
 import (
 	"net/http"
@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Service struct{}
+type ReservationRoutes struct{}
 
-func (*Service) getReservationByID(c *gin.Context) {
+func (*ReservationRoutes) GetReservationByID(c *gin.Context) {
 
 	id := c.Param("id")
 
@@ -29,7 +29,7 @@ type ReservationInput struct {
 	SpotID uint `json:"spotID"`
 }
 
-func (*Service) postReservation(c *gin.Context) {
+func (*ReservationRoutes) CreateReservation(c *gin.Context) {
 	var input ReservationInput
 	if err := c.BindJSON(&input); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
