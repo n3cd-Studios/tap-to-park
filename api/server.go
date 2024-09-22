@@ -1,13 +1,25 @@
-package api
+package main
 
 import (
+	"log"
 	"os"
+	"tap-to-park/database"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func Server() {
+
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Panic("Error loading .env file")
+	}
+
+	// Connect to the database
+	database.Connect()
 
 	router := gin.Default()
 

@@ -1,8 +1,8 @@
-package api
+package main
 
 import (
 	"net/http"
-	"tap-to-park/api/database"
+	"tap-to-park/database"
 
 	"github.com/gin-gonic/gin"
 )
