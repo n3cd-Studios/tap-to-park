@@ -1,0 +1,77 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the API for interacting with internal Tap-To-Park services",
+        "title": "Tap-To-Park API",
+        "termsOfService": "http://n3cd.io/terms/",
+        "contact": {},
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/",
+    "paths": {},
+    "definitions": {
+        "database.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.Point": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "number"
+                }
+            }
+        },
+        "database.Spot": {
+            "type": "object",
+            "properties": {
+                "coords": {
+                    "$ref": "#/definitions/database.Point"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "handicap": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "organizationID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}

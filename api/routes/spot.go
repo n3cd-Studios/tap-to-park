@@ -11,6 +11,14 @@ import (
 
 type SpotRoutes struct{}
 
+// GetSpotsNear godoc
+// @Summary      Get the spots near a longitude and latitude
+// @Produce      json
+// @Param        lat    query     number  true  "latitude to search by"
+// @Param        lng    query     number  true  "longitude to search by"
+// @Success      200  {object}  database.Spot
+// @Failure      404  {object}  database.Error
+// @Router       /spots/ [get]
 func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	latParam := c.Query("lat")

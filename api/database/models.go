@@ -36,3 +36,7 @@ type Spot struct {
 	Handicap       bool
 	OrganizationID uint
 }
+
+type Error struct {
+	Message string `json:"message"`
+}
