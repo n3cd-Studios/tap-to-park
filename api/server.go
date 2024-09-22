@@ -1,13 +1,24 @@
-package api
+package main
 
 import (
+	"log"
 	"os"
+	"tap-to-park/database"
 
-	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
-func Server() {
+func main() {
+
+	// Load .env file
+	err := godotenv.Load("../.env")
+	if err != nil {
+		log.Panic("Error loading .env file")
+	}
+
+	// Connect to the database
+	database.Connect()
 
 	router := gin.Default()
 
@@ -20,7 +31,5 @@ func Server() {
 		reservations.GET("/:id", service.getReservationByID)
 	}
 
-	// serve static files
-	router.Use(static.Serve("/", static.LocalFile("./dist", true)))
-	router.Run(os.Getenv("HOST"))
+	router.Run(os.Getenv("BACKEND_HOST"))
 }
