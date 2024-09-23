@@ -38,8 +38,8 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	point := database.Point{X: lat, Y: lng}
 
-	var spots []database.Spot
-	result := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point ?", Vars: []interface{}{[]database.Point{point}}, WithoutParentheses: true}}).Limit(10).Find(&spots)
+	spots := []database.Spot{}
+	result := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.X, point.Y}, WithoutParentheses: true}}).Limit(10).Find(&spots)
 	err := result.Error
 
 	if err != nil {
