@@ -2,7 +2,7 @@
     import { onMount, onDestroy } from "svelte";
 
     let mapElement: HTMLElement;
-    let map: L.Map;
+    export let map: L.Map;
 
     onMount(async () => {
         const leaflet = await import("leaflet");
