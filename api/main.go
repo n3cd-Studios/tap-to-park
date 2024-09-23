@@ -55,6 +55,12 @@ func main() {
 		spots.GET("/near", routes.GetSpotsNear)
 	}
 
+	auth := api.Group("/auth")
+	{
+		routes := routes.AuthRoutes{}
+		auth.POST("/login", routes.Login)
+	}
+
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.Run(os.Getenv("BACKEND_HOST"))
 }
