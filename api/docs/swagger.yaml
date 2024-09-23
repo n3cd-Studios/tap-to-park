@@ -35,6 +35,11 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  routes.ReservationInput:
+    properties:
+      spotID:
+        type: integer
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -48,5 +53,64 @@ info:
   termsOfService: http://n3cd.io/terms/
   title: Tap-To-Park API
   version: "1.0"
-paths: {}
+paths:
+  /reservations:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.ReservationInput'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/database.Error'
+      summary: Creates a reservation using a spotID and specified time
+  /reservations/{id}:
+    get:
+      parameters:
+      - description: ID of the reservation
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Spot'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/database.Error'
+      summary: Get a reservation by an ID
+  /spots/near:
+    get:
+      parameters:
+      - description: latitude to search by
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: longitude to search by
+        in: query
+        name: lng
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Spot'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/database.Error'
+      summary: Get the spots near a longitude and latitude
 swagger: "2.0"

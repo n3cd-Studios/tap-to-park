@@ -18,7 +18,7 @@ type SpotRoutes struct{}
 // @Param        lng    query     number  true  "longitude to search by"
 // @Success      200  {object}  database.Spot
 // @Failure      404  {object}  database.Error
-// @Router       /spots/ [get]
+// @Router       /spots/near [get]
 func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	latParam := c.Query("lat")

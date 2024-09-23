@@ -19,7 +19,99 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {},
+    "paths": {
+        "/reservations": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a reservation using a spotID and specified time",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.ReservationInput"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/database.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservations/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a reservation by an ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID of the reservation",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Spot"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/database.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/spots/near": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the spots near a longitude and latitude",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "latitude to search by",
+                        "name": "lat",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "longitude to search by",
+                        "name": "lng",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Spot"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/database.Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
     "definitions": {
         "database.Error": {
             "type": "object",
@@ -72,6 +164,14 @@ const docTemplate = `{
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "routes.ReservationInput": {
+            "type": "object",
+            "properties": {
+                "spotID": {
+                    "type": "integer"
                 }
             }
         }

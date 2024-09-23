@@ -6,4 +6,5 @@ export interface Coords {
 
 export interface Spot {
     name: string
+    coords: Coords
 }

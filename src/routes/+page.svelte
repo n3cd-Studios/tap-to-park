@@ -2,25 +2,25 @@
     import { onMount } from "svelte";
     import Button from "../components/Button.svelte";
     import Map from "../components/Map.svelte";
-    import type { Coords } from "../lib/models";
+    import type { Coords, Spot } from "../lib/models";
+    import { get } from "$lib/api";
 
     let map: L.Map;
-    let coords: Coords= { latitude: 0, longitude: 0 };
 
     onMount(async () => {
         const promisifyGeolocation = (): Promise<Coords> =>
             new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
-        coords = await promisifyGeolocation();
-        map.flyTo([coords.latitude, coords.longitude], 10);
-    });
 
-    
+        const leaflet = await import("leaflet");
+        const { longitude, latitude } = await promisifyGeolocation();
+        const spots = await get<Spot[]>({ route: "spots/near", params: new URLSearchParams({ lng: longitude.toString(), lat: latitude.toString() })}) ?? [];
+        spots.forEach(({ coords }) => leaflet.marker([coords.longitude, coords.latitude]).addTo(map));
+    });
 
 </script>
 
 <div class="flex h-full items-center justify-center">
     <div class="flex flex-col gap-2">
-        <h1>You are at {coords.latitude}, {coords.longitude}</h1>
         <div class="w-96 h-96 rounded-lg border-white border-4">
             <Map bind:map={map}/>
         </div>
