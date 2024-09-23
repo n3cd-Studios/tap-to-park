@@ -35,6 +35,16 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
+  routes.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   routes.ReservationInput:
     properties:
       spotID:
@@ -54,6 +64,20 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.LoginInput'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/database.Error'
+      summary: Logs a User in using a username and a password
   /reservations:
     post:
       produces:
