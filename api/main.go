@@ -8,6 +8,7 @@ import (
 
 	_ "tap-to-park/docs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerfiles "github.com/swaggo/files"
@@ -39,9 +40,14 @@ func main() {
 	database.Connect()
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowAllOrigins: true,
+	}))
 
+	// API
 	api := router.Group("/api")
 
+	// Reservation routes
 	reservations := api.Group("/reservations")
 	{
 		routes := routes.ReservationRoutes{}
@@ -49,16 +55,19 @@ func main() {
 		reservations.GET("/:id", routes.GetReservationByID)
 	}
 
+	// Spot routes
 	spots := api.Group("/spots")
 	{
 		routes := routes.SpotRoutes{}
 		spots.GET("/near", routes.GetSpotsNear)
 	}
 
+	// Auth routes
 	auth := api.Group("/auth")
 	{
 		routes := routes.AuthRoutes{}
 		auth.POST("/login", routes.Login)
+		auth.POST("/register", routes.Register)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

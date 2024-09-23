@@ -42,7 +42,8 @@ func (*AuthRoutes) Login(c *gin.Context) {
 	}
 
 	user := database.User{}
-	if err := database.Db.Where("email = ?", input.Email).First(&user); err != nil {
+	result := database.Db.Where("email = ?", input.Email).First(&user)
+	if result.Error != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Failed to login."})
 		return
 	}
@@ -56,6 +57,55 @@ func (*AuthRoutes) Login(c *gin.Context) {
 	token, err := auth.GenerateToken(user.UniqueID)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Failed to login."})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
+}
+
+type RegisterInput struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// Register godoc
+// @Summary      Registers a User in using a username and a password
+// @Produce      json
+// @Success      200  {object}  RegisterInput
+// @Failure      404  {object}  database.Error
+// @Router       /auth/register [post]
+func (*AuthRoutes) Register(c *gin.Context) {
+
+	// TODO: CHANGE ALL ERRORS TO GENERIC ERROR FOR SECURITY
+
+	var input RegisterInput
+	if err := c.BindJSON(&input); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid body recieved."})
+		return
+	}
+
+	hash, err := auth.GenerateFromPassword(input.Password, &auth.Params{
+		Memory:      64 * 1024,
+		Iterations:  3,
+		Parallelism: 2,
+		SaltLength:  16,
+		KeyLength:   32,
+	})
+
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Hash failed"})
+		return
+	}
+
+	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: 1}
+	if err := database.Db.Create(&user); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Creation failed"})
+		return
+	}
+
+	token, err := auth.GenerateToken(user.UniqueID)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Token failed"})
 		return
 	}
 

@@ -10,15 +10,15 @@ import (
 // Organization has many Admins, OrganizationID is the foreign key
 type Organization struct {
 	gorm.Model
-	Name   string `gorm:"not null;"`
+	Name   string `gorm:"not null;unique;"`
 	Spots  []Spot
 	Admins []User
 }
 
 type User struct {
 	gorm.Model
-	UniqueID       string `gorm:"not null;type:uuid;default:gen_random_uuid()"`
-	Email          string `gorm:"not null;"`
+	UniqueID       string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()"`
+	Email          string `gorm:"not null;unique;"`
 	PasswordHash   string `gorm:"not null;"`
 	OrganizationID uint   `gorm:"not null;"`
 }
