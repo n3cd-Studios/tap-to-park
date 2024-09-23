@@ -45,6 +45,16 @@ definitions:
     - email
     - password
     type: object
+  routes.RegisterInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   routes.ReservationInput:
     properties:
       spotID:
@@ -78,6 +88,20 @@ paths:
           schema:
             $ref: '#/definitions/database.Error'
       summary: Logs a User in using a username and a password
+  /auth/register:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.RegisterInput'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/database.Error'
+      summary: Registers a User in using a username and a password
   /reservations:
     post:
       produces:
