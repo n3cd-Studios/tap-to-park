@@ -33,9 +33,10 @@ type Reservation struct {
 
 type Spot struct {
 	gorm.Model
-	Coords         Point `gorm:"type:Point;index:coords_gist_idx,type:gist"`
-	Handicap       bool  `gorm:"not null;"`
-	OrganizationID uint  `gorm:"not null;"`
+	Name           string      `gorm:"not null;" json:"name"`
+	Coords         Coordinates `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
+	Handicap       bool        `gorm:"not null;" json:"handicap"`
+	OrganizationID uint        `gorm:"not null;" json:"organization"`
 }
 
 type Error struct {
