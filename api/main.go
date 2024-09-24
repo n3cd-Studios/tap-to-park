@@ -50,24 +50,32 @@ func main() {
 	// Reservation routes
 	reservations := api.Group("/reservations")
 	{
-		routes := routes.ReservationRoutes{}
-		reservations.POST("/", routes.CreateReservation)
-		reservations.GET("/:id", routes.GetReservationByID)
+		routing := routes.ReservationRoutes{}
+		reservations.POST("/", routing.CreateReservation)
+		reservations.GET("/:id", routing.GetReservationByID)
 	}
 
 	// Spot routes
 	spots := api.Group("/spots")
 	{
-		routes := routes.SpotRoutes{}
-		spots.GET("/near", routes.GetSpotsNear)
+		routing := routes.SpotRoutes{}
+		spots.GET("/near", routing.GetSpotsNear)
 	}
 
 	// Auth routes
 	auth := api.Group("/auth")
 	{
-		routes := routes.AuthRoutes{}
-		auth.POST("/login", routes.Login)
-		auth.POST("/register", routes.Register)
+		routing := routes.AuthRoutes{}
+		auth.POST("/login", routing.Login)
+		auth.POST("/register", routing.Register)
+		auth.POST("/info", routes.AuthMiddleware(), routing.Info)
+	}
+
+	// Auth routes
+	admin := api.Group("/admin", routes.AuthMiddleware())
+	{
+		routing := routes.AdminRoutes{}
+		admin.POST("/test", routing.Test)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

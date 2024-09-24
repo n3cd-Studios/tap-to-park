@@ -8,8 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthRoutes struct{}
-
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
@@ -22,6 +20,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+type AuthRoutes struct{}
 
 type JWTResponse struct {
 	token string `json:"token"`
