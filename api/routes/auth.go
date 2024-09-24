@@ -12,7 +12,8 @@ type AuthRoutes struct{}
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := auth.TokenValid(c)
+		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
+		err := auth.TokenValid(token)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			c.Abort()
@@ -20,6 +21,10 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+
+type JWTResponse struct {
+	token string `json:"token"`
 }
 
 type LoginInput struct {
@@ -30,8 +35,8 @@ type LoginInput struct {
 // Login godoc
 // @Summary      Logs a User in using a username and a password
 // @Produce      json
-// @Success      200  {object}  LoginInput
-// @Failure      404  {object}  database.Error
+// @Success      200  {object}  JWTResponse
+// @Failure      400  {string}  "Failed to log in"
 // @Router       /auth/login [post]
 func (*AuthRoutes) Login(c *gin.Context) {
 
@@ -44,19 +49,19 @@ func (*AuthRoutes) Login(c *gin.Context) {
 	user := database.User{}
 	result := database.Db.Where("email = ?", input.Email).First(&user)
 	if result.Error != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Failed to login."})
+		c.String(http.StatusBadRequest, "Failed to login.")
 		return
 	}
 
 	match, err := auth.ComparePasswordAndHash(input.Password, user.PasswordHash)
 	if !match || err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Failed to login."})
+		c.String(http.StatusBadRequest, "Failed to login.")
 		return
 	}
 
-	token, err := auth.GenerateToken(user.UniqueID)
+	token, err := auth.TokenGenerate(user.UniqueID)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Failed to login."})
+		c.String(http.StatusBadRequest, "Failed to login.")
 		return
 	}
 
@@ -71,8 +76,8 @@ type RegisterInput struct {
 // Register godoc
 // @Summary      Registers a User in using a username and a password
 // @Produce      json
-// @Success      200  {object}  RegisterInput
-// @Failure      404  {object}  database.Error
+// @Success      200  {object}  JWTResponse
+// @Failure      400  {string}  "Failed to register user"
 // @Router       /auth/register [post]
 func (*AuthRoutes) Register(c *gin.Context) {
 
@@ -93,21 +98,46 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Hash failed"})
+		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
 	}
 
 	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: 1}
 	if err := database.Db.Create(&user); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Creation failed"})
+		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
 	}
 
-	token, err := auth.GenerateToken(user.UniqueID)
+	token, err := auth.TokenGenerate(user.UniqueID)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Token failed"})
+		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
+}
+
+// Info godoc
+// @Summary      Gets the info of the current user
+// @Produce      json
+// @Success      200  {object}  JWTResponse
+// @Failure      400  {string}  "Failed to use token to retrieve user information"
+// @Router       /auth/info [get]
+func (*AuthRoutes) Info(c *gin.Context) {
+
+	token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
+	unique_id, err := auth.TokenExtractID(token)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Unauthorized")
+		return
+	}
+
+	user := database.User{}
+	result := database.Db.Where("unique_id = ?", unique_id).First(&user)
+	if result.Error != nil {
+		c.String(http.StatusNotFound, "For some reason, you don't exist!")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, user)
 }
