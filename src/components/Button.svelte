@@ -1,6 +1,6 @@
 
 <script lang="ts">
-    export let click = () => {};
+    export let click: (() => void) | (() => Promise<void>); 
 
 </script>
 
