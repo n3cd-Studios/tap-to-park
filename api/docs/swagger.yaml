@@ -35,25 +35,7 @@ definitions:
         description: Valid is true if Time is not NULL
         type: boolean
     type: object
-  routes.LoginInput:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  routes.RegisterInput:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
+  routes.JWTResponse:
     type: object
   routes.ReservationInput:
     properties:
@@ -74,6 +56,20 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
+  /auth/info:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Failed to use token to retrieve user information
+          schema:
+            type: string
+      summary: Gets the info of the current user
   /auth/login:
     post:
       produces:
@@ -82,11 +78,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.LoginInput'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Failed to log in
           schema:
-            $ref: '#/definitions/database.Error'
+            type: string
       summary: Logs a User in using a username and a password
   /auth/register:
     post:
@@ -96,11 +92,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.RegisterInput'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Failed to register user
           schema:
-            $ref: '#/definitions/database.Error'
+            type: string
       summary: Registers a User in using a username and a password
   /reservations:
     post:
