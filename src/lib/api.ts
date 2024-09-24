@@ -5,7 +5,10 @@ export interface GetParams {
     body?: any;
 }
 
-export const get = <T>({ route, params, body, method = "GET" }: GetParams): Promise<T | null> => 
+const getHelper = <T, R>({ route, params, body, method = "GET" }: GetParams, defaultValue: R): Promise<T | R> => 
     fetch(`http://localhost:8080/api/${route}${params ? `?${params.toString()}` : ""}`, { method, body: JSON.stringify(body) })
         .then(r => r.json() as T)
-        .catch(_ => null);
+        .catch(_ => defaultValue);
+
+export const getWithDefault = <T>(params: GetParams, defaultValue: T) => getHelper<T, T>(params, defaultValue);
+export const get = <T>(params: GetParams) => getHelper<T, null>(params, null);

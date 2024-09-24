@@ -3,9 +3,11 @@
     import Button from "../components/Button.svelte";
     import Map from "../components/Map.svelte";
     import type { Coords, Spot } from "../lib/models";
-    import { get } from "$lib/api";
+    import { get, getWithDefault } from "$lib/api";
+    import type { Marker } from "leaflet";
 
     let map: L.Map;
+    let spots: Marker<any>[];
 
     onMount(async () => {
         const promisifyGeolocation = (): Promise<Coords> =>
@@ -13,9 +15,23 @@
 
         const leaflet = await import("leaflet");
         const { longitude, latitude } = await promisifyGeolocation();
-        const spots = await get<Spot[]>({ route: "spots/near", params: new URLSearchParams({ lng: longitude.toString(), lat: latitude.toString() })}) ?? [];
-        spots.forEach(({ coords }) => leaflet.marker([coords.longitude, coords.latitude]).addTo(map));
+        map.setView([latitude, longitude], 13);
+
+        const nearbySpots = await getWithDefault<Spot[]>({ route: "spots/near", params: new URLSearchParams({ lng: longitude.toString(), lat: latitude.toString() })}, []);
+        spots = nearbySpots.map(({ name, coords }) =>
+            leaflet
+                .marker([coords.longitude, coords.latitude])
+                .bindPopup(`<strong>${name}</strong>`)
+                .addTo(map),
+        );
     });
+
+    let activeSpot = 0;
+    const updateSpot = () => {
+        if (activeSpot < 0) activeSpot = spots.length - 1;
+        if (activeSpot >= spots.length) activeSpot = 0;
+        spots[activeSpot].openPopup();
+    };
 
 </script>
 
@@ -29,8 +45,8 @@
                 >Find Nearest</Button
             >
             <div>
-                <Button>{"<"}</Button>
-                <Button>{">"}</Button>
+                <Button click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
+                <Button click={() => { activeSpot++; updateSpot(); }}>{">"}</Button>
             </div>
         </div>
     </div>

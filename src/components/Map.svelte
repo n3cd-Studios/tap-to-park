@@ -7,7 +7,7 @@
     onMount(async () => {
         const leaflet = await import("leaflet");
 
-        map = leaflet.map(mapElement).setView([51.505, -0.09], 13);
+        map = leaflet.map(mapElement).setView([41.1366, -81.3299], 13);
 
         leaflet
             .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -15,12 +15,6 @@
                     '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             })
             .addTo(map);
-
-        leaflet
-            .marker([51.5, -0.09])
-            .addTo(map)
-            .bindPopup("A pretty CSS3 popup.<br> Easily customizable.")
-            .openPopup();
     });
 
     onDestroy(async () => {
