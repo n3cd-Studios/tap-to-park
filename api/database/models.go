@@ -16,19 +16,19 @@ type Organization struct {
 }
 
 type User struct {
-	gorm.Model
-	UniqueID       string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()"`
-	Email          string `gorm:"not null;unique;"`
-	PasswordHash   string `gorm:"not null;"`
-	OrganizationID uint   `gorm:"not null;"`
+	gorm.Model     `json:"-"`
+	UniqueID       string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"uuid"`
+	Email          string `gorm:"not null;unique;" json:"email"`
+	PasswordHash   string `gorm:"not null;" json:"-"`
+	OrganizationID uint   `gorm:"not null;" json:"-"`
 }
 
 type Reservation struct {
 	gorm.Model
-	Start         time.Time `gorm:"not null;"`
-	End           time.Time `gorm:"not null;"`
-	SpotID        uint      `gorm:"not null;"`
-	TransactionID string    `gorm:"not null;"`
+	Start         time.Time `gorm:"not null;" json:"start"`
+	End           time.Time `gorm:"not null;" json:"end"`
+	SpotID        uint      `gorm:"not null;" json:"id"`
+	TransactionID string    `gorm:"not null;" json:"-"`
 }
 
 type Spot struct {

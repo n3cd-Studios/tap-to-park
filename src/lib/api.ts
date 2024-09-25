@@ -1,12 +1,18 @@
+
 export interface GetParams {
     route: string;
     method?: "GET" | "POST";
     params?: URLSearchParams;
+    headers?: GetHeaderParams;
     body?: any;
 }
 
-const getHelper = <T, R>({ route, params, body, method = "GET" }: GetParams, defaultValue: R): Promise<T | R> => 
-    fetch(`http://localhost:8080/api/${route}${params ? `?${params.toString()}` : ""}`, { method, body: JSON.stringify(body) })
+interface GetHeaderParams { 
+    [key: string]: string
+}
+
+const getHelper = <T, R>({ route, params, body, headers, method = "GET" }: GetParams, defaultValue: R): Promise<T | R> => 
+    fetch(`http://localhost:8080/api/${route}${params ? `?${params.toString()}` : ""}`, { method, headers, body: JSON.stringify(body) })
         .then(r => r.json() as T)
         .catch(_ => defaultValue);
 

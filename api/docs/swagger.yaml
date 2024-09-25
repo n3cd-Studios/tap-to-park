@@ -1,19 +1,24 @@
 basePath: /api/
 definitions:
+  database.Coordinates:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
   database.Error:
     properties:
       message:
         type: string
     type: object
-  database.Point:
-    properties:
-      x:
-        type: number
-    type: object
   database.Spot:
     properties:
       coords:
-        $ref: '#/definitions/database.Point'
+        $ref: '#/definitions/database.Coordinates'
       createdAt:
         type: string
       deletedAt:
@@ -22,7 +27,9 @@ definitions:
         type: boolean
       id:
         type: integer
-      organizationID:
+      name:
+        type: string
+      organization:
         type: integer
       updatedAt:
         type: string
@@ -98,6 +105,20 @@ paths:
           schema:
             type: string
       summary: Registers a User in using a username and a password
+  /auth/test:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Logged in
+          schema:
+            type: string
+        "400":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Logs a User in using a username and a password
   /reservations:
     post:
       produces:
@@ -132,6 +153,26 @@ paths:
           schema:
             $ref: '#/definitions/database.Error'
       summary: Get a reservation by an ID
+  /spots/create:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Spot'
+        "400":
+          description: Invalid body
+          schema:
+            type: string
+        "401":
+          description: Invalid token
+          schema:
+            type: string
+      summary: Create a spot at a longitude and latitude
   /spots/near:
     get:
       parameters:

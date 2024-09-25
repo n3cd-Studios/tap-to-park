@@ -11,12 +11,13 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
-		err := auth.TokenValid(token)
+		uuid, err := auth.TokenExtractID(token)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			c.Abort()
 			return
 		}
+		c.Set("uuid", uuid)
 		c.Next()
 	}
 }
@@ -125,15 +126,10 @@ func (*AuthRoutes) Register(c *gin.Context) {
 // @Router       /auth/info [get]
 func (*AuthRoutes) Info(c *gin.Context) {
 
-	token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
-	unique_id, err := auth.TokenExtractID(token)
-	if err != nil {
-		c.String(http.StatusUnauthorized, "Unauthorized")
-		return
-	}
+	uuid := c.MustGet("uuid")
 
 	user := database.User{}
-	result := database.Db.Where("unique_id = ?", unique_id).First(&user)
+	result := database.Db.Where("unique_id = ?", uuid).First(&user)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "For some reason, you don't exist!")
 		return

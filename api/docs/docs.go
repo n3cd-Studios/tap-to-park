@@ -86,6 +86,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/test": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Logs a User in using a username and a password",
+                "responses": {
+                    "200": {
+                        "description": "Logged in",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/reservations": {
             "post": {
                 "produces": [
@@ -139,6 +161,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/spots/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a spot at a longitude and latitude",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Spot"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/spots/near": {
             "get": {
                 "produces": [
@@ -179,6 +232,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "database.Coordinates": {
+            "type": "object",
+            "required": [
+                "latitude",
+                "longitude"
+            ],
+            "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
         "database.Error": {
             "type": "object",
             "properties": {
@@ -187,19 +255,11 @@ const docTemplate = `{
                 }
             }
         },
-        "database.Point": {
-            "type": "object",
-            "properties": {
-                "x": {
-                    "type": "number"
-                }
-            }
-        },
         "database.Spot": {
             "type": "object",
             "properties": {
                 "coords": {
-                    "$ref": "#/definitions/database.Point"
+                    "$ref": "#/definitions/database.Coordinates"
                 },
                 "createdAt": {
                     "type": "string"
@@ -213,7 +273,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "organizationID": {
+                "name": {
+                    "type": "string"
+                },
+                "organization": {
                     "type": "integer"
                 },
                 "updatedAt": {

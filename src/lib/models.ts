@@ -8,3 +8,7 @@ export interface Spot {
     name: string
     coords: Coords
 }
+
+export interface User {
+    email: string
+}

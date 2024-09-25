@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 	"strconv"
-	"tap-to-park/auth"
 	"tap-to-park/database"
 
 	"github.com/gin-gonic/gin"
@@ -66,10 +65,7 @@ type CreateSpotInput struct {
 // @Router       /spots/create [post]
 func (*SpotRoutes) CreateSpot(c *gin.Context) {
 
-	uuid, err := auth.TokenExtractID(c.Request.Header.Get("Authentication"))
-	if err != nil {
-		c.String(http.StatusUnauthorized, "Invalid token")
-	}
+	uuid := c.MustGet("uuid")
 
 	var input CreateSpotInput
 	if err := c.BindJSON(&input); err != nil {

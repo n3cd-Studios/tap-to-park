@@ -42,6 +42,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
+		AllowHeaders:    []string{"Authentication"},
 	}))
 
 	// API
@@ -68,7 +69,7 @@ func main() {
 		routing := routes.AuthRoutes{}
 		auth.POST("/login", routing.Login)
 		auth.POST("/register", routing.Register)
-		auth.POST("/info", routes.AuthMiddleware(), routing.Info)
+		auth.GET("/info", routes.AuthMiddleware(), routing.Info)
 	}
 
 	// Auth routes
