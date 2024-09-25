@@ -7,8 +7,8 @@ import (
 )
 
 type Coordinates struct {
-	Longitude float64 `json:"longitude"`
-	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude" binding:"required"`
+	Latitude  float64 `json:"latitude" binding:"required"`
 }
 
 // thx https://stackoverflow.com/questions/37889726/how-to-store-a-point-in-postgres-sql-database-using-gorm

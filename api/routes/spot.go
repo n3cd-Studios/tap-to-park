@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"strconv"
+	"tap-to-park/auth"
 	"tap-to-park/database"
 
 	"github.com/gin-gonic/gin"
@@ -48,4 +49,49 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusAccepted, spots)
+}
+
+type CreateSpotInput struct {
+	Name   string               `json:"name" binding:"required"`
+	Coords database.Coordinates `json:"coords" binding:"required"`
+}
+
+// CreateSpot godoc
+// @Summary      Create a spot at a longitude and latitude
+// @Produce      json
+// @Accept		 json
+// @Success      200  {object}  database.Spot
+// @Failure      400  {string}  "Invalid body"
+// @Failure      401  {string}  "Invalid token"
+// @Router       /spots/create [post]
+func (*SpotRoutes) CreateSpot(c *gin.Context) {
+
+	uuid, err := auth.TokenExtractID(c.Request.Header.Get("Authentication"))
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Invalid token")
+	}
+
+	var input CreateSpotInput
+	if err := c.BindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Invalid body")
+		return
+	}
+
+	user := database.User{}
+	if result := database.Db.Where("uuid = ?", uuid).First(&user); result.Error != nil {
+		c.String(http.StatusBadRequest, "You literally don't exist")
+		return
+	}
+
+	spot := database.Spot{
+		Name:           input.Name,
+		Coords:         input.Coords,
+		OrganizationID: 1,
+	}
+	if result := database.Db.Create(&spot); result.Error != nil {
+		c.String(http.StatusBadRequest, "Failed to create a spot")
+		return
+	}
+
+	c.IndentedJSON(http.StatusAccepted, spot)
 }
