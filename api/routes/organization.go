@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AdminRoutes struct{}
+type OrganizationRoutes struct{}
 
 // GetOrganization godoc
 // @Summary      Get all of the organizations associated with an admin
@@ -15,7 +15,7 @@ type AdminRoutes struct{}
 // @Success      200  {array} []database.Organization
 // @Failure      400  {string}  "Unauthorized"
 // @Router       /admin/organization [get]
-func (*AdminRoutes) GetOrganization(c *gin.Context) {
+func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 
 	uuid := c.MustGet("uuid")
 
@@ -26,8 +26,9 @@ func (*AdminRoutes) GetOrganization(c *gin.Context) {
 	}
 
 	organization := database.Organization{}
-	if result := database.Db.Where("id = ?", user.OrganizationID).First(&organization); result.Error != nil {
-		c.String(http.StatusNotFound, "Couldn't find organizations associated with you.")
+	result := database.Db.Model(&database.Organization{}).Preload("Spots").Where("id = ?", user.OrganizationID).First(&organization)
+	if result.Error != nil {
+		c.String(http.StatusNotFound, "Couldn't find the organization associated with you")
 		return
 	}
 

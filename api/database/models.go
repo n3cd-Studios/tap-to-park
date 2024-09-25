@@ -11,8 +11,8 @@ import (
 type Organization struct {
 	gorm.Model
 	Name   string `gorm:"not null;unique;" json:"name"`
-	Spots  []Spot
-	Admins []User
+	Spots  []Spot `json:"spots"`
+	Admins []User `json:"-"`
 }
 
 type User struct {

@@ -16,4 +16,5 @@ export interface User {
 
 export interface Organization {
     name: string;
+    spots: Spot[]
 }
