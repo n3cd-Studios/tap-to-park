@@ -20,6 +20,34 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/organization": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all of the organizations associated with an admin",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/database.Organization"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/info": {
             "get": {
                 "produces": [
@@ -79,28 +107,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Failed to register user",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/test": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Logs a User in using a username and a password",
-                "responses": {
-                    "200": {
-                        "description": "Logged in",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Unauthorized",
                         "schema": {
                             "type": "string"
                         }
@@ -192,6 +198,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/spots/delete": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a spot by it's ID",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted spot",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/spots/near": {
             "get": {
                 "produces": [
@@ -255,6 +292,38 @@ const docTemplate = `{
                 }
             }
         },
+        "database.Organization": {
+            "type": "object",
+            "properties": {
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.User"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "spots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Spot"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "database.Spot": {
             "type": "object",
             "properties": {
@@ -280,6 +349,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "uuid": {
                     "type": "string"
                 }
             }

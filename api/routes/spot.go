@@ -91,3 +91,42 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusAccepted, spot)
 }
+
+type DeleteSpotInput struct {
+	SpotID uint64 `json:"spot_id" bindings:"required"`
+}
+
+// CreateSpot godoc
+// @Summary      Delete a spot by it's ID
+// @Produce      json
+// @Accept		 json
+// @Success      200  {string}  "Successfully deleted spot"
+// @Failure      400  {string}  "Invalid body"
+// @Failure      401  {string}  "Invalid token"
+// @Router       /spots/delete [delete]
+func (*SpotRoutes) DeleteSpot(c *gin.Context) {
+
+	uuid := c.MustGet("uuid")
+
+	var input DeleteSpotInput
+	if err := c.BindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Invalid body")
+		return
+	}
+
+	// TODO: Make this more efficient
+
+	user := database.User{}
+	if result := database.Db.Where("uuid = ?", uuid).First(&user); result.Error != nil {
+		c.String(http.StatusBadRequest, "You literally don't exist")
+		return
+	}
+
+	spot := database.Spot{}
+	if result := database.Db.Where("id = ?", input.SpotID).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
+		c.String(http.StatusNotFound, "That spot does not exist")
+		return
+	}
+
+	c.String(http.StatusAccepted, "Spot successfully deleted")
+}

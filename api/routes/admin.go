@@ -9,7 +9,7 @@ import (
 
 type AdminRoutes struct{}
 
-// GetOrganizations godoc
+// GetOrganization godoc
 // @Summary      Get all of the organizations associated with an admin
 // @Produce      json
 // @Success      200  {array} []database.Organization

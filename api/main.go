@@ -61,6 +61,8 @@ func main() {
 	{
 		routing := routes.SpotRoutes{}
 		spots.GET("/near", routing.GetSpotsNear)
+		spots.POST("/create", routing.CreateSpot)
+		spots.DELETE("/delete", routing.DeleteSpot)
 	}
 
 	// Auth routes

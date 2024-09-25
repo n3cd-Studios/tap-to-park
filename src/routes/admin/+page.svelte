@@ -1,16 +1,15 @@
 
 <script lang="ts">
+    import { get } from "$lib/api";
     import { authStore } from "$lib/auth";
-    import { onMount } from "svelte";
-    import Card from "../../components/Card.svelte";
     import type { Organization } from "$lib/models";
-    import { getWithDefault } from "$lib/api";
+    import { onMount } from "svelte";
 
     $: email = $authStore.user?.email
 
-    let organization: Organization | undefined;
+    let organization: Organization | null;
     onMount(async () => {
-        organization = await getWithDefault<Organization>({ route: "admin/organization", headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" }, []);
+        organization = await get<Organization>({ route: "admin/organization", headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
     })
 
 </script>
