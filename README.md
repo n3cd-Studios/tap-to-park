@@ -2,9 +2,20 @@
 
 A parking application created with Go and Svelte.
 
+## Installation
+
+First you need to install [Docker](https://www.docker.com/) to get a database setup.
+
+Once Docker is installed, you can install a Postgres docker container: `docker run --name ttp-db -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres`
+
+Now, copy the `.env.defaults` file to a `.env` file and fill out the connection string.
+
+To install all of the Node packages, run `npm install`
+
 ## Getting Started
 
-To install all of the packages, run `npm install`.
+Run the container with `docker start ttp-db`
+
 After that, you can:
 - Run production: `npm start`
 - Bring up the frontend: `npm run frontend`
