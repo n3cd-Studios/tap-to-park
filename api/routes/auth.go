@@ -129,8 +129,7 @@ func (*AuthRoutes) Info(c *gin.Context) {
 	uuid := c.MustGet("uuid")
 
 	user := database.User{}
-	result := database.Db.Where("unique_id = ?", uuid).First(&user)
-	if result.Error != nil {
+	if result := database.Db.Where("unique_id = ?", uuid).First(&user); result.Error != nil {
 		c.String(http.StatusNotFound, "For some reason, you don't exist!")
 		return
 	}

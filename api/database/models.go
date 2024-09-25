@@ -10,7 +10,7 @@ import (
 // Organization has many Admins, OrganizationID is the foreign key
 type Organization struct {
 	gorm.Model
-	Name   string `gorm:"not null;unique;"`
+	Name   string `gorm:"not null;unique;" json:"name"`
 	Spots  []Spot
 	Admins []User
 }

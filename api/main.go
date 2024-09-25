@@ -76,7 +76,7 @@ func main() {
 	admin := api.Group("/admin", routes.AuthMiddleware())
 	{
 		routing := routes.AdminRoutes{}
-		admin.POST("/test", routing.Test)
+		admin.GET("/organization", routing.GetOrganization)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
