@@ -28,6 +28,7 @@ type Reservation struct {
 	End           time.Time `gorm:"not null;" json:"end"`
 	SpotID        uint      `gorm:"not null;" json:"id"`
 	TransactionID string    `gorm:"not null;" json:"-"`
+	CostPerHour   uint      `gorm:"not null;" json:"costPerHour"`
 }
 
 type Spot struct {
@@ -37,6 +38,7 @@ type Spot struct {
 	Coords         Coordinates `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
 	Handicap       bool        `gorm:"not null;" json:"handicap"`
 	OrganizationID uint        `gorm:"not null;" json:"organization"`
+	Reservations   []Reservation
 }
 
 type Error struct {

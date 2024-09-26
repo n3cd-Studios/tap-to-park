@@ -34,3 +34,13 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, organization)
 }
+
+// GetSpotData godoc
+// @Summary      Get all of the spots data associated with an organization
+// @Produce      json
+// @Success      200  {array} []database.Spot
+// @Failure      400  {string}  "Unauthorized"
+// @Router       /admin/organization/data [get]
+func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
+
+}
