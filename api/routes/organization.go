@@ -64,6 +64,8 @@ func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 		spotIDs = append(spotIDs, spot.ID)
 	}
 
+	// Queries to gather the spots attached to the organization
+	// and their reservations
 	spots := database.Spot{}
 	spotResult := database.Db.Model(&database.Spot{}).Preload("Reservations").Where("spotID IN ?", spotIDs).Find(&spots)
 	if spotResult.Error != nil {
@@ -71,6 +73,6 @@ func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, spots)
+	c.IndentedJSON(http.StatusOK, spots) // Send back 220 with the JSON of the spots & reservations
 
 }
