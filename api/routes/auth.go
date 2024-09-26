@@ -11,13 +11,13 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
-		uuid, err := auth.TokenExtractID(token)
+		guid, err := auth.TokenExtractID(token)
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
 			c.Abort()
 			return
 		}
-		c.Set("uuid", uuid)
+		c.Set("guid", guid)
 		c.Next()
 	}
 }
@@ -25,7 +25,7 @@ func AuthMiddleware() gin.HandlerFunc {
 type AuthRoutes struct{}
 
 type JWTResponse struct {
-	token string `json:"token"`
+	Token string `json:"token"`
 }
 
 type LoginInput struct {
@@ -60,13 +60,13 @@ func (*AuthRoutes) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.TokenGenerate(user.UniqueID)
+	token, err := auth.TokenGenerate(user.Guid)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to login.")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
+	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
 }
 
 type RegisterInput struct {
@@ -86,7 +86,7 @@ func (*AuthRoutes) Register(c *gin.Context) {
 
 	var input RegisterInput
 	if err := c.BindJSON(&input); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid body recieved."})
+		c.String(http.StatusBadRequest, "Invalid body recieved.")
 		return
 	}
 
@@ -109,13 +109,13 @@ func (*AuthRoutes) Register(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.TokenGenerate(user.UniqueID)
+	token, err := auth.TokenGenerate(user.Guid)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
+	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
 }
 
 // Info godoc
@@ -126,10 +126,10 @@ func (*AuthRoutes) Register(c *gin.Context) {
 // @Router       /auth/info [get]
 func (*AuthRoutes) Info(c *gin.Context) {
 
-	uuid := c.MustGet("uuid")
+	uuid := c.MustGet("guid")
 
 	user := database.User{}
-	if result := database.Db.Where("unique_id = ?", uuid).First(&user); result.Error != nil {
+	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
 		c.String(http.StatusNotFound, "For some reason, you don't exist!")
 		return
 	}

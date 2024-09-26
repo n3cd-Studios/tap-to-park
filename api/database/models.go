@@ -2,29 +2,28 @@ package database
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 // Organization has many Spots, OrganizationID is the foreign key
 // Organization has many Admins, OrganizationID is the foreign key
 type Organization struct {
-	gorm.Model
+	ID     uint   `gorm:"primarykey" json:"-"`
 	Name   string `gorm:"not null;unique;" json:"name"`
 	Spots  []Spot `json:"spots"`
 	Admins []User `json:"-"`
 }
 
 type User struct {
-	gorm.Model     `json:"-"`
-	UniqueID       string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"uuid"`
+	ID             uint   `gorm:"primarykey" json:"-"`
+	Guid           string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Email          string `gorm:"not null;unique;" json:"email"`
 	PasswordHash   string `gorm:"not null;" json:"-"`
 	OrganizationID uint   `gorm:"not null;" json:"-"`
 }
 
 type Reservation struct {
-	gorm.Model
+	ID            uint      `gorm:"primarykey" json:"-"`
+	Guid          string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Start         time.Time `gorm:"not null;" json:"start"`
 	End           time.Time `gorm:"not null;" json:"end"`
 	SpotID        uint      `gorm:"not null;" json:"id"`
@@ -32,7 +31,8 @@ type Reservation struct {
 }
 
 type Spot struct {
-	gorm.Model
+	ID             uint        `gorm:"primarykey" json:"-"`
+	Guid           string      `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Name           string      `gorm:"not null;" json:"name"`
 	Coords         Coordinates `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
 	Handicap       bool        `gorm:"not null;" json:"handicap"`

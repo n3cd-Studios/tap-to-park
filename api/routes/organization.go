@@ -17,10 +17,10 @@ type OrganizationRoutes struct{}
 // @Router       /admin/organization [get]
 func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 
-	uuid := c.MustGet("uuid")
+	uuid := c.MustGet("guid")
 
 	user := database.User{}
-	if result := database.Db.Where("unique_id = ?", uuid).First(&user); result.Error != nil {
+	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
 		c.String(http.StatusNotFound, "For some reason, you don't exist!")
 		return
 	}

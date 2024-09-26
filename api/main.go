@@ -60,6 +60,7 @@ func main() {
 	spots := api.Group("/spots")
 	{
 		routing := routes.SpotRoutes{}
+		spots.GET("/info", routing.GetSpotByID)
 		spots.GET("/near", routing.GetSpotsNear)
 		spots.POST("/create", routing.CreateSpot)
 		spots.DELETE("/delete", routing.DeleteSpot)

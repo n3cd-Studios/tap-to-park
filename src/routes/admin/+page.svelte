@@ -2,7 +2,7 @@
 <script lang="ts">
     import { get } from "$lib/api";
     import { authStore } from "$lib/auth";
-    import type { Organization } from "$lib/models";
+    import { type Spot, type Organization } from "$lib/models";
     import { onMount } from "svelte";
     import Map from "../../components/Map.svelte";
     import { pluralize } from "$lib/lang";
@@ -20,11 +20,14 @@
             return;
         }
 
+        const getSpot = (guid: string) => get<Spot>({ route: "spots/info", params: { guid }})
+
         const leaflet = await import("leaflet");
-        spots = organization.spots.map(({ name, coords }) =>
+        spots = organization.spots.map(({ guid, coords }) =>
             leaflet
                 .marker([coords.longitude, coords.latitude])
-                .bindPopup(`<strong>${name}</strong>`)
+                .bindPopup("Loading...")
+                .on('popupopen', ({ popup }) => getSpot(guid).then(spot => popup.setContent(`${spot?.name}`)))
                 .addTo(map),
         );
     

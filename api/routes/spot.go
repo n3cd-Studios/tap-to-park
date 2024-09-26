@@ -50,6 +50,29 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, spots)
 }
 
+// GetSpotByID godoc
+// @Summary      Get the spots near a longitude and latitude
+// @Produce      json
+// @Param        id    query     uuid  true  "Guid of the spot"
+// @Success      200  {object}  database.Spot
+// @Failure      404  {object}  "Spot was not found"
+// @Router       /spots/info [get]
+func (*SpotRoutes) GetSpotByID(c *gin.Context) {
+
+	guid := c.Query("guid")
+
+	spot := database.Spot{}
+	result := database.Db.Where("guid = ?", guid).First(&spot)
+	err := result.Error
+
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, "Spot was not found")
+		return
+	}
+
+	c.IndentedJSON(http.StatusAccepted, spot)
+}
+
 type CreateSpotInput struct {
 	Name   string               `json:"name" binding:"required"`
 	Coords database.Coordinates `json:"coords" binding:"required"`
