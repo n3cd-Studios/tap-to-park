@@ -43,7 +43,7 @@ func (*AuthRoutes) Login(c *gin.Context) {
 
 	var input LoginInput
 	if err := c.BindJSON(&input); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid body recieved."})
+		c.String(http.StatusBadRequest, "Invalid body recieved.")
 		return
 	}
 
