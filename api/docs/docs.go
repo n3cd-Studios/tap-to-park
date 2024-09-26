@@ -20,6 +20,28 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/info": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets the info of the current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.JWTResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to use token to retrieve user information",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "produces": [
@@ -30,13 +52,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.LoginInput"
+                            "$ref": "#/definitions/routes.JWTResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Failed to log in",
                         "schema": {
-                            "$ref": "#/definitions/database.Error"
+                            "type": "string"
                         }
                     }
                 }
@@ -52,13 +74,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.RegisterInput"
+                            "$ref": "#/definitions/routes.JWTResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Failed to register user",
                         "schema": {
-                            "$ref": "#/definitions/database.Error"
+                            "type": "string"
                         }
                     }
                 }
@@ -211,35 +233,8 @@ const docTemplate = `{
                 }
             }
         },
-        "routes.LoginInput": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.RegisterInput": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
+        "routes.JWTResponse": {
+            "type": "object"
         },
         "routes.ReservationInput": {
             "type": "object",
