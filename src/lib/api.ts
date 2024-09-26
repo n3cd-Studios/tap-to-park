@@ -2,17 +2,17 @@
 export interface GetParams {
     route: string;
     method?: "GET" | "POST";
-    params?: URLSearchParams;
-    headers?: GetHeaderParams;
+    params?: GetPairs;
+    headers?: GetPairs;
     body?: any;
 }
 
-interface GetHeaderParams { 
+interface GetPairs { 
     [key: string]: string
 }
 
 const getHelper = <T, R>({ route, params, body, headers, method = "GET" }: GetParams, defaultValue: R): Promise<T | R> => 
-    fetch(`http://localhost:8080/api/${route}${params ? `?${params.toString()}` : ""}`, { method, headers, body: JSON.stringify(body) })
+    fetch(`http://localhost:8080/api/${route}${params ? `?${new URLSearchParams(params).toString()}` : ""}`, { method, headers, body: JSON.stringify(body) })
         .then(r => r.json() as T)
         .catch(_ => defaultValue);
 

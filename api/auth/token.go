@@ -10,7 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func TokenGenerate(user_id string) (string, error) {
+func TokenGenerate(guid string) (string, error) {
 
 	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN"))
 
@@ -20,7 +20,7 @@ func TokenGenerate(user_id string) (string, error) {
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
-	claims["user_id"] = user_id
+	claims["guid"] = guid
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(token_lifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -60,7 +60,7 @@ func TokenExtractID(tokenString string) (string, error) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		return string(fmt.Sprint(claims["user_id"])), nil
+		return string(fmt.Sprint(claims["guid"])), nil
 	}
 	return "", nil
 }

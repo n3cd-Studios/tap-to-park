@@ -60,6 +60,7 @@ func main() {
 	spots := api.Group("/spots")
 	{
 		routing := routes.SpotRoutes{}
+		spots.GET("/info", routing.GetSpotByID)
 		spots.GET("/near", routing.GetSpotsNear)
 		spots.POST("/create", routing.CreateSpot)
 		spots.DELETE("/delete", routing.DeleteSpot)
@@ -75,10 +76,10 @@ func main() {
 	}
 
 	// Auth routes
-	admin := api.Group("/admin", routes.AuthMiddleware())
+	admin := api.Group("/organization", routes.AuthMiddleware())
 	{
-		routing := routes.AdminRoutes{}
-		admin.GET("/organization", routing.GetOrganization)
+		routing := routes.OrganizationRoutes{}
+		admin.GET("/me", routing.GetOrganization)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

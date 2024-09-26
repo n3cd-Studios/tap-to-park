@@ -2,23 +2,43 @@
 <script lang="ts">
     import { get } from "$lib/api";
     import { authStore } from "$lib/auth";
-    import type { Organization } from "$lib/models";
+    import { type Spot, type Organization } from "$lib/models";
     import { onMount } from "svelte";
+    import Map from "../../components/Map.svelte";
+    import { pluralize } from "$lib/lang";
 
     $: email = $authStore.user?.email
 
+    let map: L.Map;
+    let spots: L.Marker<any>[] = [];
+
     let organization: Organization | null;
     onMount(async () => {
-        organization = await get<Organization>({ route: "admin/organization", headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
+        organization = await get<Organization>({ route: "organization/me", headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
+        
+        if (!organization) {
+            return;
+        }
+
+        const getSpot = (guid: string) => get<Spot>({ route: "spots/info", params: { guid }})
+
+        const leaflet = await import("leaflet");
+        spots = organization.spots.map(({ guid, coords }) =>
+            leaflet
+                .marker([coords.longitude, coords.latitude])
+                .bindPopup("Loading...")
+                .on('popupopen', ({ popup }) => getSpot(guid).then(spot => popup.setContent(`${spot?.name}`)))
+                .addTo(map),
+        );
+    
     })
 
 </script>
 
-<div class="m-10">
+<div class="m-10 flex flex-col gap-2">
     <p>Hello, {email}! You are apart of <span class="font-bold">{organization?.name}</span>.</p>
-    <!-- <div class="pt-3 flex flex-row gap-1">
-        {#each organizations as organization}
-            <Card name={organization.name} description="This is an organization" />
-        {/each}
-    </div> -->
+    <p>Your organization has {pluralize(spots.length, "spot")}:</p>
+    <div class="w-full h-96 rounded-lg border-white border-4">
+        <Map bind:map={map}/>
+    </div>
 </div>

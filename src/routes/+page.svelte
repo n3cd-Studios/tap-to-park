@@ -17,7 +17,7 @@
         const { longitude, latitude } = await promisifyGeolocation();
         map.setView([latitude, longitude], 13);
 
-        const nearbySpots = await getWithDefault<Spot[]>({ route: "spots/near", params: new URLSearchParams({ lng: longitude.toString(), lat: latitude.toString() })}, []);
+        const nearbySpots = await getWithDefault<Spot[]>({ route: "spots/near", params: { lng: longitude.toString(), lat: latitude.toString() }}, []);
         spots = nearbySpots.map(({ name, coords }) =>
             leaflet
                 .marker([coords.longitude, coords.latitude])
