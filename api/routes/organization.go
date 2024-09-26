@@ -43,4 +43,34 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 // @Router       /admin/organization/data [get]
 func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 
+	uuid := c.MustGet("guid")
+
+	user := database.User{}
+	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
+		c.String(http.StatusNotFound, "For some reason, you don't exist!")
+		return
+	}
+
+	organization := database.Organization{}
+	orgResult := database.Db.Model(&database.Organization{}).Preload("Spots").Where("id = ?", user.OrganizationID).First(&organization)
+	if orgResult.Error != nil {
+		c.String(http.StatusNotFound, "Couldn't find the organization associated with you")
+		return
+	}
+
+	// Gather just the spot IDs from the organization struct
+	var spotIDs []uint
+	for _, spot := range organization.Spots {
+		spotIDs = append(spotIDs, spot.ID)
+	}
+
+	spots := database.Spot{}
+	spotResult := database.Db.Model(&database.Spot{}).Preload("Reservations").Where("spotID IN ?", spotIDs).Find(&spots)
+	if spotResult.Error != nil {
+		c.String(http.StatusNotFound, "Couldn't find the spots associated with you")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, spots)
+
 }
