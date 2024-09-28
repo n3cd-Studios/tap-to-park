@@ -104,7 +104,7 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	}
 
 	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: 1}
-	if err := database.Db.Create(&user); err != nil {
+	if err := database.Db.Create(&user).Error; err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
 	}
