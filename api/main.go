@@ -75,11 +75,12 @@ func main() {
 		auth.GET("/info", routes.AuthMiddleware(), routing.Info)
 	}
 
-	// Auth routes
+	// Organization routes
 	admin := api.Group("/organization", routes.AuthMiddleware())
 	{
 		routing := routes.OrganizationRoutes{}
 		admin.GET("/me", routing.GetOrganization)
+		admin.POST("/code", routing.CreateInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

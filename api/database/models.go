@@ -13,6 +13,15 @@ type Organization struct {
 	Admins []User `json:"-"`
 }
 
+type Invite struct {
+	ID             string    `gorm:"primarykey" json:"code"`
+	Start          time.Time `gorm:"not null;" json:"start"`
+	End            time.Time `gorm:"not null;" json:"end"`
+	OrganizationID uint      `gorm:"not null;" json:"organization"`
+	CreatedByID    uint      `gorm:"not null;" json:"createdBy"`
+	UsedByID       uint      `gorm:"" json:"usedBy"`
+}
+
 type User struct {
 	ID             uint   `gorm:"primarykey" json:"-"`
 	Guid           string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
