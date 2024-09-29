@@ -14,7 +14,7 @@ type Organization struct {
 }
 
 type Invite struct {
-	ID             string    `gorm:"primarykey" json:"code"`
+	ID             string    `gorm:"primarykey;unique;" json:"code"`
 	Start          time.Time `gorm:"not null;" json:"start"`
 	End            time.Time `gorm:"not null;" json:"end"`
 	OrganizationID uint      `gorm:"not null;" json:"organization"`
