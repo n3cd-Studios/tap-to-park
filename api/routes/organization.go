@@ -62,7 +62,7 @@ func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	invite := database.Invite{Start: time.Now(), End: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
+	invite := database.Invite{Expiration: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
 
 	maxGenerationAttempts := 3
 
