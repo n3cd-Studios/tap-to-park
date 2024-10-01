@@ -31,14 +31,15 @@ type Reservation struct {
 	CostPerHour   uint      `gorm:"not null;" json:"costPerHour"`
 }
 
+// Spot has many Reservations, SpotID is the foreign key
 type Spot struct {
-	ID             uint        `gorm:"primarykey" json:"-"`
-	Guid           string      `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
-	Name           string      `gorm:"not null;" json:"name"`
-	Coords         Coordinates `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
-	Handicap       bool        `gorm:"not null;" json:"handicap"`
-	OrganizationID uint        `gorm:"not null;" json:"organization"`
-	Reservations   []Reservation
+	ID             uint          `gorm:"primarykey" json:"-"`
+	Guid           string        `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
+	Name           string        `gorm:"not null;" json:"name"`
+	Coords         Coordinates   `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
+	Handicap       bool          `gorm:"not null;" json:"handicap"`
+	OrganizationID uint          `gorm:"not null;" json:"organization"`
+	Reservations   []Reservation `json:"reservations"`
 }
 
 type Error struct {
