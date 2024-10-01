@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"math/rand"
 	"net/http"
 	"tap-to-park/database"
 	"time"
@@ -37,21 +36,6 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, organization)
 }
 
-// thx https://www.calhoun.io/creating-random-strings-in-go/
-const charset = "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-var seededRand *rand.Rand = rand.New(
-	rand.NewSource(time.Now().UnixNano()))
-
-func GenerateCode(length int, charset string) string {
-	code := make([]byte, length)
-	for i := range code {
-		code[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(code)
-}
-
 // CreateInvite godoc
 // @Summary      Create an invite to allow new user to join admin's organization
 // @Produce      json
@@ -78,23 +62,18 @@ func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	const maxGenerationAttempts = 10
-	var inviteCode string
+	invite := database.Invite{Start: time.Now(), End: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
+
+	maxGenerationAttempts := 3
+
 	for attempts := 0; attempts < maxGenerationAttempts; attempts++ {
-		inviteCode = GenerateCode(9, charset)
-		var existingInvite database.Invite
-		if err := database.Db.Where("ID = ?", inviteCode).First(&existingInvite).Error; err != nil {
-			// break if code has not been used
-			break
+		err := database.Db.Create(&invite).Error
+		if err == nil {
+			c.IndentedJSON(http.StatusOK, invite)
+			return
 		}
 	}
 
-	invite := database.Invite{ID: inviteCode, Start: time.Now(), End: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
-
-	if err := database.Db.Create(&invite).Error; err != nil {
-		c.String(http.StatusInternalServerError, "Failed to create invite.")
-		return
-	}
-
-	c.IndentedJSON(http.StatusOK, invite)
+	// After failed attempts, return an error
+	c.String(http.StatusInternalServerError, "Failed to create invite.")
 }
