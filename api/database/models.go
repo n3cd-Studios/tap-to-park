@@ -6,11 +6,13 @@ import (
 
 // Organization has many Spots, OrganizationID is the foreign key
 // Organization has many Admins, OrganizationID is the foreign key
+// Organization has many Invites, OrganizationID is the foreign key
 type Organization struct {
-	ID     uint   `gorm:"primarykey" json:"-"`
-	Name   string `gorm:"not null;unique;" json:"name"`
-	Spots  []Spot `json:"spots"`
-	Admins []User `json:"-"`
+	ID      uint     `gorm:"primarykey" json:"-"`
+	Name    string   `gorm:"not null;unique;" json:"name"`
+	Spots   []Spot   `json:"spots"`
+	Invites []Invite `json:"invites"`
+	Admins  []User   `json:"-"`
 }
 
 type Invite struct {
