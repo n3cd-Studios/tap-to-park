@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"math/rand"
 	"net/http"
 	"tap-to-park/database"
 	"time"
@@ -37,21 +36,15 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, organization)
 }
 
-const charset = "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-// thx https://www.calhoun.io/creating-random-strings-in-go/
-var seededRand *rand.Rand = rand.New(
-	rand.NewSource(time.Now().UnixNano()))
-
-func GenerateAlphanumeric(length int, charset string) string {
-	code := make([]byte, length)
-	for i := range code {
-		code[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(code)
-}
-
+// CreateInvite godoc
+// @Summary      Create an invite to allow new user to join admin's organization
+// @Produce      json
+// @Success      200  {object}  database.Invite
+// @Failure      401  {string}  "Unauthorized"
+// @Failure      404  {string}  "User or Organization not found"
+// @Failure      500  {string}  "Failed to create invite"
+// @Router       /admin/organization [post]
+// @Security     BearerAuth
 func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 
 	uuid := c.MustGet("guid")
@@ -69,22 +62,18 @@ func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 		return
 	}
 
-	const maxGenerationAttempts = 10
-	var inviteCode string
+	invite := database.Invite{Expiration: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
+
+	maxGenerationAttempts := 3
+
 	for attempts := 0; attempts < maxGenerationAttempts; attempts++ {
-		inviteCode = GenerateAlphanumeric(9, charset)
-		var existingInvite database.Invite
-		if err := database.Db.Where("code = ?", inviteCode).First(&existingInvite).Error; err != nil {
-			// break if code has not been used
-			break
+		err := database.Db.Create(&invite).Error
+		if err == nil {
+			c.IndentedJSON(http.StatusOK, invite)
+			return
 		}
 	}
-	invite := database.Invite{ID: GenerateAlphanumeric(9, charset), Start: time.Now(), End: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
 
-	if err := database.Db.Create(&invite).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create invite."})
-		return
-	}
-
-	c.IndentedJSON(http.StatusOK, invite)
+	// After failed attempts, return an error
+	c.String(http.StatusInternalServerError, "Failed to create invite.")
 }

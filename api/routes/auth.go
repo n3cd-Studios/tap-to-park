@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"tap-to-park/auth"
 	"tap-to-park/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,8 +71,9 @@ func (*AuthRoutes) Login(c *gin.Context) {
 }
 
 type RegisterInput struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Email      string `json:"email" binding:"required"`
+	Password   string `json:"password" binding:"required"`
+	InviteCode string `json:"invite"`
 }
 
 // Register godoc
@@ -103,7 +105,22 @@ func (*AuthRoutes) Register(c *gin.Context) {
 		return
 	}
 
-	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: 1}
+	var invite database.Invite
+	var organizationID uint
+	if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
+		c.String(http.StatusBadRequest, "Invalid invite code.")
+		return
+	}
+
+	if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
+		c.String(http.StatusBadRequest, "Invalid invite code.")
+		return
+	}
+
+	organizationID = invite.OrganizationID
+
+	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: organizationID}
+
 	if err := database.Db.Create(&user).Error; err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
@@ -112,6 +129,12 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	token, err := auth.TokenGenerate(user.Guid)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
+		return
+	}
+
+	invite.UsedByID = user.ID
+	if err := database.Db.Save(&invite).Error; err != nil {
+		c.String(http.StatusInternalServerError, "Failed to update invite.")
 		return
 	}
 
