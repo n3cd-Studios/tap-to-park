@@ -18,7 +18,7 @@ type SpotRoutes struct{}
 // @Param        lng    query     number  true  "longitude to search by"
 // @Param        handicap query     boolean false "filter spots by handicap accessibility"
 // @Success      200  {object}  database.Spot
-// @Failure      404  {object}  database.Error
+// @Failure      404  {string}  "Could not load the list of spots"
 // @Router       /spots/near [get]
 func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
@@ -28,36 +28,38 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	lat, perr := strconv.ParseFloat(latParam, 64)
 	if perr != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Latitude must be a float."})
+		c.String(http.StatusNotFound, "Latitude must be a float.")
 		return
 	}
 
 	lng, perr := strconv.ParseFloat(lngParam, 64)
 	if perr != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Longitude must be a float."})
+		c.String(http.StatusNotFound, "Longitude must be a float.")
 		return
 	}
 
 	var filterByHandicap, applyHandicapFilter bool
-    if handicapParam != "" {
-        filterByHandicap, perr = strconv.ParseBool(handicapParam)
-        if perr != nil {
-            c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Handicap must be a boolean."})
-            return
-        }
-        applyHandicapFilter = true
-    }	
+	if handicapParam != "" {
+		filterByHandicap, perr = strconv.ParseBool(handicapParam)
+		if perr != nil {
+			c.String(http.StatusNotFound, "Handicap must be a boolean.")
+			return
+		}
+		applyHandicapFilter = true
+	}
 
 	point := database.Coordinates{Longitude: lng, Latitude: lat}
 
 	spots := []database.Spot{}
 	query := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10)
-	if applyHandicapFilter { query = query.Where("handicap = ?", filterByHandicap)}
+	if applyHandicapFilter {
+		query = query.Where("handicap = ?", filterByHandicap)
+	}
 	result := query.Find(&spots)
 	err := result.Error
 
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		c.String(http.StatusNotFound, "Could not load the list of spots.")
 		return
 	}
 
@@ -69,7 +71,7 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 // @Produce      json
 // @Param        id    query     uuid  true  "Guid of the spot"
 // @Success      200  {object}  database.Spot
-// @Failure      404  {object}  "Spot was not found"
+// @Failure      404  {string}  "Spot was not found"
 // @Router       /spots/info [get]
 func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 
@@ -133,10 +135,8 @@ type DeleteSpotInput struct {
 	SpotID uint64 `json:"spot_id" bindings:"required"`
 }
 
-// CreateSpot godoc
+// DeleteSpot godoc
 // @Summary      Delete a spot by it's ID
-// @Produce      json
-// @Accept		 json
 // @Success      200  {string}  "Successfully deleted spot"
 // @Failure      400  {string}  "Invalid body"
 // @Failure      401  {string}  "Invalid token"
