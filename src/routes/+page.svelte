@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Button from "../components/Button.svelte";
+    import Filter from "../components/Filter.svelte";
     import Map from "../components/Map.svelte";
     import type { Coords, Spot } from "../lib/models";
     import { get, getWithDefault } from "$lib/api";
@@ -8,6 +9,7 @@
 
     let map: L.Map;
     let spots: Marker<any>[];
+    let handicapFilter = false;
 
     onMount(async () => {
         const promisifyGeolocation = (): Promise<Coords> =>
@@ -26,6 +28,11 @@
         );
     });
 
+    // TODO: logic to handle filter button
+    const toggleHandicapFilter = async () => {
+        handicapFilter = !handicapFilter;
+    };
+
     let activeSpot = 0;
     const updateSpot = () => {
         if (activeSpot < 0) activeSpot = spots.length - 1;
@@ -41,9 +48,11 @@
             <Map bind:map={map}/>
         </div>
         <div class="flex flex-row justify-between">
-            <Button click={() => console.log("Find nearest")}
-                >Find Nearest</Button
-            >
+            <div class="flex gap-2">
+                <Button click={() => console.log("Find nearest")}
+                    >Find Nearest</Button>
+                <Filter click={toggleHandicapFilter}></Filter>
+            </div>
             <div>
                 <Button click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
                 <Button click={() => { activeSpot++; updateSpot(); }}>{">"}</Button>

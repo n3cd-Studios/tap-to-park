@@ -12,7 +12,7 @@
 <div class="h-full w-full flex flex-col justify-center items-center">
     <div class="p-10 bg-white rounded-xl w-1/3">
         <Input bind:value={email} name="Email" />
-        <Input bind:value={password} name="Password" />
+        <Input bind:value={password} name="Password" type="password"/>
         <div class="flex flex-row justify-end">
             <Button click={async () => {
                 await login(email, password);

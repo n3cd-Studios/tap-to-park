@@ -12,10 +12,11 @@ import (
 type SpotRoutes struct{}
 
 // GetSpotsNear godoc
-// @Summary      Get the spots near a longitude and latitude
+// @Summary      Get the spots near a longitude and latitude, with optional handicap filter
 // @Produce      json
 // @Param        lat    query     number  true  "latitude to search by"
 // @Param        lng    query     number  true  "longitude to search by"
+// @Param        handicap query     boolean false "filter spots by handicap accessibility"
 // @Success      200  {object}  database.Spot
 // @Failure      404  {object}  database.Error
 // @Router       /spots/near [get]
@@ -23,23 +24,36 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	latParam := c.Query("lat")
 	lngParam := c.Query("lng")
+	handicapParam := c.Query("handicap")
 
 	lat, perr := strconv.ParseFloat(latParam, 64)
 	if perr != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Latitude must me a float."})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Latitude must be a float."})
 		return
 	}
 
 	lng, perr := strconv.ParseFloat(lngParam, 64)
 	if perr != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Longitude must me a float."})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Longitude must be a float."})
 		return
 	}
+
+	var filterByHandicap, applyHandicapFilter bool
+    if handicapParam != "" {
+        filterByHandicap, perr = strconv.ParseBool(handicapParam)
+        if perr != nil {
+            c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Handicap must be a boolean."})
+            return
+        }
+        applyHandicapFilter = true
+    }	
 
 	point := database.Coordinates{Longitude: lng, Latitude: lat}
 
 	spots := []database.Spot{}
-	result := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10).Find(&spots)
+	query := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10)
+	if applyHandicapFilter { query = query.Where("handicap = ?", filterByHandicap)}
+	result := query.Find(&spots)
 	err := result.Error
 
 	if err != nil {

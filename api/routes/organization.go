@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"tap-to-park/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -42,7 +43,37 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 // @Failure      400  {string}  "Unauthorized"
 // @Router       /admin/organization/data [get]
 func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
+  
+  uuid := c.MustGet("guid")
 
+	user := database.User{}
+	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
+		c.String(http.StatusNotFound, "For some reason, you don't exist!")
+		return
+	}
+  
+  organization := database.Organization{}
+  result := database.Db.Preload("Spots.Reservations").Where("id = ?", user.OrganizationID).First(&organization)
+	if result.Error != nil {
+		c.String(http.StatusNotFound, "Couldn't find the organization associated with you")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, &organization) // Send back 220 with the JSON of the spots & reservations
+  
+}
+
+// CreateInvite godoc
+// @Summary      Create an invite to allow new user to join admin's organization
+// @Produce      json
+// @Success      200  {object}  database.Invite
+// @Failure      401  {string}  "Unauthorized"
+// @Failure      404  {string}  "User or Organization not found"
+// @Failure      500  {string}  "Failed to create invite"
+// @Router       /admin/organization [post]
+// @Security     BearerAuth
+func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
+  
 	uuid := c.MustGet("guid")
 
 	user := database.User{}
@@ -50,14 +81,25 @@ func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 		c.String(http.StatusNotFound, "For some reason, you don't exist!")
 		return
 	}
-
-	organization := database.Organization{}
-	result := database.Db.Preload("Spots.Reservations").Where("id = ?", user.OrganizationID).First(&organization)
+  
+  organization := database.Organization{}
+	result := database.Db.Model(&database.Organization{}).Where("id = ?", user.OrganizationID).First(&organization)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "Couldn't find the organization associated with you")
 		return
 	}
+  
+	invite := database.Invite{Expiration: time.Now().Add(1 * time.Hour), OrganizationID: organization.ID, CreatedByID: user.ID}
 
-	c.IndentedJSON(http.StatusOK, &organization) // Send back 220 with the JSON of the spots & reservations
+	maxGenerationAttempts := 3
+	for attempts := 0; attempts < maxGenerationAttempts; attempts++ {
+		err := database.Db.Create(&invite).Error
+		if err == nil {
+			c.IndentedJSON(http.StatusOK, invite)
+			return
+		}
+	}
 
+	// After failed attempts, return an error
+	c.String(http.StatusInternalServerError, "Failed to create invite.")
 }
