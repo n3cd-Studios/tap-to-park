@@ -1,19 +1,22 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
-    import { authStore, logout } from "$lib/auth";
+    import { authStore, getUserInfo, logout } from "$lib/auth";
+    import { onMount } from "svelte";
 
     export let pass: boolean = !!$authStore.token; 
-    export let logUserOut: boolean = true;
+    export let signOut: boolean = true;
     export let redirect: string = "/auth/login";
     
     onMount(async () => {
-        if (browser && !pass) {
-            if (logUserOut) {
+        const user = await getUserInfo();
+        if (browser && !(pass || user)) {
+            if (signOut) {
                 logout();
                 goto("/auth/login");
-            } else goto(redirect);
+            } else {
+                goto(redirect);
+            }
         }
     });
 </script>
