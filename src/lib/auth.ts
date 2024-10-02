@@ -2,6 +2,7 @@
 import { persisted } from 'svelte-persisted-store'
 import { get } from "./api";
 import type { User } from "./models";
+import { get as storeGet } from 'svelte/store';
 
 export interface AuthStore {
     token?: string,
@@ -27,6 +28,10 @@ export const login = async (email: string, password: string) => {
     }
 
     authStore.set({ token, user });
+}
+
+export const getUserInfo = async () => {
+    return get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${storeGet(authStore).token}` }});
 }
 
 export const logout = () => {

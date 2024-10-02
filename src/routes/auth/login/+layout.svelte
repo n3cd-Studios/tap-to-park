@@ -5,6 +5,6 @@
 
 </script>
 
-<AuthRoute pass={!$authStore.token} redirect="/admin" logUserOut={false}>
+<AuthRoute pass={!$authStore.token} redirect="/admin" signOut={false}>
     <slot />
 </AuthRoute>
