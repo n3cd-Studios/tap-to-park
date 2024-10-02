@@ -80,6 +80,7 @@ func main() {
 	{
 		routing := routes.OrganizationRoutes{}
 		admin.GET("/me", routing.GetOrganization)
+		admin.GET("/data", routing.GetSpotData)
 		admin.POST("/code", routing.CreateInvite)
 	}
 
