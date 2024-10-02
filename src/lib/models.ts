@@ -5,6 +5,17 @@ export interface Coords {
 };
 
 export interface Spot {
-    name: string
-    coords: Coords
+    guid: string;
+    name: string;
+    coords: Coords;
+}
+
+export interface User {
+    guid: string;
+    email: string;
+}
+
+export interface Organization {
+    name: string;
+    spots: Spot[]
 }

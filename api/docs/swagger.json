@@ -14,6 +14,34 @@
     "host": "localhost:8080",
     "basePath": "/api/",
     "paths": {
+        "/admin/organization": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all of the organizations associated with an admin",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/database.Organization"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/info": {
             "get": {
                 "produces": [
@@ -133,6 +161,68 @@
                 }
             }
         },
+        "/spots/create": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a spot at a longitude and latitude",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Spot"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/spots/delete": {
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a spot by it's ID",
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted spot",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/spots/near": {
             "get": {
                 "produces": [
@@ -173,6 +263,21 @@
         }
     },
     "definitions": {
+        "database.Coordinates": {
+            "type": "object",
+            "required": [
+                "latitude",
+                "longitude"
+            ],
+            "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                }
+            }
+        },
         "database.Error": {
             "type": "object",
             "properties": {
@@ -181,11 +286,35 @@
                 }
             }
         },
-        "database.Point": {
+        "database.Organization": {
             "type": "object",
             "properties": {
-                "x": {
-                    "type": "number"
+                "admins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.User"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "spots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Spot"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -193,7 +322,7 @@
             "type": "object",
             "properties": {
                 "coords": {
-                    "$ref": "#/definitions/database.Point"
+                    "$ref": "#/definitions/database.Coordinates"
                 },
                 "createdAt": {
                     "type": "string"
@@ -207,10 +336,24 @@
                 "id": {
                     "type": "integer"
                 },
-                "organizationID": {
+                "name": {
+                    "type": "string"
+                },
+                "organization": {
                     "type": "integer"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "uuid": {
                     "type": "string"
                 }
             }

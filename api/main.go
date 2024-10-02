@@ -42,6 +42,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
+		AllowHeaders:    []string{"Authentication"},
 	}))
 
 	// API
@@ -50,24 +51,37 @@ func main() {
 	// Reservation routes
 	reservations := api.Group("/reservations")
 	{
-		routes := routes.ReservationRoutes{}
-		reservations.POST("/", routes.CreateReservation)
-		reservations.GET("/:id", routes.GetReservationByID)
+		routing := routes.ReservationRoutes{}
+		reservations.POST("/", routing.CreateReservation)
+		reservations.GET("/:id", routing.GetReservationByID)
 	}
 
 	// Spot routes
 	spots := api.Group("/spots")
 	{
-		routes := routes.SpotRoutes{}
-		spots.GET("/near", routes.GetSpotsNear)
+		routing := routes.SpotRoutes{}
+		spots.GET("/info", routing.GetSpotByID)
+		spots.GET("/near", routing.GetSpotsNear)
+		spots.POST("/create", routing.CreateSpot)
+		spots.DELETE("/delete", routing.DeleteSpot)
 	}
 
 	// Auth routes
 	auth := api.Group("/auth")
 	{
-		routes := routes.AuthRoutes{}
-		auth.POST("/login", routes.Login)
-		auth.POST("/register", routes.Register)
+		routing := routes.AuthRoutes{}
+		auth.POST("/login", routing.Login)
+		auth.POST("/register", routing.Register)
+		auth.GET("/info", routes.AuthMiddleware(), routing.Info)
+	}
+
+	// Organization routes
+	admin := api.Group("/organization", routes.AuthMiddleware())
+	{
+		routing := routes.OrganizationRoutes{}
+		admin.GET("/me", routing.GetOrganization)
+		admin.GET("/data", routing.GetSpotData)
+		admin.POST("/code", routing.CreateInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
