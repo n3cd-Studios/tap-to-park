@@ -80,6 +80,7 @@ func main() {
 	{
 		routing := routes.OrganizationRoutes{}
 		admin.GET("/me", routing.GetOrganization)
+		admin.GET("/data", routing.GetSpotData)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
