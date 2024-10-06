@@ -7,17 +7,19 @@
     let email: string;
     let password: string;
 
+    const handleLogin = async () => {
+        await login(email, password);
+        goto("/admin");
+    };
+
 </script>
 
 <div class="h-full w-full flex flex-col justify-center items-center">
-    <div class="p-10 bg-white rounded-xl w-1/3">
-        <Input bind:value={email} name="Email" />
+    <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleLogin}>
+        <Input bind:value={email} name="Email"/>
         <Input bind:value={password} name="Password" type="password"/>
         <div class="flex flex-row justify-end">
-            <Button click={async () => {
-                await login(email, password);
-                goto("/admin");
-            }}>Login</Button>
+            <Button type="submit">Login</Button>
         </div>
-    </div>
+    </form>
 </div>
