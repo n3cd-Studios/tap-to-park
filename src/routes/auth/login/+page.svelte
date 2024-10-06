@@ -14,12 +14,12 @@
 
 </script>
 
-<div class="h-full w-full flex flex-col justify-center items-center" on:submit={handleLogin}>
-    <form class="p-10 bg-white rounded-xl w-1/3">
+<div class="h-full w-full flex flex-col justify-center items-center">
+    <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleLogin}>
         <Input bind:value={email} name="Email"/>
         <Input bind:value={password} name="Password" type="password"/>
         <div class="flex flex-row justify-end">
-            <Button>Login</Button>
+            <Button type="submit">Login</Button>
         </div>
     </form>
 </div>
