@@ -1,41 +1,80 @@
 basePath: /api/
 definitions:
+  database.Coordinates:
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
   database.Error:
     properties:
       message:
         type: string
     type: object
-  database.Point:
+  database.Invite:
     properties:
-      x:
-        type: number
+      code:
+        type: string
+      createdBy:
+        type: integer
+      expiration:
+        type: string
+      organization:
+        type: integer
+      usedBy:
+        type: integer
+    type: object
+  database.Organization:
+    properties:
+      invites:
+        items:
+          $ref: '#/definitions/database.Invite'
+        type: array
+      name:
+        type: string
+      spots:
+        items:
+          $ref: '#/definitions/database.Spot'
+        type: array
+    type: object
+  database.Reservation:
+    properties:
+      costPerHour:
+        type: integer
+      end:
+        type: string
+      guid:
+        type: string
+      id:
+        type: integer
+      start:
+        type: string
     type: object
   database.Spot:
     properties:
       coords:
-        $ref: '#/definitions/database.Point'
-      createdAt:
+        $ref: '#/definitions/database.Coordinates'
+      guid:
         type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
       handicap:
         type: boolean
-      id:
-        type: integer
-      organizationID:
-        type: integer
-      updatedAt:
+      name:
         type: string
-    type: object
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
+      organization:
+        type: integer
+      reservations:
+        items:
+          $ref: '#/definitions/database.Reservation'
+        type: array
     type: object
   routes.JWTResponse:
+    properties:
+      token:
+        type: string
     type: object
   routes.ReservationInput:
     properties:
@@ -56,6 +95,65 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
+  /admin/organization:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Organization'
+              type: array
+            type: array
+        "400":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Get all of the organizations associated with an admin
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Invite'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: User or Organization not found
+          schema:
+            type: string
+        "500":
+          description: Failed to create invite
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create an invite to allow new user to join admin's organization
+  /admin/organization/data:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Spot'
+              type: array
+            type: array
+        "400":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Get all of the spots data associated with an organization
   /auth/info:
     get:
       produces:
@@ -132,6 +230,56 @@ paths:
           schema:
             $ref: '#/definitions/database.Error'
       summary: Get a reservation by an ID
+  /spots/create:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Spot'
+        "400":
+          description: Invalid body
+          schema:
+            type: string
+        "401":
+          description: Invalid token
+          schema:
+            type: string
+      summary: Create a spot at a longitude and latitude
+  /spots/delete:
+    delete:
+      responses:
+        "200":
+          description: Successfully deleted spot
+          schema:
+            type: string
+        "400":
+          description: Invalid body
+          schema:
+            type: string
+        "401":
+          description: Invalid token
+          schema:
+            type: string
+      summary: Delete a spot by it's ID
+  /spots/info:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Spot'
+        "404":
+          description: Spot was not found
+          schema:
+            type: string
+      summary: Get the spots near a longitude and latitude
   /spots/near:
     get:
       parameters:
@@ -145,6 +293,10 @@ paths:
         name: lng
         required: true
         type: number
+      - description: filter spots by handicap accessibility
+        in: query
+        name: handicap
+        type: boolean
       produces:
       - application/json
       responses:
@@ -153,8 +305,9 @@ paths:
           schema:
             $ref: '#/definitions/database.Spot'
         "404":
-          description: Not Found
+          description: Could not load the list of spots
           schema:
-            $ref: '#/definitions/database.Error'
-      summary: Get the spots near a longitude and latitude
+            type: string
+      summary: Get the spots near a longitude and latitude, with optional handicap
+        filter
 swagger: "2.0"

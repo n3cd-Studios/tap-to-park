@@ -1,29 +1,44 @@
+
 <script lang="ts">
     import { get } from "$lib/api";
-    import { store } from "$lib/auth";
-    import Button from "../../components/Button.svelte";
-    import Input from "../../components/Input.svelte";
+    import { authStore } from "$lib/auth";
+    import { type Spot, type Organization } from "$lib/models";
+    import { onMount } from "svelte";
+    import Map from "../../components/Map.svelte";
+    import { pluralize } from "$lib/lang";
 
-    let email: string;
-    let password: string;
-    
-    const login = async () => {
-        const response = await get<{ token: string }>({ route: "auth/login", method: "POST", body: { email, password } });
-        if (!response) {
-            // failed to login
+    $: email = $authStore.user?.email
+
+    let map: L.Map;
+    let spots: L.Marker<any>[] = [];
+
+    let organization: Organization | null;
+    onMount(async () => {
+        organization = await get<Organization>({ route: "organization/me", headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
+        
+        if (!organization) {
             return;
         }
-        $store = response;
-    }
+
+        const getSpot = (guid: string) => get<Spot>({ route: "spots/info", params: { guid }})
+
+        const leaflet = await import("leaflet");
+        spots = organization.spots.map(({ guid, coords }) =>
+            leaflet
+                .marker([coords.longitude, coords.latitude])
+                .bindPopup("Loading...")
+                .on('popupopen', ({ popup }) => getSpot(guid).then(spot => popup.setContent(`${spot?.name}`)))
+                .addTo(map),
+        );
+    
+    })
 
 </script>
 
-<div class="h-full w-full flex flex-col justify-center items-center">
-    <div class="p-10 bg-white rounded-xl w-1/3">
-        <Input bind:value={email} name="Email" />
-        <Input bind:value={password} name="Password" />
-        <div class="flex flex-row justify-end">
-            <Button click={login}>Login</Button>
-        </div>
+<div class="m-10 flex flex-col gap-2">
+    <p>Hello, {email}! You are apart of <span class="font-bold">{organization?.name}</span>.</p>
+    <p>Your organization has {pluralize(spots.length, "spot")}:</p>
+    <div class="w-full h-96 rounded-lg border-white border-4">
+        <Map bind:map={map}/>
     </div>
 </div>
