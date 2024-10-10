@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/stripe/stripe-go/v80"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -35,6 +36,8 @@ func main() {
 	if err != nil {
 		log.Panic("Error loading .env file")
 	}
+
+	stripe.Key = os.Getenv("STRIPE_API_KEY")
 
 	// Connect to the database
 	database.Connect()
@@ -61,6 +64,7 @@ func main() {
 	{
 		routing := routes.SpotRoutes{}
 		spots.GET("/info", routing.GetSpotByID)
+		spots.POST("/purchase", routing.PurchaseSpot)
 		spots.GET("/near", routing.GetSpotsNear)
 		spots.POST("/create", routing.CreateSpot)
 		spots.DELETE("/delete", routing.DeleteSpot)

@@ -4,17 +4,20 @@
     import Button from "../../../components/Button.svelte";
     import type { Spot } from "$lib/models";
     import { get } from "$lib/api";
+    import { redirect } from "@sveltejs/kit";
+    import { goto } from "$app/navigation";
 
     export let data;
 
     let spot: Spot | null;
-    let continued = true;
+    let continued = false;
 
     let hours = 0;
     let minutes = 0;
 
     const costPerHour = 2;
     const costPerMinute = costPerHour / 60;
+    $: price = (costPerHour * hours) + (costPerMinute * minutes);
 
     onMount(async () => {
         spot = await get<Spot>({
@@ -23,7 +26,15 @@
         });
     })
 
-    $: price = (costPerHour * hours) + (costPerMinute * minutes);
+    const checkout = async () => {
+        const session = await get<{ url: string }>({ route: "spots/purchase", method: "POST", body: {
+            spot_id: data.id,
+            price: Number(price.toPrecision(3)) * 100
+        }});
+
+        if (session) window.location.href = session.url;
+    }
+
 </script>
 
 {#if spot}
@@ -44,7 +55,7 @@
                 <p class="text-4xl">Total: ${price.toPrecision(3)}</p>
             </div>
             <div class="mb-10">
-                <Button>Purchase</Button>
+                <Button click={() => checkout()}>Purchase</Button>
             </div>
         </div>
     {:else}
@@ -53,7 +64,7 @@
                 <p>This space is <span class="text-green-800">avaliable</span>.</p>
                 <p>Claim this spot at the rate of:</p>
                 <div class="flex flex-row items-baseline">
-                    <p class="text-7xl font-bold">$0.75</p>
+                    <p class="text-7xl font-bold">${costPerHour.toPrecision(3)}</p>
                     <p>/hour</p>
                 </div>
                 <p>Maximum time: <span class="text-black">{pluralize(2, "hour")}</span></p>
