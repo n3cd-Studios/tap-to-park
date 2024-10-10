@@ -6,6 +6,8 @@ import (
 	"tap-to-park/database"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stripe/stripe-go/v80"
+	"github.com/stripe/stripe-go/v80/checkout/session"
 	"gorm.io/gorm/clause"
 )
 
@@ -69,16 +71,16 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 // GetSpotByID godoc
 // @Summary      Get the spots near a longitude and latitude
 // @Produce      json
-// @Param        id    query     uuid  true  "Guid of the spot"
+// @Param        id    path     uuid  true  "Guid of the spot"
 // @Success      200  {object}  database.Spot
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/info [get]
+// @Router       /spots/{id}/info [get]
 func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 
-	guid := c.Query("guid")
+	id := c.Param("id")
 
 	spot := database.Spot{}
-	result := database.Db.Where("guid = ?", guid).First(&spot)
+	result := database.Db.Where("guid = ?", id).First(&spot)
 	err := result.Error
 
 	if err != nil {
@@ -87,6 +89,57 @@ func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusAccepted, spot)
+}
+
+type PurchaseSpotInput struct {
+	Price float64 `json:"price" bindings:"required"`
+}
+
+// PurchaseSpot godoc
+// @Summary      Purchase a spot with a certain price
+// @Produce      json
+// @Param        id    path     uuid  true  "Guid of the spot"
+// @Success      200  {string}  "URL of the stripe checkout"
+// @Failure      400  {string}  "Invalid body"
+// @Failure      404  {string}  "Spot was not found"
+// @Router       /spots/{id}/purchase [get]
+func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
+
+	var input PurchaseSpotInput
+	if err := c.BindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Invalid body")
+		return
+	}
+
+	id := c.Param("id")
+
+	domain := "https://localhost:8081"
+	params := &stripe.CheckoutSessionParams{
+		LineItems: []*stripe.CheckoutSessionLineItemParams{
+			&stripe.CheckoutSessionLineItemParams{
+				// Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
+					Currency: stripe.String("usd"),
+					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
+						Name: stripe.String("Parking"),
+					},
+					UnitAmountDecimal: stripe.Float64(input.Price),
+				},
+				Quantity: stripe.Int64(1),
+			},
+		},
+		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
+		SuccessURL: stripe.String(domain + "/park/" + id),
+		CancelURL:  stripe.String(domain + "/park/" + id),
+	}
+
+	sess, err := session.New(params)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Failed to create stripe session.")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, sess)
 }
 
 type CreateSpotInput struct {

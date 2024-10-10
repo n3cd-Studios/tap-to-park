@@ -20,10 +20,10 @@
         map.setView([latitude, longitude], 13);
 
         const nearbySpots = await getWithDefault<Spot[]>({ route: "spots/near", params: { lng: longitude.toString(), lat: latitude.toString() }}, []);
-        spots = nearbySpots.map(({ name, coords }) =>
+        spots = nearbySpots.map(({ guid, name, coords }) =>
             leaflet
                 .marker([coords.longitude, coords.latitude])
-                .bindPopup(`<strong>${name}</strong>`)
+                .bindPopup(`<a href="park/${guid}">${name}</a>`)
                 .addTo(map),
         );
     });
