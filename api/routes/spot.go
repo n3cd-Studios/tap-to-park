@@ -71,16 +71,16 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 // GetSpotByID godoc
 // @Summary      Get the spots near a longitude and latitude
 // @Produce      json
-// @Param        id    query     uuid  true  "Guid of the spot"
+// @Param        id    path     uuid  true  "Guid of the spot"
 // @Success      200  {object}  database.Spot
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/info [get]
+// @Router       /spots/{id}/info [get]
 func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 
-	guid := c.Query("guid")
+	id := c.Param("id")
 
 	spot := database.Spot{}
-	result := database.Db.Where("guid = ?", guid).First(&spot)
+	result := database.Db.Where("guid = ?", id).First(&spot)
 	err := result.Error
 
 	if err != nil {
@@ -92,17 +92,17 @@ func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 }
 
 type PurchaseSpotInput struct {
-	SpotID string  `json:"spot_id" bindings:"required"`
-	Price  float64 `json:"price" bindings:"required"`
+	Price float64 `json:"price" bindings:"required"`
 }
 
 // PurchaseSpot godoc
-// @Summary      Get the spots near a longitude and latitude
+// @Summary      Purchase a spot with a certain price
 // @Produce      json
-// @Param        id    query     uuid  true  "Guid of the spot"
-// @Success      200  {object}  database.Spot
+// @Param        id    path     uuid  true  "Guid of the spot"
+// @Success      200  {string}  "URL of the stripe checkout"
+// @Failure      400  {string}  "Invalid body"
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/purchase [post]
+// @Router       /spots/{id}/purchase [get]
 func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 
 	var input PurchaseSpotInput
@@ -110,6 +110,8 @@ func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Invalid body")
 		return
 	}
+
+	id := c.Param("id")
 
 	domain := "https://localhost:8081"
 	params := &stripe.CheckoutSessionParams{
@@ -127,8 +129,8 @@ func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 			},
 		},
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL: stripe.String(domain + "/park/" + input.SpotID),
-		CancelURL:  stripe.String(domain + "/park/" + input.SpotID),
+		SuccessURL: stripe.String(domain + "/park/" + id),
+		CancelURL:  stripe.String(domain + "/park/" + id),
 	}
 
 	sess, err := session.New(params)

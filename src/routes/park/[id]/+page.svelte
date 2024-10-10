@@ -20,15 +20,11 @@
     $: price = (costPerHour * hours) + (costPerMinute * minutes);
 
     onMount(async () => {
-        spot = await get<Spot>({
-            route: "spots/info",
-            params: { guid: data.id },
-        });
+        spot = await get<Spot>({ route: `spots/${data.id}/info` });
     })
 
     const checkout = async () => {
-        const session = await get<{ url: string }>({ route: "spots/purchase", method: "POST", body: {
-            spot_id: data.id,
+        const session = await get<{ url: string }>({ route: `spots/${data.id}/purchase`, method: "POST", body: {
             price: Number(price.toPrecision(3)) * 100
         }});
 
