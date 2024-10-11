@@ -16,7 +16,7 @@ type Organization struct {
 }
 
 type Invite struct {
-	ID             string    `gorm:"primarykey;unique;default:upper(substr(md5(random()::text), 1, 10))" json:"code"`
+	Code           string    `gorm:"primarykey;unique;default:upper(substr(md5(random()::text), 1, 10))" json:"code"`
 	Expiration     time.Time `gorm:"not null;" json:"expiration"`
 	OrganizationID uint      `gorm:"not null;" json:"organization"`
 	CreatedByID    uint      `gorm:"not null;" json:"createdBy"`
@@ -31,17 +31,8 @@ type User struct {
 	OrganizationID uint   `gorm:"not null;" json:"-"`
 }
 
-type Reservation struct {
-	ID            uint      `gorm:"primarykey" json:"-"`
-	Guid          string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
-	Start         time.Time `gorm:"not null;" json:"start"`
-	End           time.Time `gorm:"not null;" json:"end"`
-	SpotID        uint      `gorm:"not null;" json:"id"`
-	TransactionID string    `gorm:"not null;" json:"-"`
-	CostPerHour   uint      `gorm:"not null;" json:"costPerHour"`
-}
-
 // Spot has many Reservations, SpotID is the foreign key
+// Spot has many Prices, SpotID is the foreign key
 type Spot struct {
 	ID             uint          `gorm:"primarykey" json:"-"`
 	Guid           string        `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
@@ -50,6 +41,26 @@ type Spot struct {
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
 	Reservations   []Reservation `json:"reservations"`
+	Prices         []Price       `json:"prices"`
+}
+
+type Reservation struct {
+	ID            uint      `gorm:"primarykey" json:"-"`
+	Guid          string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
+	Start         time.Time `gorm:"not null;" json:"start"`
+	End           time.Time `gorm:"not null;" json:"end"`
+	Cost          float64   `gorm:"not null;" json:"cost"`
+	TransactionID string    `gorm:"not null;" json:"-"`
+	SpotID        uint      `gorm:"not null;" json:"-"`
+}
+
+type Price struct {
+	ID     uint      `gorm:"primarykey" json:"-"`
+	Guid   string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
+	Start  time.Time `gorm:"not null;" json:"start"`
+	End    time.Time `gorm:"not null;" json:"end"`
+	Cost   float64   `gorm:"not null;" json:"cost"`
+	SpotID uint      `gorm:"not null;" json:"-"`
 }
 
 type Error struct {
