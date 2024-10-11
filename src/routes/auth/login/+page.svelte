@@ -1,8 +1,8 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { login } from "$lib/auth";
-    import Button from "../../../components/Button.svelte";
-    import Input from "../../../components/Input.svelte";
+    import Button from "../../../components/form/Button.svelte";
+    import Input from "../../../components/form/Input.svelte";
 
     let email: string;
     let password: string;

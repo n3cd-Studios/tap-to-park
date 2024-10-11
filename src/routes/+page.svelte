@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import Button from "../components/Button.svelte";
-    import Filter from "../components/Filter.svelte";
+    import Button from "../components/form/Button.svelte";
+    import Filter from "../components/form/Filter.svelte";
     import Map from "../components/Map.svelte";
     import type { Coords, Spot } from "../lib/models";
     import { get, getWithDefault } from "$lib/api";
@@ -49,13 +49,13 @@
         </div>
         <div class="flex flex-row justify-between">
             <div class="flex gap-2">
-                <Button click={() => console.log("Find nearest")}
+                <Button on:click={() => console.log("Find nearest")}
                     >Find Nearest</Button>
-                <Filter click={toggleHandicapFilter}></Filter>
+                <Filter on:click={toggleHandicapFilter}></Filter>
             </div>
             <div>
-                <Button click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
-                <Button click={() => { activeSpot++; updateSpot(); }}>{">"}</Button>
+                <Button on:click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
+                <Button on:click={() => { activeSpot++; updateSpot(); }}>{">"}</Button>
             </div>
         </div>
     </div>
