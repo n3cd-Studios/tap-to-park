@@ -3,13 +3,15 @@
     import { login } from "$lib/auth";
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
+    import { toaster } from "../../../components/toaster/toaster";
 
     let email: string;
     let password: string;
 
     const handleLogin = async () => {
-        await login(email, password);
-        goto("/admin");
+        await login(email, password)
+            .then(() => goto("/admin"))
+            .catch(() => toaster.push({ type: "error", message: "Failed to login." }, 2500));
     };
 
 </script>

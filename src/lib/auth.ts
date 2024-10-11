@@ -17,15 +17,11 @@ export const authStore = persisted<AuthStore>("auth", {});
 
 export const login = async (email: string, password: string) => {
     const response = await get<TokenResponse>({ route: "auth/login", method: "POST", body: { email, password } });
-    if (!response) {
-        return;
-    }
+    if (!response) throw "Failed to login.";
 
     const { token } = response;
     const user = await get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${token}` }, method: "GET" });
-    if (!user) {
-        return;
-    }
+    if (!user) throw "Failed to login.";
 
     authStore.set({ token, user });
 }
