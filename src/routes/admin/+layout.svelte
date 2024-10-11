@@ -1,5 +1,5 @@
 <script>
-    import AuthRoute from "../../components/AuthRoute.svelte";
+    import AuthRoute from "../../components/auth/AuthRoute.svelte";
 </script>
 
 <AuthRoute>

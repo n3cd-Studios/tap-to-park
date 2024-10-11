@@ -1,11 +1,9 @@
 <script lang="ts">
-    import { pluralize } from "$lib/lang";
-    import { onMount } from "svelte";
-    import Button from "../../../components/Button.svelte";
-    import type { Spot } from "$lib/models";
     import { get } from "$lib/api";
-    import { redirect } from "@sveltejs/kit";
-    import { goto } from "$app/navigation";
+    import { pluralize } from "$lib/lang";
+    import type { Spot } from "$lib/models";
+    import { onMount } from "svelte";
+    import Button from "../../../components/form/Button.svelte";
 
     export let data;
 
@@ -51,7 +49,7 @@
                 <p class="text-4xl">Total: ${price.toPrecision(3)}</p>
             </div>
             <div class="mb-10">
-                <Button click={() => checkout()}>Purchase</Button>
+                <Button on:click={() => checkout()}>Purchase</Button>
             </div>
         </div>
     {:else}
@@ -66,7 +64,7 @@
                 <p>Maximum time: <span class="text-black">{pluralize(2, "hour")}</span></p>
             </div>
             <div class="mb-10">
-                <Button click={() => continued = true}>Continue</Button>
+                <Button on:click={() => continued = true}>Continue</Button>
             </div>
         </div>
     {/if}

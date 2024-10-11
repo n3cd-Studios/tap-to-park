@@ -2,6 +2,7 @@
 <script>
     import "../app.css";
     import Logo from "../assets/logo.png"
+    import Toaster from "../components/toaster/Toaster.svelte";
 </script>
 
 <div class="flex h-screen flex-col font-nunito">
@@ -10,5 +11,6 @@
     </div>
     <div class="h-full bg-primary rounded-t-[3rem]">
         <slot />
+        <Toaster />
     </div>
 </div>
