@@ -11,7 +11,7 @@
     const handleLogin = async () => {
         await login(email, password)
             .then(() => goto("/admin"))
-            .catch(() => toaster.push({ type: "error", message: "Failed to login." }, 2500));
+            .catch(() => toaster.push({ type: "error", message: "Failed to login." }, 5000));
     };
 
 </script>
