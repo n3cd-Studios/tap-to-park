@@ -15,7 +15,7 @@ func Connect() {
 		panic("Failed to connect to database")
 	}
 
-	err = database.AutoMigrate(&Organization{}, &Invite{}, &Spot{}, &Reservation{}, &User{})
+	err = database.AutoMigrate(&Organization{}, &Invite{}, &Spot{}, &Reservation{}, &User{}, &Price{})
 	if err != nil {
 		panic("Failed to automigrate models.")
 	}

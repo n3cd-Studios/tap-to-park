@@ -49,7 +49,7 @@ type Reservation struct {
 	Guid          string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Start         time.Time `gorm:"not null;" json:"start"`
 	End           time.Time `gorm:"not null;" json:"end"`
-	CostPerHour   uint      `gorm:"not null;" json:"costPerHour"`
+	Cost          float64   `gorm:"not null;" json:"cost"`
 	TransactionID string    `gorm:"not null;" json:"-"`
 	SpotID        uint      `gorm:"not null;" json:"-"`
 }
@@ -59,6 +59,7 @@ type Price struct {
 	Guid   string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Start  time.Time `gorm:"not null;" json:"start"`
 	End    time.Time `gorm:"not null;" json:"end"`
+	Cost   float64   `gorm:"not null;" json:"cost"`
 	SpotID uint      `gorm:"not null;" json:"-"`
 }
 

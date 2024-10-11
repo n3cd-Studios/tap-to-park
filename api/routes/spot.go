@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"tap-to-park/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v80"
@@ -178,6 +179,16 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 	}
 	if result := database.Db.Create(&spot); result.Error != nil {
 		c.String(http.StatusBadRequest, "Failed to create a spot")
+		return
+	}
+
+	price := database.Price{
+		Start: time.Time{},
+		End:   time.Time{}.Add(time.Hour * 24),
+		Cost:  1.0,
+	}
+	if result := database.Db.Create(&price); result.Error != nil {
+		c.String(http.StatusBadRequest, "Failed to create initial spot pricing point")
 		return
 	}
 
