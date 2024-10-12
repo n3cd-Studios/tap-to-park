@@ -7,15 +7,8 @@
     method: "GET",
     params: { guid: "a0889b39-d087-4b3a-a5b9-8ed7e2db41b6"}
   };
-
-  let columnLabels = {
-    guid: "Spot GUID",
-    name: "Spot Name",
-    handicap: "Handicap Access",
-    organization: "Organization ID"
-  };
   
 </script>
   
-<Table {fetchParams} defaultValue={[]} {columnLabels}></Table>
+<Table {fetchParams}></Table>
   
