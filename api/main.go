@@ -81,8 +81,8 @@ func main() {
 		routing := routes.OrganizationRoutes{}
 		admin.GET("/me", routing.GetOrganization)
 		admin.GET("/data", routing.GetSpotData)
-		admin.POST("/code", routing.CreateInvite)
 		admin.GET("/invites", routing.GetInvites)
+		admin.POST("/code", routing.CreateInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

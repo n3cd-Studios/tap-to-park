@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"log"
 	"net/http"
 	"tap-to-park/database"
 	"time"
@@ -45,6 +46,7 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 
 	uuid := c.MustGet("guid")
+	log.Println("GUID:", c.MustGet("guid"))
 
 	user := database.User{}
 	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
