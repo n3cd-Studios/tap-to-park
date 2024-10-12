@@ -82,8 +82,7 @@ func main() {
 		admin.GET("/me", routing.GetOrganization)
 		admin.GET("/data", routing.GetSpotData)
 		admin.POST("/code", routing.CreateInvite)
-		// TODO: make this functional
-		// admin.GET("/invites", routing.GetInvites)
+		admin.GET("/invites", routing.GetInvites)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

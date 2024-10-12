@@ -3,9 +3,9 @@
   import type { GetParams } from '$lib/api';
 
   let fetchParams: GetParams = {
-    route: "spots/info",
+    route: "admin/organization/invites",
     method: "GET",
-    params: { guid: "a0889b39-d087-4b3a-a5b9-8ed7e2db41b6"}
+    params: { guid: "8c6d4df8-31c5-493f-95b7-6b6e863958d9"}
   };
   
 </script>

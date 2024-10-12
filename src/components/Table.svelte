@@ -18,7 +18,6 @@
       const result = await getWithDefault<any>(fetchParams, defaultValue);
 
       data = Array.isArray(result) ? result : [result];
-      console.log(data);
 
       if (data.length > 0) {
         columns = Object.keys(data[0]); // Extract column names from the first object
