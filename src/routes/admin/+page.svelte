@@ -6,21 +6,26 @@
     import { onMount } from "svelte";
     import Map from "../../components/Map.svelte";
     import { pluralize } from "$lib/lang";
+    import Table from "../../components/Table.svelte";
 
-    $: email = $authStore.user?.email
+    $: email = $authStore.user?.email;
 
     let map: L.Map;
     let spots: L.Marker<any>[] = [];
 
+    let loading = true;
+    let error: string;
     let organization: Organization | null;
+
+    const getSpot = (guid: string) => get<Spot>({ route: `spots/${guid}/info` })
+
     onMount(async () => {
         organization = await get<Organization>({ route: "organization/me", headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
-        
         if (!organization) {
+            error = "Failed to load spots for organization.";
             return;
         }
-
-        const getSpot = (guid: string) => get<Spot>({ route: "spots/info", params: { guid }})
+        loading = false;
 
         const leaflet = await import("leaflet");
         spots = organization.spots.map(({ guid, coords }) =>
@@ -35,10 +40,20 @@
 
 </script>
 
-<div class="m-10 flex flex-col gap-2">
-    <p>Hello, {email}! You are apart of <span class="font-bold">{organization?.name}</span>.</p>
-    <p>Your organization has {pluralize(spots.length, "spot")}:</p>
+<div class="flex flex-col gap-2">
+    <h1 class="text-lg text-center"><span class="font-bold">{organization?.name}</span> organization</h1>
     <div class="w-full h-96 rounded-lg border-white border-4">
         <Map bind:map={map}/>
     </div>
+    <Table 
+        columns={["name", "coords"]} 
+        data={organization?.spots
+            .map(({ name, coords }) => 
+                ({ 
+                    name, 
+                    coords: `(${coords.longitude}, ${coords.latitude})` 
+                })
+            )} 
+        {error} 
+        {loading} />
 </div>

@@ -1,15 +1,23 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Table from '../../../components/Table.svelte';
-  import type { GetParams } from '$lib/api';
-  import { authStore } from "$lib/auth";
+  import { authStore } from '$lib/auth';
+  import { getWithDefault } from '$lib/api';
+    import type { Invite } from '$lib/models';
 
-  let fetchParams: GetParams = {
-    route: "organization/invites",
-    method: "GET",
-    // params: { guid: "8c6d4df8-31c5-493f-95b7-6b6e863958d9"},
-    headers: { "Authentication": `Bearer ${$authStore.token}` }
-  };
+  let loading = true;
+  let error: string;
+  let data: Invite[] = [];
+
+  onMount(async () => {
+    data = await getWithDefault<Invite[]>({ route: "organization/invites", method: "GET", headers: { "Authentication": `Bearer ${$authStore.token}` }}, []);
+    if (!data) {
+      error = "Failed to load table."
+      return;
+    }
+    loading = false;
+  });
   
 </script>
   
-<Table {fetchParams}></Table>
+<Table columns={["code", "expiration"]} {data} {loading} {error} />

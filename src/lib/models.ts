@@ -19,3 +19,11 @@ export interface Organization {
     name: string;
     spots: Spot[]
 }
+
+export interface Invite {
+    code: string,
+    expiration: string,
+    organization: number,
+    createdBy: number,
+    usedBy: number
+}
