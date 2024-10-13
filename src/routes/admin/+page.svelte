@@ -41,8 +41,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-    <p>Hello, {email}! You are apart of <span class="font-bold">{organization?.name}</span>.</p>
-    <p>Your organization has {pluralize(spots.length, "spot")}:</p>
+    <h1 class="text-lg text-center"><span class="font-bold">{organization?.name}</span> organization</h1>
     <div class="w-full h-96 rounded-lg border-white border-4">
         <Map bind:map={map}/>
     </div>
