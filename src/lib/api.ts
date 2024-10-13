@@ -1,4 +1,5 @@
 
+
 // The params that can be passed to a get function
 export interface GetParams {
     route: string;
@@ -11,6 +12,33 @@ export interface GetParams {
 // A helper object for key-value string pairs
 interface GetPairs { 
     [key: string]: string
+}
+
+// A helper type to add paginated items
+type AsPaginated<T> = T & { page: number, pages: number };
+
+export class Paginator<T> {
+
+    private page: number = 0;
+    private pages: number = 0;
+    items: T[] = [];
+
+    constructor(private params: GetParams) {
+        this.load();
+    };
+
+    next = () => {
+        this.page = Math.max(this.page++, this.pages)
+        this.load();
+    };
+
+    last = () => {
+        this.page = Math.min(this.page--, 0);
+        this.load();
+    };
+
+    private load = async () => this.items = await getWithDefault<T[]>(this.params, []);
+
 }
 
 // Just a helper that does all of the heavy lifting, notice how it is not exported
