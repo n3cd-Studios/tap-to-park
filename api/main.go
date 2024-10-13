@@ -85,6 +85,7 @@ func main() {
 		routing := routes.OrganizationRoutes{}
 		admin.GET("/me", routing.GetOrganization)
 		admin.GET("/data", routing.GetSpotData)
+		admin.GET("/invites", routing.GetInvites)
 		admin.POST("/code", routing.CreateInvite)
 	}
 
