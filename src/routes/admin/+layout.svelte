@@ -5,11 +5,10 @@ import AuthRoute from "../../components/auth/AuthRoute.svelte";
 
 <AuthRoute>
     <div class="flex flex-row justify-around mt-10">
-        <div class="flex flex-col mx-20 gap-2">
+        <div class="flex flex-col gap-2 ml-10 bg-white pl-6 pr-14 py-3 rounded-lg">
             <Hover href="/admin">Dashboard</Hover>
             <Hover href="/admin/invites">Invites</Hover>
         </div>
-        <div class="w-1 bg-white"></div>
         <div class="w-full mx-10">
             <slot />
         </div>
