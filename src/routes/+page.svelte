@@ -23,7 +23,7 @@
         spots = nearbySpots.map(({ guid, name, coords }) =>
             leaflet
                 .marker([coords.longitude, coords.latitude])
-                .bindPopup(`<a href="park/${guid}">${name}</a>`)
+                .bindPopup(`<a href="/${guid}">${name}</a>`)
                 .addTo(map),
         );
     });

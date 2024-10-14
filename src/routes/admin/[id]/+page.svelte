@@ -1,7 +1,11 @@
 <script lang="ts">
     import { Region, type Point } from "$lib/geometry";
+    import { onMount } from "svelte";
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
+    import { get } from "$lib/api";
+    import { type Spot } from "$lib/models";
+    import { authStore } from "$lib/auth";
 
     type DayOfWeek = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
     let daysOfWeek: DayOfWeek[] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -25,11 +29,16 @@
     let region = new Region();
     let dragging = false;
     let times = Array(24).fill(0).map((_, num) => `${num}:00`);
-    console.log(times.length)
     let schedule: ScheduleItem[] = daysOfWeek.map((day, x) => ({
         day,
         times: times.map((time, y) => ({ point: [x, y], time, price: 0 }))
     }));
+
+    // TODO: finish this
+    // onMount(async () => {
+    //     const spot = await get<Spot>({ route: `spots/${data.id}/info`, headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
+        
+    // })
 
     // TODO: this is odd, maybe fix??
     const usingSelection = (updater: (time: TimeItem, x: number, y: number) => void) => 

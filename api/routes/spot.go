@@ -81,7 +81,7 @@ func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 	id := c.Param("id")
 
 	spot := database.Spot{}
-	result := database.Db.Where("guid = ?", id).First(&spot)
+	result := database.Db.Where("guid = ?", id).Preload("Prices").First(&spot)
 	err := result.Error
 
 	if err != nil {
