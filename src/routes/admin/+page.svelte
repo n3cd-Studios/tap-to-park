@@ -2,10 +2,9 @@
 <script lang="ts">
     import { get } from "$lib/api";
     import { authStore } from "$lib/auth";
-    import { type Spot, type Organization } from "$lib/models";
+    import { type Organization, type Spot } from "$lib/models";
     import { onMount } from "svelte";
     import Map from "../../components/Map.svelte";
-    import { pluralize } from "$lib/lang";
     import Table from "../../components/Table.svelte";
 
     $: email = $authStore.user?.email;
