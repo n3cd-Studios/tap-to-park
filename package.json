@@ -12,6 +12,10 @@
 		"docs": "cd api && swag init --parseDependency --parseInternal"
 	},
 	"devDependencies": {
+		"@fortawesome/fontawesome-svg-core": "^6.6.0",
+		"@fortawesome/free-brands-svg-icons": "^6.6.0",
+		"@fortawesome/free-solid-svg-icons": "^6.6.0",
+		"@fortawesome/svelte-fontawesome": "^0.2.2",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
@@ -29,6 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"svelte-fa": "^4.0.3",
 		"svelte-persisted-store": "^0.11.0"
 	}
 }

@@ -1,11 +1,7 @@
 <script lang="ts">
     import { Region, type Point } from "$lib/geometry";
-    import { onMount } from "svelte";
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
-    import { get } from "$lib/api";
-    import { type Spot } from "$lib/models";
-    import { authStore } from "$lib/auth";
 
     type DayOfWeek = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
     let daysOfWeek: DayOfWeek[] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
