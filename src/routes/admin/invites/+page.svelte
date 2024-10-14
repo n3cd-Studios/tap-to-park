@@ -1,9 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Table from '../../../components/Table.svelte';
+  import Table from '../../../components/table/Table.svelte';
   import { authStore } from '$lib/auth';
   import { getWithDefault } from '$lib/api';
     import type { Invite } from '$lib/models';
+    import TableItem from '../../../components/table/TableItem.svelte';
 
   let loading = true;
   let error: string;
@@ -20,4 +21,8 @@
   
 </script>
   
-<Table columns={["code", "expiration"]} {data} {loading} {error} />
+<Table columns={["code", "expiration"]} {data} {loading} {error} 
+  let:code let:expiration>
+  <TableItem>{code}</TableItem>
+  <TableItem>{expiration}</TableItem>
+</Table>
