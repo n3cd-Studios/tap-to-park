@@ -1,4 +1,6 @@
 <script lang="ts">
+    import TableItem from "./TableItem.svelte";
+
   
   export let data: any[] = [];
   export let error: string | null = null;
@@ -24,11 +26,7 @@
     <tbody class="bg-white divide-y divide-gray-200">
       {#each data as row}
         <tr>
-          {#each columns as column}
-            <td class="px-4 sm:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-              {row[column] ?? 'N/A'}
-            </td>
-          {/each}
+          <slot {...row} />
         </tr>
       {/each}
     </tbody>

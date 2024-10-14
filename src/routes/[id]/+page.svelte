@@ -3,7 +3,7 @@
     import { pluralize } from "$lib/lang";
     import type { Spot } from "$lib/models";
     import { onMount } from "svelte";
-    import Button from "../../../components/form/Button.svelte";
+    import Button from "../../components/form/Button.svelte";
 
     export let data;
 

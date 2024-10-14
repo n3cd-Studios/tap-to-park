@@ -2,11 +2,11 @@
 <script lang="ts">
     import { get } from "$lib/api";
     import { authStore } from "$lib/auth";
-    import { type Spot, type Organization } from "$lib/models";
+    import { type Organization, type Spot } from "$lib/models";
     import { onMount } from "svelte";
     import Map from "../../components/Map.svelte";
-    import { pluralize } from "$lib/lang";
-    import Table from "../../components/Table.svelte";
+    import Table from "../../components/table/Table.svelte";
+    import TableItem from "../../components/table/TableItem.svelte";
 
     $: email = $authStore.user?.email;
 
@@ -46,14 +46,10 @@
         <Map bind:map={map}/>
     </div>
     <Table 
-        columns={["name", "coords"]} 
-        data={organization?.spots
-            .map(({ name, coords }) => 
-                ({ 
-                    name, 
-                    coords: `(${coords.longitude}, ${coords.latitude})` 
-                })
-            )} 
-        {error} 
-        {loading} />
+        columns={["name", "coords", ""]} data={organization?.spots} {error} {loading}
+        let:name let:coords let:guid>
+        <TableItem>{name}</TableItem>
+        <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
+        <TableItem><a href={`/admin/${guid}`}>Manage Pricing</a></TableItem>
+    </Table>
 </div>

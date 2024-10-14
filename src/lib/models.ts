@@ -8,6 +8,7 @@ export interface Spot {
     guid: string;
     name: string;
     coords: Coords;
+    prices?: Price[]
 }
 
 export interface User {
@@ -26,4 +27,11 @@ export interface Invite {
     organization: number,
     createdBy: number,
     usedBy: number
+}
+
+export interface Price {
+    guid: string;
+    start: string;
+    end: string;
+    cost: number;
 }
