@@ -17,57 +17,64 @@
         times: TimeItem[];
     }
 
+    // external
+    export let data;
+
     // setup variables
     let price = "0";
     let region = new Region();
     let dragging = false;
-    let times = Array(12).fill(0).map((_, num) => `${num}:00`);
+    let times = Array(24).fill(0).map((_, num) => `${num}:00`);
+    console.log(times.length)
     let schedule: ScheduleItem[] = daysOfWeek.map((day, x) => ({
         day,
         times: times.map((time, y) => ({ point: [x, y], time, price: 0 }))
     }));
 
-    const startDragging = (point: Point) => { dragging = true; region.lower = point; };
-    const whileDragging = (point: Point) => { if (dragging) region.upper = point; };
-    const stopDragging = (point: Point) => { dragging = false; region.upper = point; };
+    // TODO: this is odd, maybe fix??
+    const usingSelection = (updater: (time: TimeItem, x: number, y: number) => void) => 
+        schedule.forEach((item, x) => 
+            item.times.forEach((time, y) => 
+                region.in(time.point) ? updater(time, x, y) : undefined)
+            );
 
-    // TODO: this is goofy, maybe fix??
-    const updatePricing = () => {
-        schedule.forEach((item, i) => {
-            item.times.forEach((time, j) => {
-              if (region.in(time.point)) {
-                schedule[i].times[j].price = Number(price); // hella goofy
-              }  
-            })
-        })
+    const named = ([x, y]: Point) => {
+        let item = schedule[x];
+        let time = item.times[y];
+        return `${item.day} at ${time.time}`;
     }
 
 </script>
 
+<h1 class="text-xl font-bold text-center">Pricing information for {data.id}</h1>
 <div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
         {#if region.size() >= 0}
-            <Input bind:value={price} type="number" name="Price" />
-            <Button on:click={updatePricing}>Update</Button>
+            <Input bind:value={price} type="number" name={`Price for ${named(region.lower)} to ${named(region.upper)}`} />
+            <Button on:click={() => usingSelection((_, x, y) => schedule[x].times[y].price = Number(price))}>Save</Button>
         {:else}
             <p>Select a region</p>
         {/if}
     </div>
-    <div class="grid grid-cols-8 bg-white text-center border-gray-200 border-2 w-full">
-        <div>
+    
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div class="grid grid-cols-8 bg-white text-center border-gray-200 border-2 w-full" on:mouseenter={() => dragging = false}>
+        <div class="grid grid-rows-12 border-r-2">
             <div class="bg-gray-200">&nbsp;</div>
-            {#each Array(12).fill(0).map((_, num) => `${num}:00`) as time}
+            {#each times as time}
                 <div>{time}</div>
             {/each}
         </div>
         {#each schedule as { day, times }}
             <div class="grid grid-rows-12">
-                <h1>{day}</h1>
-                {#each times as { point, price }}
+                <h1 class="border-b-2">{day}</h1>
+                {#each times as { point, price }}  
+                    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
                     <button
-                        on:mousedown={() => startDragging(point)}
-                        on:mouseover={() => whileDragging(point)}
-                        on:mouseup={() => stopDragging(point)}
+                        on:mousedown={() => { dragging = true; region.lower = point; }}
+                        on:mouseover={() => { if (dragging) region.upper = point; }}
+                        on:click={() => { region.lower = point; region.upper = point; }}
+                        on:mouseup={() => dragging = false}
                         class={`bg-${region.in(point) ? "green-500" : "white"} hover:bg-gray-400`}>{price}</button
                     >
                 {/each}
