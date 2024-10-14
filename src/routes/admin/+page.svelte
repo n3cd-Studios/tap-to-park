@@ -7,6 +7,8 @@
     import Map from "../../components/Map.svelte";
     import Table from "../../components/table/Table.svelte";
     import TableItem from "../../components/table/TableItem.svelte";
+    import Fa from "svelte-fa";
+    import { faDollar } from "@fortawesome/free-solid-svg-icons";
 
     $: email = $authStore.user?.email;
 
@@ -46,10 +48,10 @@
         <Map bind:map={map}/>
     </div>
     <Table 
-        columns={["name", "coords", ""]} data={organization?.spots} {error} {loading}
+        columns={["name", "coords", "manage pricing"]} data={organization?.spots} {error} {loading}
         let:name let:coords let:guid>
         <TableItem>{name}</TableItem>
         <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
-        <TableItem><a href={`/admin/${guid}`}>Manage Pricing</a></TableItem>
+        <TableItem><a href={`/admin/${guid}`}><Fa icon={faDollar}/></a></TableItem>
     </Table>
 </div>

@@ -1,11 +1,12 @@
 <script lang="ts">
+    import { getWithDefault } from "$lib/api";
+    import type { Marker } from "leaflet";
     import { onMount } from "svelte";
     import Button from "../components/form/Button.svelte";
-    import Filter from "../components/form/Filter.svelte";
     import Map from "../components/Map.svelte";
     import type { Coords, Spot } from "../lib/models";
-    import { get, getWithDefault } from "$lib/api";
-    import type { Marker } from "leaflet";
+    import Fa from 'svelte-fa';
+    import { faFilter } from '@fortawesome/free-solid-svg-icons';
 
     let map: L.Map;
     let spots: Marker<any>[];
@@ -51,7 +52,9 @@
             <div class="flex gap-2">
                 <Button on:click={() => console.log("Find nearest")}
                     >Find Nearest</Button>
-                <Filter on:click={toggleHandicapFilter}></Filter>
+                <Button on:click={toggleHandicapFilter}>
+                    <Fa icon={faFilter} class="text-white w-4 h-4 mr-0.5" />
+                </Button>
             </div>
             <div>
                 <Button on:click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
