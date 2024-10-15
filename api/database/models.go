@@ -34,7 +34,6 @@ type User struct {
 }
 
 // Spot has many Reservations, SpotID is the foreign key
-// Spot has one PriceTable, SpotID is the foreign key
 type Spot struct {
 	ID             uint          `gorm:"primarykey" json:"-"`
 	Guid           string        `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
@@ -43,7 +42,7 @@ type Spot struct {
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
 	Reservations   []Reservation `json:"reservations"`
-	PriceTable     PriceTable    `json:"pricing"`
+	Table          pgtype.JSONB  `gorm:"type:jsonb;not null;serializer:json" json:"table"`
 }
 
 type Reservation struct {
@@ -54,10 +53,4 @@ type Reservation struct {
 	Cost          float64   `gorm:"not null;" json:"cost"`
 	TransactionID string    `gorm:"not null;" json:"-"`
 	SpotID        uint      `gorm:"not null;" json:"-"`
-}
-
-type PriceTable struct {
-	ID     uint         `gorm:"primarykey;" json:"-"`
-	SpotID uint         `gorm:"not null;" json:"-"`
-	Table  pgtype.JSONB `gorm:"type:jsonb;not null;serializer:json" json:"table"`
 }

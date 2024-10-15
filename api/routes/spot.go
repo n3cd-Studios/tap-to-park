@@ -124,15 +124,8 @@ func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 		return
 	}
 
-	pricing := database.PriceTable{SpotID: spot.ID}
-	database.Db.Where("spot_id = ?", pricing.SpotID).First(&pricing) // dont care if it fails or not
-	pricing.Table.Set(&input)
-	if result := database.Db.Save(pricing); result.Error != nil {
-		c.String(http.StatusNotFound, "Failed to update pricing table")
-		return
-	}
-
-	c.IndentedJSON(http.StatusOK, pricing)
+	spot.Table.Set(&input)
+	c.String(http.StatusOK, "Successfully updated spot")
 }
 
 type PurchaseSpotInput struct {
