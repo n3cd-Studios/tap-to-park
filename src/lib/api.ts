@@ -15,29 +15,50 @@ interface GetPairs {
 }
 
 // A helper type to add paginated items
-type AsPaginated<T> = T & { page: number, pages: number };
+interface AsPaginated<T> { 
+    items: T[], 
+    page: number, 
+    pages: number
+};
 
+// Paginate a table of a certain datatype
 export class Paginator<T> {
 
     private page: number = 0;
     private pages: number = 0;
+    private update?: (items: typeof this.items) => any;
     items: T[] = [];
 
-    constructor(private params: GetParams) {
-        this.load();
-    };
+    constructor(private params: GetParams, private pageSize: number = 10) {}
 
+    hasNext = () => this.page < this.pages;
     next = () => {
-        this.page = Math.max(this.page++, this.pages)
-        this.load();
+        this.page = Math.min(++this.page, this.pages)
+        return this.load();
     };
 
+    hasLast = () => this.page > 0;
     last = () => {
-        this.page = Math.min(this.page--, 0);
-        this.load();
+        this.page = Math.max(--this.page, 0);
+        return this.load();
     };
 
-    private load = async () => this.items = await getWithDefault<T[]>(this.params, []);
+    set = (page: number) => {
+        this.page = Math.min(Math.max(page, 0), this.pages);
+        return this.load();
+    };
+
+    subscribe = (cb: typeof this.update) => this.update = cb;
+
+    load = async () => {
+        const payload = await get<AsPaginated<T>>({ ...this.params, params: { ...this.params.params, page: `${this.page}`, size: `${this.pageSize}` }});
+        if (payload) {
+            this.items = payload.items;
+            this.pages = payload.pages;
+        }
+        if (this.update) this.update(this.items);
+        return this.items;
+    };
 
 }
 
