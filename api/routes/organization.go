@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"log"
 	"net/http"
+	"strconv"
 	"tap-to-park/database"
 	"time"
 
@@ -14,9 +14,9 @@ type OrganizationRoutes struct{}
 // GetOrganization godoc
 // @Summary      Get all of the organizations associated with an admin
 // @Produce      json
-// @Success      200  {array} []database.Organization
+// @Success      200  {object}  database.Organization
 // @Failure      400  {string}  "Unauthorized"
-// @Router       /admin/organization [get]
+// @Router       /organization/me [get]
 func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 
 	uuid := c.MustGet("guid")
@@ -27,8 +27,15 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 		return
 	}
 
+	deep := c.Query("deep")
+
+	result := database.Db.Model(&database.Organization{}).Where("id = ?", user.OrganizationID)
+	if deep == "true" {
+		result = result.Preload("Spots.Reservations")
+	}
+
 	organization := database.Organization{}
-	result := database.Db.Model(&database.Organization{}).Preload("Spots").Where("id = ?", user.OrganizationID).First(&organization)
+	result = result.First(&organization)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "Couldn't find the organization associated with you")
 		return
@@ -37,16 +44,15 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, organization)
 }
 
-// GetSpotData godoc
-// @Summary      Get all of the spots data associated with an organization
+// GetSpots godoc
+// @Summary      Get all of the spots associated with an organization
 // @Produce      json
-// @Success      200  {array} []database.Spot
+// @Success      200  {array}   []database.Spot
 // @Failure      400  {string}  "Unauthorized"
-// @Router       /admin/organization/data [get]
-func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
+// @Router       /organization/spots [get]
+func (*OrganizationRoutes) GetSpots(c *gin.Context) {
 
 	uuid := c.MustGet("guid")
-	log.Println("GUID:", c.MustGet("guid"))
 
 	user := database.User{}
 	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
@@ -54,15 +60,29 @@ func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 		return
 	}
 
-	organization := database.Organization{}
-	result := database.Db.Preload("Spots.Reservations").Where("id = ?", user.OrganizationID).First(&organization)
+	page, perr := strconv.ParseInt(c.Query("page"), 10, 64)
+	if perr != nil {
+		page = 0
+	}
+
+	size, perr := strconv.ParseInt(c.Query("size"), 10, 64)
+	if perr != nil {
+		size = 10
+	}
+
+	spots := []database.Spot{}
+	count := int64(0)
+	result := database.Db.Model(&database.Spot{}).Where("organization_id = ?", user.OrganizationID).Count(&count).Offset(int(size * page)).Limit(int(size)).Find(&spots)
 	if result.Error != nil {
-		c.String(http.StatusNotFound, "Couldn't find the organization associated with you")
+		c.String(http.StatusConflict, "Couldn't count all of the spots in the organization.")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, &organization) // Send back 220 with the JSON of the spots & reservations
-
+	c.IndentedJSON(http.StatusOK, PaginatorOutput[database.Spot]{
+		Items: spots,
+		Pages: (count / size),
+		Page:  page,
+	})
 }
 
 // CreateInvite godoc
@@ -72,7 +92,7 @@ func (*OrganizationRoutes) GetSpotData(c *gin.Context) {
 // @Failure      401  {string}  "Unauthorized"
 // @Failure      404  {string}  "User or Organization not found"
 // @Failure      500  {string}  "Failed to create invite"
-// @Router       /admin/organization [post]
+// @Router       /organization/code [post]
 // @Security     BearerAuth
 func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 
@@ -106,6 +126,15 @@ func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 	c.String(http.StatusInternalServerError, "Failed to create invite.")
 }
 
+// GetInvites godoc
+// @Summary      Get's all the invites for an organization
+// @Produce      json
+// @Success      200  {object}  database.Invite
+// @Failure      401  {string}  "Unauthorized"
+// @Failure      404  {string}  "User or Organization not found"
+// @Failure      500  {string}  "Failed to create invite"
+// @Router       /organization/code [post]
+// @Security     BearerAuth
 func (*OrganizationRoutes) GetInvites(c *gin.Context) {
 	uuid := c.MustGet("guid")
 
@@ -115,17 +144,32 @@ func (*OrganizationRoutes) GetInvites(c *gin.Context) {
 		return
 	}
 
+	page, perr := strconv.ParseInt(c.Query("page"), 10, 64)
+	if perr != nil {
+		page = 0
+	}
+
+	size, perr := strconv.ParseInt(c.Query("size"), 10, 64)
+	if perr != nil {
+		size = 10
+	}
+
 	organization := database.Organization{}
 	if result := database.Db.Where("id = ?", user.OrganizationID).First(&organization); result.Error != nil {
 		c.String(http.StatusNotFound, "Could not find your organization")
 		return
 	}
 
+	count := int64(0)
 	var invites []database.Invite
-	if result := database.Db.Where("organization_id = ?", organization.ID).Find(&invites); result.Error != nil {
+	if result := database.Db.Where("organization_id = ?", organization.ID).Count(&count).Offset(int(page * size)).Limit(int(size)).Find(&invites); result.Error != nil {
 		c.String(http.StatusNotFound, "Could not find any invites for your organization")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, invites)
+	c.IndentedJSON(http.StatusOK, PaginatorOutput[database.Invite]{
+		Items: invites,
+		Pages: (count / size),
+		Page:  page,
+	})
 }

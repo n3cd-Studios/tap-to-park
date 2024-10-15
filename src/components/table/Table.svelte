@@ -1,9 +1,7 @@
 <script lang="ts">
-    import TableItem from "./TableItem.svelte";
-    import { goto } from "$app/navigation";
+  import { goto } from "$app/navigation";
   
   export let data: any[] = [];
-  export let error: string | null = null;
   export let loading = true;
   export let columns: string[] = [];
   export let showAddSpot: boolean = false;
@@ -51,10 +49,6 @@
 
   {#if loading}
     <p class="mt-4 text-center text-gray-500">Loading...</p>
-  {/if}
-
-  {#if error}
-    <p class="mt-4 text-center text-red-500">Error: {error}</p>
   {/if}
 </div>
 
