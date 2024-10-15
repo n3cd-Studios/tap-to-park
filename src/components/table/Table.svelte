@@ -1,9 +1,10 @@
 <script lang="ts">
-    
+  import { goto } from "$app/navigation";
   
   export let data: any[] = [];
   export let loading = true;
   export let columns: string[] = [];
+  export let showAddSpot: boolean = false;
 
 </script>
 
@@ -22,6 +23,22 @@
       </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
+      {#if showAddSpot}
+      <tr class="bg-blue-100 cursor-pointer" on:click={() => {/* Functionality for adding a new row */}}>
+        <td 
+          class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider bg-blue-100 cursor-pointer" 
+          on:click={() => goto("/admin/spots/create")}
+        >
+          Add Row
+        </td>
+        {#each columns.slice(1) as column}
+          <td 
+            class="bg-blue-100 cursor-pointer" 
+            on:click={() => goto("/admin/spots/create")} 
+          >
+        {/each}
+      </tr>
+    {/if}
       {#each data as row}
         <tr>
           <slot {...row} />

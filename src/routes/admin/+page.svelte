@@ -73,6 +73,7 @@
         columns={["name", "coords", "manage pricing"]}
         data={items}
         {loading}
+        showAddSpot={true}
         let:name
         let:coords
         let:guid
