@@ -64,10 +64,11 @@ func main() {
 	{
 		routing := routes.SpotRoutes{}
 		spots.GET("/near", routing.GetSpotsNear)
-		spots.POST("/", routes.AuthMiddleware(), routing.CreateSpot)
-		spots.GET("/:id", routing.GetSpot)
-		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
 		spots.POST("/:id/purchase", routing.PurchaseSpot)
+		spots.GET("/:id", routing.GetSpot)
+		spots.POST("/", routes.AuthMiddleware(), routing.CreateSpot)
+		spots.PUT("/:id", routes.AuthMiddleware(), routing.UpdateSpot)
+		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
 	}
 
 	// Auth routes

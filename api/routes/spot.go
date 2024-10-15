@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"tap-to-park/database"
@@ -92,6 +93,45 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, spot)
 }
 
+type UpdateSpotInput struct {
+	Day   string `json:"day"`
+	Times []uint `json:"times"`
+}
+
+// DeleteSpot godoc
+// @Summary      Delete a spot by its ID
+// @Success      200  {string}  "Successfully deleted spot"
+// @Failure      400  {string}  "Invalid body"
+// @Failure      401  {string}  "Invalid token"
+// @Router       /spots/{id} [delete]
+func (*SpotRoutes) UpdateSpot(c *gin.Context) {
+
+	uuid := c.MustGet("uuid")
+
+	user := database.User{}
+	if result := database.Db.Where("uuid = ?", uuid).First(&user); result.Error != nil {
+		c.String(http.StatusBadRequest, "You literally don't exist")
+		return
+	}
+
+	input := []UpdateSpotInput{}
+	if err := c.BindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Invalid body")
+		return
+	}
+
+	println(json.Marshal(input))
+
+	spot_id := c.Param("id")
+	spot := database.Spot{}
+	if result := database.Db.Where("id = ?", spot_id).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
+		c.String(http.StatusNotFound, "That spot does not exist")
+		return
+	}
+
+	c.String(http.StatusAccepted, "Spot successfully deleted")
+}
+
 type PurchaseSpotInput struct {
 	Price float64 `json:"price" bindings:"required"`
 }
@@ -117,7 +157,7 @@ func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 	domain := "https://localhost:8081"
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
-			&stripe.CheckoutSessionLineItemParams{
+			{
 				// Provide the exact Price ID (for example, pr_1234) of the product you want to sell
 				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
 					Currency: stripe.String("usd"),
