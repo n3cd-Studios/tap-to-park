@@ -158,7 +158,13 @@ type CreateSpotInput struct {
 // @Router       /spots/create [post]
 func (*SpotRoutes) CreateSpot(c *gin.Context) {
 
-	uuid := c.MustGet("uuid")
+	uuid := c.MustGet("guid")
+
+	user := database.User{}
+	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
+		c.String(http.StatusNotFound, "For some reason, you don't exist!")
+		return
+	}
 
 	var input CreateSpotInput
 	if err := c.BindJSON(&input); err != nil {
@@ -166,29 +172,40 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		return
 	}
 
-	user := database.User{}
-	if result := database.Db.Where("uuid = ?", uuid).First(&user); result.Error != nil {
-		c.String(http.StatusBadRequest, "You literally don't exist")
 		return
 	}
+	tx := database.Db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
 	spot := database.Spot{
 		Name:           input.Name,
 		Coords:         input.Coords,
-		OrganizationID: 1,
+		OrganizationID: user.OrganizationID,
 	}
-	if result := database.Db.Create(&spot); result.Error != nil {
+	if err := tx.Create(&spot).Error; err != nil {
+		tx.Rollback()
 		c.String(http.StatusBadRequest, "Failed to create a spot")
 		return
 	}
 
 	price := database.Price{
-		Start: time.Time{},
-		End:   time.Time{}.Add(time.Hour * 24),
-		Cost:  1.0,
+		Start:  time.Time{},
+		End:    time.Time{}.Add(time.Hour * 24),
+		Cost:   1.0,
+		SpotID: spot.ID,
 	}
-	if result := database.Db.Create(&price); result.Error != nil {
+	if err := tx.Create(&price).Error; err != nil {
+		tx.Rollback()
 		c.String(http.StatusBadRequest, "Failed to create initial spot pricing point")
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.String(http.StatusInternalServerError, "Transaction could not be commited")
 		return
 	}
 
