@@ -43,7 +43,7 @@
     ></TableItem
   >
 </Table>
-<div class="flex flex-row justify-center">
+<div class="flex flex-row justify-center gap-2">
   <Button on:click={() => paginator.last()}>Last</Button>
   <Button on:click={() => paginator.next()}>Next</Button>
 </div>

@@ -81,8 +81,8 @@
         <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
         <TableItem><a href={`/admin/${guid}`}><Fa icon={faDollar} /></a></TableItem>
     </Table>
-    <div class="flex flex-row justify-center">
-        <Button on:click={() => paginator.last()}>Last</Button>
-        <Button on:click={() => paginator.next()}>Next</Button>
+    <div class="flex flex-row justify-center gap-2">
+        <Button on:click={() => paginator.last()}>{"<"}</Button>
+        <Button on:click={() => paginator.next()}>{">"}</Button>
     </div>
 </div>
