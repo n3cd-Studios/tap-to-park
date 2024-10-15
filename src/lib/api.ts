@@ -3,7 +3,7 @@
 // The params that can be passed to a get function
 export interface GetParams {
     route: string;
-    method?: "GET" | "POST";
+    method?: "GET" | "POST" | "PUT" | "DELETE";
     params?: GetPairs;
     headers?: GetPairs;
     body?: any;

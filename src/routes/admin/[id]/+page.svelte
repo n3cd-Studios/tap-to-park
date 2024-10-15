@@ -29,7 +29,7 @@
     let price = "0";
     let region = new Region();
     let dragging = false;
-    let times = Array(24).fill(0).map((_, num) => `${num}:00`);
+    let times = Array(24).fill(0).map((_, num) => `${num % 12}:00`);
     let schedule: ScheduleItem[] = daysOfWeek.map((day, x) => ({
         day,
         times: times.map((time, y) => ({ point: [x, y], time, price: 0 }))
@@ -41,16 +41,23 @@
     })
 
     // TODO: this is odd, maybe fix??
-    const usingSelection = (updater: (time: TimeItem, x: number, y: number) => void) => 
+    const updateItems = (val: number) => 
         schedule.forEach((item, x) => 
-            item.times.forEach((time, y) => 
-                region.in(time.point) ? updater(time, x, y) : undefined)
-            );
+            item.times.forEach((time, y) => region.in(time.point) ? 
+                schedule[x].times[y].price = val : undefined));
 
-    const named = ([x, y]: Point) => {
+    const namedItem = ([x, y]: Point) => {
         let item = schedule[x];
         let time = item.times[y];
         return `${item.day} at ${time.time}`;
+    }
+
+    const serializeItems = () => schedule.map(item =>  ({ day: item.day, times: item.times.map(time => time.price) }));
+
+    const handleSave = async () => {
+        updateItems(Number(price));
+        const response = await get<string>({ route: `spots/${data.id}`, headers: { "Authentication": `Bearer ${$authStore.token}` }, body: serializeItems(), method: "PUT" });
+        console.log(response);
     }
 
 </script>
@@ -59,8 +66,8 @@
 <div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
         {#if region.size() >= 0}
-            <Input bind:value={price} type="number" name={`Price for ${named(region.lower)} to ${named(region.upper)}`} />
-            <Button on:click={() => usingSelection((_, x, y) => schedule[x].times[y].price = Number(price))}>Save</Button>
+            <Input bind:value={price} type="number" name={`Price for ${namedItem(region.lower)} to ${namedItem(region.upper)}`} />
+            <Button on:click={handleSave}>Save</Button>
         {:else}
             <p>Select a region</p>
         {/if}
