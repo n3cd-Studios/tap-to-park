@@ -18,7 +18,7 @@
     $: price = (costPerHour * hours) + (costPerMinute * minutes);
 
     onMount(async () => {
-        spot = await get<Spot>({ route: `spots/${data.id}/info` });
+        spot = await get<Spot>({ route: `spots/${data.id}` });
     })
 
     const checkout = async () => {

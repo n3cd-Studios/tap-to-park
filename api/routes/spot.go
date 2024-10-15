@@ -69,14 +69,14 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, spots)
 }
 
-// GetSpotByID godoc
+// GetSpot godoc
 // @Summary      Get the spots near a longitude and latitude
 // @Produce      json
 // @Param        id    path     uuid  true  "Guid of the spot"
 // @Success      200  {object}  database.Spot
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id}/info [get]
-func (*SpotRoutes) GetSpotByID(c *gin.Context) {
+// @Router       /spots/{id} [get]
+func (*SpotRoutes) GetSpot(c *gin.Context) {
 
 	id := c.Param("id")
 
@@ -103,7 +103,7 @@ type PurchaseSpotInput struct {
 // @Success      200  {string}  "URL of the stripe checkout"
 // @Failure      400  {string}  "Invalid body"
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id}/purchase [get]
+// @Router       /spots/{id}/purchase [post]
 func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 
 	var input PurchaseSpotInput
@@ -155,7 +155,7 @@ type CreateSpotInput struct {
 // @Success      200  {object}  database.Spot
 // @Failure      400  {string}  "Invalid body"
 // @Failure      401  {string}  "Invalid token"
-// @Router       /spots/create [post]
+// @Router       /spots [post]
 func (*SpotRoutes) CreateSpot(c *gin.Context) {
 
 	uuid := c.MustGet("guid")
@@ -225,27 +225,15 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, spot)
 }
 
-type DeleteSpotInput struct {
-	SpotID uint64 `json:"spot_id" bindings:"required"`
-}
-
 // DeleteSpot godoc
-// @Summary      Delete a spot by it's ID
+// @Summary      Delete a spot by its ID
 // @Success      200  {string}  "Successfully deleted spot"
 // @Failure      400  {string}  "Invalid body"
 // @Failure      401  {string}  "Invalid token"
-// @Router       /spots/delete [delete]
+// @Router       /spots/{id} [delete]
 func (*SpotRoutes) DeleteSpot(c *gin.Context) {
 
 	uuid := c.MustGet("uuid")
-
-	var input DeleteSpotInput
-	if err := c.BindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "Invalid body")
-		return
-	}
-
-	// TODO: Make this more efficient
 
 	user := database.User{}
 	if result := database.Db.Where("uuid = ?", uuid).First(&user); result.Error != nil {
@@ -253,8 +241,10 @@ func (*SpotRoutes) DeleteSpot(c *gin.Context) {
 		return
 	}
 
+	spot_id := c.Param("id")
+
 	spot := database.Spot{}
-	if result := database.Db.Where("id = ?", input.SpotID).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
+	if result := database.Db.Where("id = ?", spot_id).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist")
 		return
 	}
