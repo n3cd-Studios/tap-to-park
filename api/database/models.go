@@ -2,6 +2,8 @@ package database
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/pgtype"
 )
 
 // Organization has many Spots, OrganizationID is the foreign key
@@ -32,7 +34,7 @@ type User struct {
 }
 
 // Spot has many Reservations, SpotID is the foreign key
-// Spot has many Prices, SpotID is the foreign key
+// Spot has one PriceTable, SpotID is the foreign key
 type Spot struct {
 	ID             uint          `gorm:"primarykey" json:"-"`
 	Guid           string        `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
@@ -41,7 +43,7 @@ type Spot struct {
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
 	Reservations   []Reservation `json:"reservations"`
-	Prices         []Price       `json:"prices"`
+	PriceTable     PriceTable    `json:"pricing"`
 }
 
 type Reservation struct {
@@ -54,11 +56,8 @@ type Reservation struct {
 	SpotID        uint      `gorm:"not null;" json:"-"`
 }
 
-type Price struct {
-	ID     uint      `gorm:"primarykey" json:"-"`
-	Guid   string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
-	Start  time.Time `gorm:"not null;" json:"start"`
-	End    time.Time `gorm:"not null;" json:"end"`
-	Cost   float64   `gorm:"not null;" json:"cost"`
-	SpotID uint      `gorm:"not null;" json:"-"`
+type PriceTable struct {
+	ID     uint         `gorm:"primarykey;" json:"-"`
+	SpotID uint         `gorm:"not null;" json:"-"`
+	Table  pgtype.JSONB `gorm:"type:jsonb;not null;serializer:json" json:"table"`
 }

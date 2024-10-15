@@ -45,6 +45,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
+		AllowMethods:    []string{"PUT", "POST", "OPTIONS", "GET", "DELETE"},
 		AllowHeaders:    []string{"Authentication"},
 	}))
 
