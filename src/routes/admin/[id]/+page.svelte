@@ -2,6 +2,11 @@
     import { Region, type Point } from "$lib/geometry";
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
+    import { authStore } from "$lib/auth";
+    import type { Spot } from "$lib/models";
+    import { get } from "$lib/api";
+    import { onMount } from "svelte";
+    import { Formats } from "$lib/lang";
 
     type DayOfWeek = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
     let daysOfWeek: DayOfWeek[] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -30,11 +35,10 @@
         times: times.map((time, y) => ({ point: [x, y], time, price: 0 }))
     }));
 
-    // TODO: finish this
-    // onMount(async () => {
-    //     const spot = await get<Spot>({ route: `spots/${data.id}/info`, headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
-        
-    // })
+    onMount(async () => {
+        const spot = await get<Spot>({ route: `spots/${data.id}`, headers: { "Authentication": `Bearer ${$authStore.token}` }, method: "GET" });
+        console.log(spot);
+    })
 
     // TODO: this is odd, maybe fix??
     const usingSelection = (updater: (time: TimeItem, x: number, y: number) => void) => 
@@ -80,7 +84,7 @@
                         on:mouseover={() => { if (dragging) region.upper = point; }}
                         on:click={() => { region.lower = point; region.upper = point; }}
                         on:mouseup={() => dragging = false}
-                        class={`bg-${region.in(point) ? "green-500" : "white"} hover:bg-gray-400`}>{price}</button
+                        class={`bg-${region.in(point) ? "green-500" : "white"} hover:bg-gray-400`}>{Formats.USDollar.format(price)}</button
                     >
                 {/each}
             </div>
