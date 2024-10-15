@@ -44,12 +44,6 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, organization)
 }
 
-type GetSpotsOutput struct {
-	Items []database.Spot `json:"items"`
-	Pages int64           `json:"pages"`
-	Page  int64           `json:"page"`
-}
-
 // GetSpots godoc
 // @Summary      Get all of the spots associated with an organization
 // @Produce      json
@@ -84,7 +78,7 @@ func (*OrganizationRoutes) GetSpots(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, GetSpotsOutput{
+	c.IndentedJSON(http.StatusOK, PaginatorOutput[database.Spot]{
 		Items: spots,
 		Pages: (count / size),
 		Page:  page,
@@ -150,17 +144,32 @@ func (*OrganizationRoutes) GetInvites(c *gin.Context) {
 		return
 	}
 
+	page, perr := strconv.ParseInt(c.Query("page"), 10, 64)
+	if perr != nil {
+		page = 0
+	}
+
+	size, perr := strconv.ParseInt(c.Query("size"), 10, 64)
+	if perr != nil {
+		size = 10
+	}
+
 	organization := database.Organization{}
 	if result := database.Db.Where("id = ?", user.OrganizationID).First(&organization); result.Error != nil {
 		c.String(http.StatusNotFound, "Could not find your organization")
 		return
 	}
 
+	count := int64(0)
 	var invites []database.Invite
-	if result := database.Db.Where("organization_id = ?", organization.ID).Find(&invites); result.Error != nil {
+	if result := database.Db.Where("organization_id = ?", organization.ID).Count(&count).Offset(int(page * size)).Limit(int(size)).Find(&invites); result.Error != nil {
 		c.String(http.StatusNotFound, "Could not find any invites for your organization")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, invites)
+	c.IndentedJSON(http.StatusOK, PaginatorOutput[database.Invite]{
+		Items: invites,
+		Pages: (count / size),
+		Page:  page,
+	})
 }

@@ -1,30 +1,26 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import Table from "../../../components/table/Table.svelte";
+  import { Paginator } from "$lib/api";
   import { authStore } from "$lib/auth";
-  import { getWithDefault } from "$lib/api";
   import type { Invite } from "$lib/models";
-  import TableItem from "../../../components/table/TableItem.svelte";
-  import Fa from "svelte-fa";
   import { faCancel } from "@fortawesome/free-solid-svg-icons";
+  import { onMount } from "svelte";
+  import Fa from "svelte-fa";
+  import Button from "../../../components/form/Button.svelte";
+  import Table from "../../../components/table/Table.svelte";
+  import TableItem from "../../../components/table/TableItem.svelte";
 
   let loading = true;
-  let error: string;
   let data: Invite[] = [];
 
-  onMount(async () => {
-    data = await getWithDefault<Invite[]>(
-      {
+  const paginator = new Paginator<Invite>({
         route: "organization/invites",
         method: "GET",
         headers: { Authentication: `Bearer ${$authStore.token}` },
-      },
-      [],
-    );
-    if (!data) {
-      error = "Failed to load table.";
-      return;
-    }
+  }, 10);
+  paginator.subscribe(items => data = items);
+
+  onMount(async () => {
+    await paginator.load();
     loading = false;
   });
 </script>
@@ -43,4 +39,8 @@
       ><Fa icon={faCancel} /></button
     ></TableItem
   >
+  <div class="flex flex-row justify-center">
+    <Button on:click={() => paginator.last()}>Last</Button>
+    <Button on:click={() => paginator.next()}>Next</Button>
+  </div>
 </Table>
