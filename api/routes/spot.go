@@ -172,8 +172,21 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		return
 	}
 
+	if input.Coords.Longitude < -180 || input.Coords.Longitude > 180 {
+		c.String(http.StatusBadRequest, "Longitude must be between -180 and 180")
 		return
 	}
+	if input.Coords.Latitude < -90 || input.Coords.Latitude > 90 {
+		c.String(http.StatusBadRequest, "Latitude must be between -90 and 90")
+		return
+	}
+
+	existingSpot := database.Spot{}
+	if err := database.Db.Where("name = ? AND organization_id = ?", input.Name, user.OrganizationID).First(&existingSpot).Error; err == nil {
+		c.String(http.StatusBadRequest, "A spot with this name already exists for the organization")
+		return
+	}
+
 	tx := database.Db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
