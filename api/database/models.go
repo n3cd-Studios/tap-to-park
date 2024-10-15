@@ -62,7 +62,3 @@ type Price struct {
 	Cost   float64   `gorm:"not null;" json:"cost"`
 	SpotID uint      `gorm:"not null;" json:"-"`
 }
-
-type Error struct {
-	Message string `json:"message"`
-}

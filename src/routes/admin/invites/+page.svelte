@@ -33,7 +33,6 @@
   columns={["code", "expiration", "cancel"]}
   {data}
   {loading}
-  {error}
   let:code
   let:expiration
 >
