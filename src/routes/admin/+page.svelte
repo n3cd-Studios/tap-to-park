@@ -48,7 +48,7 @@
         <Map bind:map={map}/>
     </div>
     <Table 
-        columns={["name", "coords", "manage pricing"]} data={organization?.spots} {error} {loading}
+        columns={["name", "coords", "manage pricing"]} data={organization?.spots} {error} {loading} showAddSpot={true}
         let:name let:coords let:guid>
         <TableItem>{name}</TableItem>
         <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
