@@ -12,12 +12,15 @@
   let loading = true;
   let data: Invite[] = [];
 
-  const paginator = new Paginator<Invite>({
-        route: "organization/invites",
-        method: "GET",
-        headers: { Authentication: `Bearer ${$authStore.token}` },
-  }, 10);
-  paginator.subscribe(items => data = items);
+  const paginator = new Paginator<Invite>(
+    {
+      route: "organization/invites",
+      method: "GET",
+      headers: { Authentication: `Bearer ${$authStore.token}` },
+    },
+    10,
+  );
+  paginator.subscribe((items) => (data = items));
 
   onMount(async () => {
     await paginator.load();
@@ -39,8 +42,8 @@
       ><Fa icon={faCancel} /></button
     ></TableItem
   >
-  <div class="flex flex-row justify-center">
-    <Button on:click={() => paginator.last()}>Last</Button>
-    <Button on:click={() => paginator.next()}>Next</Button>
-  </div>
 </Table>
+<div class="flex flex-row justify-center">
+  <Button on:click={() => paginator.last()}>Last</Button>
+  <Button on:click={() => paginator.next()}>Next</Button>
+</div>
