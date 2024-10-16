@@ -77,7 +77,7 @@ type RegisterInput struct {
 }
 
 // Register godoc
-// @Summary      Registers a User in using a username and a password
+// @Summary      Registers a User using a username, password, and an optional invite code
 // @Produce      json
 // @Success      200  {object}  JWTResponse
 // @Failure      400  {string}  "Failed to register user"
@@ -90,6 +90,32 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	if err := c.BindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "Invalid body recieved.")
 		return
+	}
+
+	var existingUser database.User
+	if result := database.Db.Where("email = ?", input.Email).First(&existingUser); result.Error == nil {
+		c.String(http.StatusBadRequest, "Email already in use.")
+		return
+	}
+
+	var organizationID uint
+	if input.InviteCode != "" {
+		// Validate invite code
+		var invite database.Invite
+		if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
+			c.String(http.StatusBadRequest, "Invalid invite code.")
+			return
+		}
+
+		if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
+			c.String(http.StatusBadRequest, "Invalid or expired invite code.")
+			return
+		}
+		organizationID = invite.OrganizationID
+	} else {
+		// No invite code
+		c.String(http.StatusBadRequest, "Currently, you need an invite to register.")
+		organizationID = 0
 	}
 
 	hash, err := auth.GenerateFromPassword(input.Password, &auth.Params{
@@ -105,20 +131,6 @@ func (*AuthRoutes) Register(c *gin.Context) {
 		return
 	}
 
-	var invite database.Invite
-	var organizationID uint
-	if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
-		c.String(http.StatusBadRequest, "Invalid invite code.")
-		return
-	}
-
-	if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
-		c.String(http.StatusBadRequest, "Invalid invite code.")
-		return
-	}
-
-	organizationID = invite.OrganizationID
-
 	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: organizationID}
 
 	if err := database.Db.Create(&user).Error; err != nil {
@@ -126,15 +138,19 @@ func (*AuthRoutes) Register(c *gin.Context) {
 		return
 	}
 
+	// mark inv code used
+	if input.InviteCode != "" {
+		var invite database.Invite
+		invite.UsedByID = user.ID
+		if err := database.Db.Save(&invite).Error; err != nil {
+			c.String(http.StatusInternalServerError, "Failed to update invite.")
+			return
+		}
+	}
+
 	token, err := auth.TokenGenerate(user.Guid)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
-		return
-	}
-
-	invite.UsedByID = user.ID
-	if err := database.Db.Save(&invite).Error; err != nil {
-		c.String(http.StatusInternalServerError, "Failed to update invite.")
 		return
 	}
 
