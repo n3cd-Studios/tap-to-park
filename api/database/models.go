@@ -2,8 +2,6 @@ package database
 
 import (
 	"time"
-
-	"github.com/jackc/pgx/pgtype"
 )
 
 // Organization has many Spots, OrganizationID is the foreign key
@@ -41,8 +39,8 @@ type Spot struct {
 	Coords         Coordinates   `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
+	Table          Pricing       `gorm:"type:json;not null;default:'{}';" json:"table"`
 	Reservations   []Reservation `json:"reservations"`
-	Table          pgtype.JSONB  `gorm:"type:jsonb;not null;serializer:json" json:"table"`
 }
 
 type Reservation struct {

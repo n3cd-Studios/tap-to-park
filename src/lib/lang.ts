@@ -6,4 +6,16 @@ export const Formats = {
         style: 'currency',
         currency: 'USD',
     })
-} 
+}
+
+export enum DayOfWeek {
+    sunday = "sunday",
+    monday = "monday",
+    tuesday = "tuesday",
+    wednesday = "wednesday",
+    thursday = "thursday",
+    friday = "friday",
+    saturday = "saturday"
+};
+
+export const daysOfWeek: DayOfWeek[] = [  DayOfWeek.sunday, DayOfWeek.monday, DayOfWeek.tuesday, DayOfWeek.wednesday, DayOfWeek.thursday, DayOfWeek.friday, DayOfWeek.saturday];

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"tap-to-park/database"
@@ -90,11 +91,6 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, spot)
 }
 
-type UpdateSpotInput struct {
-	Day   string    `json:"day"`
-	Times []float64 `json:"times"`
-}
-
 // UpdateSpot godoc
 // @Summary      Update a spot by its ID
 // @Success      200  {string}  "Successfully deleted spot"
@@ -111,20 +107,19 @@ func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 		return
 	}
 
-	input := []UpdateSpotInput{}
+	input := database.Pricing{}
 	if err := c.BindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "Invalid body")
 		return
 	}
 
 	id := c.Param("id")
-	spot := database.Spot{}
-	if result := database.Db.Where("guid = ?", id).Where("organization_id = ?", user.OrganizationID).Preload("PriceTable").First(&spot); result.Error != nil {
+	table, _ := json.Marshal(input)
+	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("table", table); result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist")
 		return
 	}
 
-	spot.Table.Set(&input)
 	c.String(http.StatusOK, "Successfully updated spot")
 }
 
