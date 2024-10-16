@@ -1,3 +1,4 @@
+import { DayOfWeek } from "./lang";
 
 export interface Coords {
     latitude: number;
@@ -8,7 +9,7 @@ export interface Spot {
     guid: string;
     name: string;
     coords: Coords;
-    prices?: Price[]
+    table: Pricing;
 }
 
 export interface User {
@@ -29,9 +30,6 @@ export interface Invite {
     usedBy: number
 }
 
-export interface Price {
-    guid: string;
-    start: string;
-    end: string;
-    cost: number;
+export type Pricing = {
+    [key in DayOfWeek]: number[]
 }

@@ -8,7 +8,7 @@ export interface Toast {
 const store = writable<Toast[]>([]);
 
 export const toaster = {
-    push: (toast: Toast, timeout = 1000) => {
+    push: (toast: Toast, timeout = 3000) => {
         store.update(old => {
             old.push(toast);
             setTimeout(() => {

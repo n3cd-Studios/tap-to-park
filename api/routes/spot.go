@@ -1,10 +1,10 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"tap-to-park/database"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v80"
@@ -52,7 +52,6 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	}
 
 	point := database.Coordinates{Longitude: lng, Latitude: lat}
-
 	spots := []database.Spot{}
 	query := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10)
 	if applyHandicapFilter {
@@ -69,19 +68,19 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, spots)
 }
 
-// GetSpotByID godoc
+// GetSpot godoc
 // @Summary      Get the spots near a longitude and latitude
 // @Produce      json
 // @Param        id    path     uuid  true  "Guid of the spot"
 // @Success      200  {object}  database.Spot
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id}/info [get]
-func (*SpotRoutes) GetSpotByID(c *gin.Context) {
+// @Router       /spots/{id} [get]
+func (*SpotRoutes) GetSpot(c *gin.Context) {
 
 	id := c.Param("id")
 
 	spot := database.Spot{}
-	result := database.Db.Where("guid = ?", id).Preload("Prices").First(&spot)
+	result := database.Db.Where("guid = ?", id).First(&spot)
 	err := result.Error
 
 	if err != nil {
@@ -89,7 +88,39 @@ func (*SpotRoutes) GetSpotByID(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusAccepted, spot)
+	c.IndentedJSON(http.StatusOK, spot)
+}
+
+// UpdateSpot godoc
+// @Summary      Update a spot by its ID
+// @Success      200  {string}  "Successfully deleted spot"
+// @Failure      400  {string}  "Invalid body"
+// @Failure      401  {string}  "Invalid token"
+// @Router       /spots/{id} [put]
+func (*SpotRoutes) UpdateSpot(c *gin.Context) {
+
+	guid := c.MustGet("guid")
+
+	user := database.User{}
+	if result := database.Db.Where("guid = ?", guid).First(&user); result.Error != nil {
+		c.String(http.StatusBadRequest, "You literally don't exist")
+		return
+	}
+
+	input := database.Pricing{}
+	if err := c.BindJSON(&input); err != nil {
+		c.String(http.StatusBadRequest, "Invalid body")
+		return
+	}
+
+	id := c.Param("id")
+	table, _ := json.Marshal(input)
+	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("table", table); result.Error != nil {
+		c.String(http.StatusNotFound, "That spot does not exist")
+		return
+	}
+
+	c.String(http.StatusOK, "Successfully updated spot")
 }
 
 type PurchaseSpotInput struct {
@@ -103,7 +134,7 @@ type PurchaseSpotInput struct {
 // @Success      200  {string}  "URL of the stripe checkout"
 // @Failure      400  {string}  "Invalid body"
 // @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id}/purchase [get]
+// @Router       /spots/{id}/purchase [post]
 func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 
 	var input PurchaseSpotInput
@@ -117,7 +148,7 @@ func (*SpotRoutes) PurchaseSpot(c *gin.Context) {
 	domain := "https://localhost:8081"
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
-			&stripe.CheckoutSessionLineItemParams{
+			{
 				// Provide the exact Price ID (for example, pr_1234) of the product you want to sell
 				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
 					Currency: stripe.String("usd"),
@@ -155,13 +186,13 @@ type CreateSpotInput struct {
 // @Success      200  {object}  database.Spot
 // @Failure      400  {string}  "Invalid body"
 // @Failure      401  {string}  "Invalid token"
-// @Router       /spots/create [post]
+// @Router       /spots [post]
 func (*SpotRoutes) CreateSpot(c *gin.Context) {
 
-	uuid := c.MustGet("guid")
+	guid := c.MustGet("guid")
 
 	user := database.User{}
-	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
+	if result := database.Db.Where("guid = ?", guid).First(&user); result.Error != nil {
 		c.String(http.StatusNotFound, "For some reason, you don't exist!")
 		return
 	}
@@ -187,77 +218,42 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		return
 	}
 
-	tx := database.Db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
 	spot := database.Spot{
 		Name:           input.Name,
 		Coords:         input.Coords,
 		OrganizationID: user.OrganizationID,
 	}
-	if err := tx.Create(&spot).Error; err != nil {
-		tx.Rollback()
+	if result := database.Db.Create(&spot); result.Error != nil {
 		c.String(http.StatusBadRequest, "Failed to create a spot")
 		return
 	}
 
-	price := database.Price{
-		Start:  time.Time{},
-		End:    time.Time{}.Add(time.Hour * 24),
-		Cost:   1.0,
-		SpotID: spot.ID,
-	}
-	if err := tx.Create(&price).Error; err != nil {
-		tx.Rollback()
-		c.String(http.StatusBadRequest, "Failed to create initial spot pricing point")
-		return
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		c.String(http.StatusInternalServerError, "Transaction could not be commited")
-		return
-	}
-
-	c.IndentedJSON(http.StatusAccepted, spot)
-}
-
-type DeleteSpotInput struct {
-	SpotID uint64 `json:"spot_id" bindings:"required"`
+	c.IndentedJSON(http.StatusOK, spot)
 }
 
 // DeleteSpot godoc
-// @Summary      Delete a spot by it's ID
+// @Summary      Delete a spot by its ID
 // @Success      200  {string}  "Successfully deleted spot"
 // @Failure      400  {string}  "Invalid body"
 // @Failure      401  {string}  "Invalid token"
-// @Router       /spots/delete [delete]
+// @Router       /spots/{id} [delete]
 func (*SpotRoutes) DeleteSpot(c *gin.Context) {
 
-	uuid := c.MustGet("uuid")
-
-	var input DeleteSpotInput
-	if err := c.BindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "Invalid body")
-		return
-	}
-
-	// TODO: Make this more efficient
+	guid := c.MustGet("guid")
 
 	user := database.User{}
-	if result := database.Db.Where("uuid = ?", uuid).First(&user); result.Error != nil {
+	if result := database.Db.Where("guid = ?", guid).First(&user); result.Error != nil {
 		c.String(http.StatusBadRequest, "You literally don't exist")
 		return
 	}
 
+	spot_id := c.Param("id")
+
 	spot := database.Spot{}
-	if result := database.Db.Where("id = ?", input.SpotID).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
+	if result := database.Db.Where("id = ?", spot_id).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist")
 		return
 	}
 
-	c.String(http.StatusAccepted, "Spot successfully deleted")
+	c.String(http.StatusOK, "Spot successfully deleted")
 }

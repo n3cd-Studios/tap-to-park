@@ -32,7 +32,6 @@ type User struct {
 }
 
 // Spot has many Reservations, SpotID is the foreign key
-// Spot has many Prices, SpotID is the foreign key
 type Spot struct {
 	ID             uint          `gorm:"primarykey" json:"-"`
 	Guid           string        `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
@@ -40,8 +39,8 @@ type Spot struct {
 	Coords         Coordinates   `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
+	Table          Pricing       `gorm:"type:json;not null;default:'{}';" json:"table"`
 	Reservations   []Reservation `json:"reservations"`
-	Prices         []Price       `json:"prices"`
 }
 
 type Reservation struct {
@@ -52,13 +51,4 @@ type Reservation struct {
 	Cost          float64   `gorm:"not null;" json:"cost"`
 	TransactionID string    `gorm:"not null;" json:"-"`
 	SpotID        uint      `gorm:"not null;" json:"-"`
-}
-
-type Price struct {
-	ID     uint      `gorm:"primarykey" json:"-"`
-	Guid   string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
-	Start  time.Time `gorm:"not null;" json:"start"`
-	End    time.Time `gorm:"not null;" json:"end"`
-	Cost   float64   `gorm:"not null;" json:"cost"`
-	SpotID uint      `gorm:"not null;" json:"-"`
 }

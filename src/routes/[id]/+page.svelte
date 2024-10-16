@@ -1,6 +1,6 @@
 <script lang="ts">
     import { get } from "$lib/api";
-    import { pluralize } from "$lib/lang";
+    import { Formats, pluralize } from "$lib/lang";
     import type { Spot } from "$lib/models";
     import { onMount } from "svelte";
     import Button from "../../components/form/Button.svelte";
@@ -18,7 +18,7 @@
     $: price = (costPerHour * hours) + (costPerMinute * minutes);
 
     onMount(async () => {
-        spot = await get<Spot>({ route: `spots/${data.id}/info` });
+        spot = await get<Spot>({ route: `spots/${data.id}` });
     })
 
     const checkout = async () => {
@@ -46,7 +46,7 @@
                         <p>{minutes == 1 ? "minute" : "minutes"}</p>
                     </div>
                 </div>
-                <p class="text-4xl">Total: ${price.toPrecision(3)}</p>
+                <p class="text-4xl">Total: {Formats.USDollar.format(price)}</p>
             </div>
             <div class="mb-10">
                 <Button on:click={() => checkout()}>Purchase</Button>
@@ -58,7 +58,7 @@
                 <p>This space is <span class="text-green-800">avaliable</span>.</p>
                 <p>Claim this spot at the rate of:</p>
                 <div class="flex flex-row items-baseline">
-                    <p class="text-7xl font-bold">${costPerHour.toPrecision(3)}</p>
+                    <p class="text-7xl font-bold">{Formats.USDollar.format(costPerHour)}</p>
                     <p>/hour</p>
                 </div>
                 <p>Maximum time: <span class="text-black">{pluralize(2, "hour")}</span></p>
