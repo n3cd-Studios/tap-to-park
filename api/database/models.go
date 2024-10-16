@@ -39,7 +39,7 @@ type Spot struct {
 	Coords         Coordinates   `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
-	Table          Pricing       `gorm:"type:json;not null;default:'{}';" json:"table"`
+	Table          Pricing       `gorm:"type:json;not null;default:'{\"sunday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"monday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"tuesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"wednesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"thursday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"friday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"saturday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}';" json:"table"`
 	Reservations   []Reservation `json:"reservations"`
 }
 
