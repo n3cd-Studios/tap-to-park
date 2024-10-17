@@ -16,7 +16,7 @@ type SpotRoutes struct{}
 //
 // @Summary		Get spots near
 // @Description	Get a spot near a longitude and latitude
-// @Tags			spots
+// @Tags			spot
 // @Accept			json
 // @Produce		json
 // @Param			lat	query		decimal	true	"Latitude to search near"
@@ -68,7 +68,7 @@ type GetSpotOutput struct {
 //
 // @Summary		Get a spot
 // @Description	Get a spot by its ID
-// @Tags		spots
+// @Tags		spot
 // @Accept		json
 // @Produce		json
 // @Param		id  path		string	true	"The ID of the spot"
@@ -98,7 +98,7 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 //
 // @Summary		Update a spot
 // @Description	Update a spot's information such as pricing table, name or longitude and latitude
-// @Tags		spots
+// @Tags		spot
 // @Accept		json
 // @Produce		json
 // @Param		id  path		string	true	"The ID of the spot"
@@ -134,7 +134,7 @@ type CreateSpotInput struct {
 //
 // @Summary		Create a spot
 // @Description	Create a spot at a longitude and latitude
-// @Tags		spots
+// @Tags		spot
 // @Accept		json
 // @Produce		json
 // @Success		200	{object}	database.Spot
@@ -186,7 +186,7 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 //
 // @Summary		Delete a spot
 // @Description	Delete a spot by its ID
-// @Tags		spots
+// @Tags		spot
 // @Accept		json
 // @Produce		json
 // @Param		id  path		string	true	"The ID of the spot"

@@ -235,7 +235,7 @@ const docTemplate = `{
                 ],
                 "tags": [
                     "organization",
-                    "spots"
+                    "spot"
                 ],
                 "summary": "Get the spots for your organization",
                 "parameters": [
@@ -353,7 +353,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "spots"
+                    "spot"
                 ],
                 "summary": "Create a spot",
                 "responses": {
@@ -388,7 +388,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "spots"
+                    "spot"
                 ],
                 "summary": "Get spots near",
                 "parameters": [
@@ -431,7 +431,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "spots"
+                    "spot"
                 ],
                 "summary": "Get a spot",
                 "parameters": [
@@ -472,7 +472,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "spots"
+                    "spot"
                 ],
                 "summary": "Update a spot",
                 "parameters": [
@@ -519,7 +519,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "spots"
+                    "spot"
                 ],
                 "summary": "Delete a spot",
                 "parameters": [
@@ -540,6 +540,146 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "That spot does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/{id}": {
+            "post": {
+                "description": "Create a Stripe checkout session and forward the user to Stripe",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot",
+                    "reservation",
+                    "stripe"
+                ],
+                "summary": "Create a checkout session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the Spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The Session ID passed from Stripe",
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The Stripe checkout URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create stripe session.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/{id}/cancel": {
+            "get": {
+                "description": "This is just a dummy route, it redirects to the frontend",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot",
+                    "reservation",
+                    "stripe"
+                ],
+                "summary": "Cancel callback for Stripe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the Spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "This will redirect you to a page on the frontend.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "That spot ID is invalid.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/{id}/success": {
+            "get": {
+                "description": "Create a Reservation from a Stripe Session ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot",
+                    "reservation",
+                    "stripe"
+                ],
+                "summary": "Success callback for Stripe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the Spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The Session ID passed from Stripe",
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "This will redirect you to a page on the frontend.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Something went wrong (did you resubmit the request?)",
                         "schema": {
                             "type": "string"
                         }

@@ -47,7 +47,7 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 //
 // @Summary		Get the spots for your organization
 // @Description	Get the spots associated with a User's organization based on their Bearer token
-// @Tags		organization,spots
+// @Tags		organization,spot
 // @Accept		json
 // @Produce		json
 // @Param		size  query		number	false	"The size of a page"

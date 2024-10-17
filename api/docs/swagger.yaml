@@ -290,7 +290,7 @@ paths:
       summary: Get the spots for your organization
       tags:
       - organization
-      - spots
+      - spot
   /register:
     post:
       consumes:
@@ -359,7 +359,7 @@ paths:
       - BearerToken: []
       summary: Create a spot
       tags:
-      - spots
+      - spot
   /spots/{id}:
     delete:
       consumes:
@@ -386,7 +386,7 @@ paths:
       - BearerToken: []
       summary: Delete a spot
       tags:
-      - spots
+      - spot
     get:
       consumes:
       - application/json
@@ -410,7 +410,7 @@ paths:
             type: string
       summary: Get a spot
       tags:
-      - spots
+      - spot
     put:
       consumes:
       - application/json
@@ -441,7 +441,7 @@ paths:
       - BearerToken: []
       summary: Update a spot
       tags:
-      - spots
+      - spot
   /spots/near:
     get:
       consumes:
@@ -469,7 +469,102 @@ paths:
             type: string
       summary: Get spots near
       tags:
-      - spots
+      - spot
+  /stripe/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Create a Stripe checkout session and forward the user to Stripe
+      parameters:
+      - description: The ID of the Spot
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: The Session ID passed from Stripe
+        in: query
+        name: session_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The Stripe checkout URL
+          schema:
+            type: string
+        "400":
+          description: Invalid body.
+          schema:
+            type: string
+        "500":
+          description: Failed to create stripe session.
+          schema:
+            type: string
+      summary: Create a checkout session
+      tags:
+      - spot
+      - reservation
+      - stripe
+  /stripe/{id}/cancel:
+    get:
+      consumes:
+      - application/json
+      description: This is just a dummy route, it redirects to the frontend
+      parameters:
+      - description: The ID of the Spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: This will redirect you to a page on the frontend.
+          schema:
+            type: string
+        "400":
+          description: That spot ID is invalid.
+          schema:
+            type: string
+      summary: Cancel callback for Stripe
+      tags:
+      - spot
+      - reservation
+      - stripe
+  /stripe/{id}/success:
+    get:
+      consumes:
+      - application/json
+      description: Create a Reservation from a Stripe Session ID
+      parameters:
+      - description: The ID of the Spot
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: The Session ID passed from Stripe
+        in: query
+        name: session_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: This will redirect you to a page on the frontend.
+          schema:
+            type: string
+        "400":
+          description: Something went wrong (did you resubmit the request?)
+          schema:
+            type: string
+      summary: Success callback for Stripe
+      tags:
+      - spot
+      - reservation
+      - stripe
 securityDefinitions:
   BearerAuth:
     in: header
