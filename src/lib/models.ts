@@ -9,6 +9,7 @@ export interface Spot {
     guid: string;
     name: string;
     coords: Coords;
+    price?: number;
     table: Pricing;
 }
 

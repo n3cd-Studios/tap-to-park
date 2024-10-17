@@ -39,16 +39,18 @@ type Spot struct {
 	Coords         Coordinates   `gorm:"type:Point;index:coords_gist_idx,type:gist" json:"coords"`
 	Handicap       bool          `gorm:"not null;" json:"handicap"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
-	Table          Pricing       `gorm:"type:json;not null;default:'{\"sunday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"monday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"tuesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"wednesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"thursday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"friday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"saturday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}';" json:"table"`
+	Pricing        Pricing       `gorm:"type:json;not null;default:'{\"sunday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"monday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"tuesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"wednesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"thursday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"friday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"saturday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}';" json:"table"`
 	Reservations   []Reservation `json:"reservations"`
 }
 
 type Reservation struct {
-	ID            uint      `gorm:"primarykey" json:"-"`
-	Guid          string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
-	Start         time.Time `gorm:"not null;" json:"start"`
-	End           time.Time `gorm:"not null;" json:"end"`
-	Cost          float64   `gorm:"not null;" json:"cost"`
-	TransactionID string    `gorm:"not null;" json:"-"`
-	SpotID        uint      `gorm:"not null;" json:"-"`
+	ID                  uint      `gorm:"primarykey" json:"-"`
+	Guid                string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
+	Start               time.Time `gorm:"not null;" json:"start"`
+	End                 time.Time `gorm:"not null;" json:"end"`
+	Price               float64   `gorm:"not null;" json:"price"`
+	Email               string    `gorm:"not null;" json:"email"`
+	StripeTransactionID string    `gorm:"not null;unique;" json:"-"`
+	SpotID              uint      `gorm:"not null;" json:"-"`
+	// Transactions []Transaction `gorm:"not null;" json:"transactions"`
 }

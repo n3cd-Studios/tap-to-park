@@ -65,11 +65,19 @@ func main() {
 	{
 		routing := routes.SpotRoutes{}
 		spots.GET("/near", routing.GetSpotsNear)
-		spots.POST("/:id/purchase", routing.PurchaseSpot)
 		spots.GET("/:id", routing.GetSpot)
 		spots.POST("", routes.AuthMiddleware(), routing.CreateSpot)
 		spots.PUT("/:id", routes.AuthMiddleware(), routing.UpdateSpot)
 		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
+	}
+
+	// Spot routes
+	stripe := api.Group("/stripe")
+	{
+		routing := routes.StripeRoutes{}
+		stripe.POST("/:id", routing.PurchaseSpot)
+		stripe.GET("/:id/success", routing.SuccessfulPurchaseSpot)
+		stripe.GET("/:id/cancel", routing.CancelPurchaseSpot)
 	}
 
 	// Auth routes
