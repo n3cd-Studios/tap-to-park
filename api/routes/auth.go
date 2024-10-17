@@ -170,6 +170,6 @@ func (*AuthRoutes) Register(c *gin.Context) {
 // @Router		/info [post]
 // @Security	BearerToken
 func (*AuthRoutes) Info(c *gin.Context) {
-	user := c.MustGet("guid").(database.User)
+	user := c.MustGet("user").(database.User)
 	c.IndentedJSON(http.StatusOK, user)
 }
