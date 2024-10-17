@@ -75,7 +75,7 @@ func main() {
 		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
 	}
 
-	// Spot routes
+	// Stripe routes
 	stripe := api.Group("/stripe")
 	{
 		routing := routes.StripeRoutes{}

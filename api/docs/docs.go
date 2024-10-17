@@ -77,17 +77,84 @@ const docTemplate = `{
                 }
             }
         },
-        "/organization/code": {
-            "post": {
+        "/organization/invites": {
+            "get": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "BearerToken": []
                     }
+                ],
+                "description": "Get the invites associated with a User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get's all the invites for an organization",
+                "tags": [
+                    "organization",
+                    "invite"
+                ],
+                "summary": "Get the invites for your organization",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "The size of a page",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "The page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/database.Invite"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No invites were found for your organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't count all of the invites in the organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Create an invite for User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organization",
+                    "invite"
+                ],
+                "summary": "Create an invite",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -95,20 +162,111 @@ const docTemplate = `{
                             "$ref": "#/definitions/database.Invite"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     "404": {
-                        "description": "User or Organization not found",
+                        "description": "Failed to find your organization.",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Failed to create invite",
+                        "description": "Failed to create invite.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/organization/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get the organization associated with a User based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organization"
+                ],
+                "summary": "Get your organization",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Pull a deep copy of all of the organization's information",
+                        "name": "deep",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Organization"
+                        }
+                    },
+                    "400": {
+                        "description": "You don't seem to have an organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/organization/spots": {
+            "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get the spots associated with a User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organization",
+                    "spots"
+                ],
+                "summary": "Get the spots for your organization",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "The size of a page",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "The page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/database.Spot"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't count all of the spots in the organization.",
                         "schema": {
                             "type": "string"
                         }
@@ -394,6 +552,26 @@ const docTemplate = `{
                 },
                 "usedBy": {
                     "type": "integer"
+                }
+            }
+        },
+        "database.Organization": {
+            "type": "object",
+            "properties": {
+                "invites": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Invite"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "spots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Spot"
+                    }
                 }
             }
         },

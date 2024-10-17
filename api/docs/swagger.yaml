@@ -23,6 +23,19 @@ definitions:
       usedBy:
         type: integer
     type: object
+  database.Organization:
+    properties:
+      invites:
+        items:
+          $ref: '#/definitions/database.Invite'
+        type: array
+      name:
+        type: string
+      spots:
+        items:
+          $ref: '#/definitions/database.Spot'
+        type: array
+    type: object
   database.Pricing:
     properties:
       friday:
@@ -149,8 +162,51 @@ paths:
       summary: Login a user
       tags:
       - auth
-  /organization/code:
+  /organization/invites:
+    get:
+      consumes:
+      - application/json
+      description: Get the invites associated with a User's organization based on
+        their Bearer token
+      parameters:
+      - description: The size of a page
+        in: query
+        name: size
+        type: number
+      - description: The page
+        in: query
+        name: page
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Invite'
+              type: array
+            type: array
+        "404":
+          description: No invites were found for your organization.
+          schema:
+            type: string
+        "500":
+          description: Couldn't count all of the invites in the organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get the invites for your organization
+      tags:
+      - organization
+      - invite
     post:
+      consumes:
+      - application/json
+      description: Create an invite for User's organization based on their Bearer
+        token
       produces:
       - application/json
       responses:
@@ -158,21 +214,83 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Invite'
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
         "404":
-          description: User or Organization not found
+          description: Failed to find your organization.
           schema:
             type: string
         "500":
-          description: Failed to create invite
+          description: Failed to create invite.
           schema:
             type: string
       security:
-      - BearerAuth: []
-      summary: Get's all the invites for an organization
+      - BearerToken: []
+      summary: Create an invite
+      tags:
+      - organization
+      - invite
+  /organization/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the organization associated with a User based on their Bearer
+        token
+      parameters:
+      - description: Pull a deep copy of all of the organization's information
+        in: query
+        name: deep
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Organization'
+        "400":
+          description: You don't seem to have an organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get your organization
+      tags:
+      - organization
+  /organization/spots:
+    get:
+      consumes:
+      - application/json
+      description: Get the spots associated with a User's organization based on their
+        Bearer token
+      parameters:
+      - description: The size of a page
+        in: query
+        name: size
+        type: number
+      - description: The page
+        in: query
+        name: page
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Spot'
+              type: array
+            type: array
+        "500":
+          description: Couldn't count all of the spots in the organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get the spots for your organization
+      tags:
+      - organization
+      - spots
   /register:
     post:
       consumes:
