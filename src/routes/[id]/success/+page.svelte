@@ -4,20 +4,18 @@
     import type { Spot } from "$lib/models";
     import { get } from "$lib/api";
 
-    export let data;
+    export let data: Spot;
 
-    let spot: Spot | null;
     let map: L.Map;
 
     onMount(async () => {
         const leaflet = await import("leaflet");
 
-        spot = await get<Spot>({ route: `spots/${data.id}` });
-        if (spot) {
-            const { longitude, latitude } = spot.coords;
+        if (data) {
+            const { longitude, latitude } = data.coords;
             leaflet
                 .marker([longitude, latitude])
-                .bindPopup(`${spot.name}`)
+                .bindPopup(`${data.name}`)
                 .addTo(map)
                 .openPopup();
             map.setView([longitude, latitude], 13);

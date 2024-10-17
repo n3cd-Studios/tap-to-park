@@ -3,29 +3,24 @@
     import { authStore } from "$lib/auth";
     import { Region, type Point } from "$lib/geometry";
     import { daysOfWeek, Formats } from "$lib/lang";
-    import type { Spot } from "$lib/models";
     import { onMount } from "svelte";
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
     import { toaster } from "../../../components/toaster/toaster";
+    import type { Spot } from "$lib/models";
 
     // external
-    export let data;
+    export let data: Spot;
 
     // setup variables
     let price = "0";
     let region = new Region();
     let dragging = false;
     let times = Array(24).fill(0).map((_, num) => `${num % 12}:00`);
-    let schedule: number[][] = daysOfWeek.map((_) => Array(24).fill(0));
+    let schedule: number[][] = daysOfWeek.map((_) => times.map(_ => 0));
 
     onMount(async () => {
-        const spot = await get<Spot>({
-            route: `spots/${data.id}`,
-            headers: { Authentication: `Bearer ${$authStore.token}` },
-            method: "GET",
-        });
-        if (!spot) {
+        if (!data) {
             toaster.push({
                 type: "error",
                 message: "Failed to load spot information.",
@@ -33,7 +28,7 @@
             return;
         }
 
-        const pricing = spot.table;
+        const pricing = data.table;
         schedule.forEach((inner, x) => {
             inner.forEach((_, y) => schedule[x][y] = pricing[daysOfWeek[x]][y]);
         });
@@ -47,7 +42,7 @@
     const handleSave = async () => {
         updateItems(Number(price));
         await get<string>({
-            route: `spots/${data.id}`,
+            route: `spots/${data.guid}`,
             headers: { Authentication: `Bearer ${$authStore.token}` },
             body: exportSchedule(),
             method: "PUT",
@@ -59,7 +54,7 @@
     };
 </script>
 
-<h1 class="text-xl font-bold text-center">Pricing information for {data.id}</h1>
+<h1 class="text-xl font-bold text-center">Pricing information for {data.name}</h1>
 <div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
         {#if region.size() >= 0}

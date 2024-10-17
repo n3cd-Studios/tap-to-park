@@ -1,8 +1,5 @@
+import { get } from "$lib/api";
+import type { Spot } from "$lib/models";
 import type { Page } from "@sveltejs/kit";
-import type { PageData } from "./$types";
 
-export const load = ({ params }: Page) => {
-    return {
-        id: params.id
-    }
-} 
+export const load = async ({ params }: Page) => get<Spot>({ route: `spots/${params.id}` });

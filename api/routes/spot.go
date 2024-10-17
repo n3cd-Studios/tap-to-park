@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"tap-to-park/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
@@ -86,12 +88,25 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 		return
 	}
 
+	now := time.Now()
+	weekday := strings.ToLower(now.Weekday().String())
+	hour := strconv.FormatInt(int64(now.Hour()), 10)
+
+	// WHY DOES THIS WORK
+	var price float64
+	if result := database.Db.Raw("select ((pricing->?)::JSON->>CAST(? AS INT))::DECIMAL as price from spots where id=?", weekday, hour, spot.ID).Scan(&price); result.Error != nil {
+		return
+	}
+
+	println(price)
+
 	c.IndentedJSON(http.StatusOK, spot)
 }
 
 // UpdateSpot godoc
 // @Summary      Update a spot by its ID
 // @Success      200  {string}  "Successfully deleted spot"
+
 // @Failure      400  {string}  "Invalid body"
 // @Failure      401  {string}  "Invalid token"
 // @Router       /spots/{id} [put]
@@ -113,7 +128,7 @@ func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 
 	id := c.Param("id")
 	table, _ := json.Marshal(input)
-	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("table", table); result.Error != nil {
+	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table); result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist")
 		return
 	}
