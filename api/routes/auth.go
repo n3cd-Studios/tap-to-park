@@ -14,11 +14,17 @@ func AuthMiddleware() gin.HandlerFunc {
 		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
 		guid, err := auth.TokenExtractID(token)
 		if err != nil {
-			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.String(http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
 		}
-		c.Set("guid", guid)
+		user := database.User{}
+		if result := database.Db.Where("guid = ?", guid).Find(&user); result.Error != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized.")
+			c.Abort()
+			return
+		}
+		c.Set("user", user)
 		c.Next()
 	}
 }
