@@ -20,15 +20,19 @@ import (
 // @version         1.0
 // @description     This is the API for interacting with internal Tap-To-Park services
 // @termsOfService  http://n3cd.io/terms/
-
+//
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-
+//
 // @host      localhost:8080
 // @BasePath  /api/
-
+//
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 
 	// Load .env file

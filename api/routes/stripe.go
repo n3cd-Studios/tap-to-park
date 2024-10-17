@@ -67,14 +67,6 @@ type PurchaseSpotInput struct {
 	End   time.Time `json:"end" bindings:"required"`
 }
 
-// PurchaseSpot godoc
-// @Summary      Purchase a spot with a certain price
-// @Produce      json
-// @Param        id    path     uuid  true  "Guid of the spot"
-// @Success      200  {string}  "URL of the stripe checkout"
-// @Failure      400  {string}  "Invalid body"
-// @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id}/purchase [post]
 func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 
 	var input PurchaseSpotInput

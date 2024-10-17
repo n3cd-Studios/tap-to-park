@@ -40,12 +40,6 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
-// Login godoc
-// @Summary      Logs a User in using a username and a password
-// @Produce      json
-// @Success      200  {object}  JWTResponse
-// @Failure      400  {string}  "Failed to log in"
-// @Router       /auth/login [post]
 func (*AuthRoutes) Login(c *gin.Context) {
 
 	var input LoginInput
@@ -82,12 +76,6 @@ type RegisterInput struct {
 	InviteCode string `json:"invite"`
 }
 
-// Register godoc
-// @Summary      Registers a User in using a username and a password
-// @Produce      json
-// @Success      200  {object}  JWTResponse
-// @Failure      400  {string}  "Failed to register user"
-// @Router       /auth/register [post]
 func (*AuthRoutes) Register(c *gin.Context) {
 
 	// TODO: CHANGE ALL ERRORS TO GENERIC ERROR FOR SECURITY
@@ -147,12 +135,6 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
 }
 
-// Info godoc
-// @Summary      Gets the info of the current user
-// @Produce      json
-// @Success      200  {object}  JWTResponse
-// @Failure      400  {string}  "Failed to use token to retrieve user information"
-// @Router       /auth/info [get]
 func (*AuthRoutes) Info(c *gin.Context) {
 
 	uuid := c.MustGet("guid")

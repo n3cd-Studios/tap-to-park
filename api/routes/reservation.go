@@ -9,13 +9,6 @@ import (
 
 type ReservationRoutes struct{}
 
-// GetReservationByID godoc
-// @Summary      Get a reservation by an ID
-// @Produce      json
-// @Param        id    path     string  true  "ID of the reservation"
-// @Success      200  {object}  database.Spot
-// @Failure      404  {object}  database.Error
-// @Router       /reservations/{id} [get]
 func (*ReservationRoutes) GetReservationByID(c *gin.Context) {
 
 	id := c.Param("id")
@@ -36,12 +29,6 @@ type ReservationInput struct {
 	SpotID uint `json:"spotID"`
 }
 
-// CreateReservation godoc
-// @Summary      Creates a reservation using a spotID and specified time
-// @Produce      json
-// @Success      200  {object}  ReservationInput
-// @Failure      404  {object}  database.Error
-// @Router       /reservations [post]
 func (*ReservationRoutes) CreateReservation(c *gin.Context) {
 	var input ReservationInput
 	if err := c.BindJSON(&input); err != nil {

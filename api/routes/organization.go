@@ -11,12 +11,6 @@ import (
 
 type OrganizationRoutes struct{}
 
-// GetOrganization godoc
-// @Summary      Get all of the organizations associated with an admin
-// @Produce      json
-// @Success      200  {object}  database.Organization
-// @Failure      400  {string}  "Unauthorized"
-// @Router       /organization/me [get]
 func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 
 	uuid := c.MustGet("guid")
@@ -44,12 +38,6 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, organization)
 }
 
-// GetSpots godoc
-// @Summary      Get all of the spots associated with an organization
-// @Produce      json
-// @Success      200  {array}   []database.Spot
-// @Failure      400  {string}  "Unauthorized"
-// @Router       /organization/spots [get]
 func (*OrganizationRoutes) GetSpots(c *gin.Context) {
 
 	uuid := c.MustGet("guid")

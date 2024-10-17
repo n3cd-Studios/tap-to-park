@@ -10,11 +10,6 @@ definitions:
     - latitude
     - longitude
     type: object
-  database.Error:
-    properties:
-      message:
-        type: string
-    type: object
   database.Invite:
     properties:
       code:
@@ -28,29 +23,47 @@ definitions:
       usedBy:
         type: integer
     type: object
-  database.Organization:
+  database.Pricing:
     properties:
-      invites:
+      friday:
         items:
-          $ref: '#/definitions/database.Invite'
+          type: number
         type: array
-      name:
-        type: string
-      spots:
+      monday:
         items:
-          $ref: '#/definitions/database.Spot'
+          type: number
+        type: array
+      saturday:
+        items:
+          type: number
+        type: array
+      sunday:
+        items:
+          type: number
+        type: array
+      thursday:
+        items:
+          type: number
+        type: array
+      tuesday:
+        items:
+          type: number
+        type: array
+      wednesday:
+        items:
+          type: number
         type: array
     type: object
   database.Reservation:
     properties:
-      costPerHour:
-        type: integer
+      email:
+        type: string
       end:
         type: string
       guid:
         type: string
-      id:
-        type: integer
+      price:
+        type: number
       start:
         type: string
     type: object
@@ -70,16 +83,8 @@ definitions:
         items:
           $ref: '#/definitions/database.Reservation'
         type: array
-    type: object
-  routes.JWTResponse:
-    properties:
-      token:
-        type: string
-    type: object
-  routes.ReservationInput:
-    properties:
-      spotID:
-        type: integer
+      table:
+        $ref: '#/definitions/database.Pricing'
     type: object
 externalDocs:
   description: OpenAPI
@@ -95,24 +100,7 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
-  /admin/organization:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              items:
-                $ref: '#/definitions/database.Organization'
-              type: array
-            type: array
-        "400":
-          description: Unauthorized
-          schema:
-            type: string
-      summary: Get all of the organizations associated with an admin
+  /organization/code:
     post:
       produces:
       - application/json
@@ -135,85 +123,65 @@ paths:
             type: string
       security:
       - BearerAuth: []
-      summary: Create an invite to allow new user to join admin's organization
-  /admin/organization/data:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              items:
-                $ref: '#/definitions/database.Spot'
-              type: array
-            type: array
-        "400":
-          description: Unauthorized
-          schema:
-            type: string
-      summary: Get all of the spots data associated with an organization
-  /auth/info:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.JWTResponse'
-        "400":
-          description: Failed to use token to retrieve user information
-          schema:
-            type: string
-      summary: Gets the info of the current user
-  /auth/login:
+      summary: Get's all the invites for an organization
+  /spots:
     post:
+      consumes:
+      - application/json
+      description: Create a spot at a longitude and latitude
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.JWTResponse'
+            $ref: '#/definitions/database.Spot'
         "400":
-          description: Failed to log in
+          description: A spot with this name already exists for the organization.
           schema:
             type: string
-      summary: Logs a User in using a username and a password
-  /auth/register:
-    post:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.JWTResponse'
-        "400":
-          description: Failed to register user
+        "409":
+          description: A spot with this name already exists for the organization.
           schema:
             type: string
-      summary: Registers a User in using a username and a password
-  /reservations:
-    post:
-      produces:
+      security:
+      - BearerToken: []
+      summary: Create a spot
+      tags:
+      - spots
+  /spots/{id}:
+    delete:
+      consumes:
       - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.ReservationInput'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/database.Error'
-      summary: Creates a reservation using a spotID and specified time
-  /reservations/{id}:
-    get:
+      description: Delete a spot by its ID
       parameters:
-      - description: ID of the reservation
+      - description: The ID of the spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spot successfully deleted.
+          schema:
+            type: string
+        "404":
+          description: That spot does not exist.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Delete a spot
+      tags:
+      - spots
+    get:
+      consumes:
+      - application/json
+      description: Get a spot by its ID
+      parameters:
+      - description: The ID of the spot
         in: path
         name: id
         required: true
@@ -226,74 +194,50 @@ paths:
           schema:
             $ref: '#/definitions/database.Spot'
         "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/database.Error'
-      summary: Get a reservation by an ID
-  /spots/create:
-    post:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/database.Spot'
-        "400":
-          description: Invalid body
-          schema:
-            type: string
-        "401":
-          description: Invalid token
-          schema:
-            type: string
-      summary: Create a spot at a longitude and latitude
-  /spots/delete:
-    delete:
-      responses:
-        "200":
-          description: Successfully deleted spot
-          schema:
-            type: string
-        "400":
-          description: Invalid body
-          schema:
-            type: string
-        "401":
-          description: Invalid token
-          schema:
-            type: string
-      summary: Delete a spot by it's ID
-  /spots/info:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/database.Spot'
-        "404":
           description: Spot was not found
           schema:
             type: string
-      summary: Get the spots near a longitude and latitude
+      summary: Get a spot
+      tags:
+      - spots
+    put:
+      consumes:
+      - application/json
+      description: Update a spot's information such as pricing table, name or longitude
+        and latitude
+      parameters:
+      - description: The ID of the spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated spot.
+          schema:
+            type: string
+        "400":
+          description: Invalid body.
+          schema:
+            type: string
+        "404":
+          description: That spot does not exist.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Update a spot
+      tags:
+      - spots
   /spots/near:
     get:
+      consumes:
+      - application/json
+      description: Get a spot near a longitude and latitude
       parameters:
-      - description: latitude to search by
-        in: query
-        name: lat
-        required: true
-        type: number
-      - description: longitude to search by
-        in: query
-        name: lng
-        required: true
-        type: number
-      - description: filter spots by handicap accessibility
+      - description: To filter spots by handicap spots
         in: query
         name: handicap
         type: boolean
@@ -304,10 +248,15 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Spot'
-        "404":
-          description: Could not load the list of spots
+        "400":
+          description: Longitude must be a number.
           schema:
             type: string
-      summary: Get the spots near a longitude and latitude, with optional handicap
-        filter
+        "404":
+          description: Could not load the list of spots.
+          schema:
+            type: string
+      summary: Get spots near
+      tags:
+      - spots
 swagger: "2.0"
