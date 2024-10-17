@@ -14,12 +14,102 @@
     "host": "localhost:8080",
     "basePath": "/api/",
     "paths": {
-        "/admin/organization": {
-            "get": {
+        "/info": {
+            "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get a user's info based on a Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get all of the organizations associated with an admin",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get user info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Login a user, this will generate a Bearer token to be used with Authenticated requests.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login a user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.JWTResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body recieved.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/organization/invites": {
+            "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get the invites associated with a User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organization",
+                    "invite"
+                ],
+                "summary": "Get the invites for your organization",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "The size of a page",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "The page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -28,13 +118,25 @@
                             "items": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/definitions/database.Organization"
+                                    "$ref": "#/definitions/database.Invite"
                                 }
                             }
                         }
                     },
-                    "400": {
-                        "description": "Unauthorized",
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "No invites were found for your organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't count all of the invites in the organization.",
                         "schema": {
                             "type": "string"
                         }
@@ -44,13 +146,21 @@
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "BearerToken": []
                     }
+                ],
+                "description": "Create an invite for User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create an invite to allow new user to join admin's organization",
+                "tags": [
+                    "organization",
+                    "invite"
+                ],
+                "summary": "Create an invite",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -59,19 +169,19 @@
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "Unauthorized.",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "404": {
-                        "description": "User or Organization not found",
+                        "description": "Failed to find your organization.",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Failed to create invite",
+                        "description": "Failed to create invite.",
                         "schema": {
                             "type": "string"
                         }
@@ -79,12 +189,87 @@
                 }
             }
         },
-        "/admin/organization/data": {
+        "/organization/me": {
             "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get the organization associated with a User based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get all of the spots data associated with an organization",
+                "tags": [
+                    "organization"
+                ],
+                "summary": "Get your organization",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Pull a deep copy of all of the organization's information",
+                        "name": "deep",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Organization"
+                        }
+                    },
+                    "400": {
+                        "description": "You don't seem to have an organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/organization/spots": {
+            "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get the spots associated with a User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organization",
+                    "spot"
+                ],
+                "summary": "Get the spots for your organization",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "The size of a page",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "The page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -98,8 +283,14 @@
                             }
                         }
                     },
-                    "400": {
-                        "description": "Unauthorized",
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't count all of the spots in the organization.",
                         "schema": {
                             "type": "string"
                         }
@@ -107,134 +298,88 @@
                 }
             }
         },
-        "/auth/info": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Gets the info of the current user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.JWTResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed to use token to retrieve user information",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/login": {
+        "/register": {
             "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Logs a User in using a username and a password",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.JWTResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed to log in",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/register": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Registers a User in using a username and a password",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.JWTResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed to register user",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/reservations": {
-            "post": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Creates a reservation using a spotID and specified time",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.ReservationInput"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/database.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/reservations/{id}": {
-            "get": {
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get a reservation by an ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the reservation",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/database.Spot"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/database.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/spots/create": {
-            "post": {
+                "description": "Register a user using an organization's invite code, this will generate a Bearer token to be used with Authenticated requests.",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create a spot at a longitude and latitude",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.JWTResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body recieved.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update invite.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservation/{id}": {
+            "get": {
+                "description": "Create an invite for User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Create an invite",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Reservation"
+                        }
+                    },
+                    "404": {
+                        "description": "That reservation does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/spots": {
+            "post": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Create a spot at a longitude and latitude",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot"
+                ],
+                "summary": "Create a spot",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -243,13 +388,19 @@
                         }
                     },
                     "400": {
-                        "description": "Invalid body",
+                        "description": "A spot with this name already exists for the organization.",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "401": {
-                        "description": "Invalid token",
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "A spot with this name already exists for the organization.",
                         "schema": {
                             "type": "string"
                         }
@@ -257,37 +408,71 @@
                 }
             }
         },
-        "/spots/delete": {
-            "delete": {
-                "summary": "Delete a spot by it's ID",
-                "responses": {
-                    "200": {
-                        "description": "Successfully deleted spot",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid token",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/spots/info": {
+        "/spots/near": {
             "get": {
+                "description": "Get a spot near a longitude and latitude",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get the spots near a longitude and latitude",
+                "tags": [
+                    "spot"
+                ],
+                "summary": "Get spots near",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "To filter spots by handicap spots",
+                        "name": "handicap",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Spot"
+                        }
+                    },
+                    "400": {
+                        "description": "Longitude must be a number.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Could not load the list of spots.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/spots/{id}": {
+            "get": {
+                "description": "Get a spot by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot"
+                ],
+                "summary": "Get a spot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -302,45 +487,241 @@
                         }
                     }
                 }
-            }
-        },
-        "/spots/near": {
-            "get": {
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Update a spot's information such as pricing table, name or longitude and latitude",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get the spots near a longitude and latitude, with optional handicap filter",
+                "tags": [
+                    "spot"
+                ],
+                "summary": "Update a spot",
                 "parameters": [
                     {
-                        "type": "number",
-                        "description": "latitude to search by",
-                        "name": "lat",
-                        "in": "query",
+                        "type": "string",
+                        "description": "The ID of the spot",
+                        "name": "id",
+                        "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "number",
-                        "description": "longitude to search by",
-                        "name": "lng",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "filter spots by handicap accessibility",
-                        "name": "handicap",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully updated spot.",
                         "schema": {
-                            "$ref": "#/definitions/database.Spot"
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "404": {
-                        "description": "Could not load the list of spots",
+                        "description": "That spot does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Delete a spot by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot"
+                ],
+                "summary": "Delete a spot",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Spot successfully deleted.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "That spot does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/{id}": {
+            "post": {
+                "description": "Create a Stripe checkout session and forward the user to Stripe",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot",
+                    "reservation",
+                    "stripe"
+                ],
+                "summary": "Create a checkout session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the Spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The Session ID passed from Stripe",
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The Stripe checkout URL",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create stripe session.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/{id}/cancel": {
+            "get": {
+                "description": "This is just a dummy route, it redirects to the frontend",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot",
+                    "reservation",
+                    "stripe"
+                ],
+                "summary": "Cancel callback for Stripe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the Spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "This will redirect you to a page on the frontend.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "That spot ID is invalid.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/{id}/success": {
+            "get": {
+                "description": "Create a Reservation from a Stripe Session ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "spot",
+                    "reservation",
+                    "stripe"
+                ],
+                "summary": "Success callback for Stripe",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the Spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The Session ID passed from Stripe",
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "301": {
+                        "description": "This will redirect you to a page on the frontend.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Something went wrong (did you resubmit the request?)",
                         "schema": {
                             "type": "string"
                         }
@@ -362,14 +743,6 @@
                 },
                 "longitude": {
                     "type": "number"
-                }
-            }
-        },
-        "database.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
                 }
             }
         },
@@ -413,11 +786,58 @@
                 }
             }
         },
+        "database.Pricing": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "monday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "saturday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "sunday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "thursday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "tuesday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "wednesday": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
+        },
         "database.Reservation": {
             "type": "object",
             "properties": {
-                "costPerHour": {
-                    "type": "integer"
+                "email": {
+                    "type": "string"
                 },
                 "end": {
                     "type": "string"
@@ -425,8 +845,8 @@
                 "guid": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
+                "price": {
+                    "type": "number"
                 },
                 "start": {
                     "type": "string"
@@ -456,6 +876,20 @@
                     "items": {
                         "$ref": "#/definitions/database.Reservation"
                     }
+                },
+                "table": {
+                    "$ref": "#/definitions/database.Pricing"
+                }
+            }
+        },
+        "database.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "guid": {
+                    "type": "string"
                 }
             }
         },
@@ -466,14 +900,13 @@
                     "type": "string"
                 }
             }
-        },
-        "routes.ReservationInput": {
-            "type": "object",
-            "properties": {
-                "spotID": {
-                    "type": "integer"
-                }
-            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     },
     "externalDocs": {

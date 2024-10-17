@@ -13,57 +13,50 @@ import (
 type SpotRoutes struct{}
 
 // GetSpotsNear godoc
-// @Summary      Get the spots near a longitude and latitude, with optional handicap filter
-// @Produce      json
-// @Param        lat    query     number  true  "latitude to search by"
-// @Param        lng    query     number  true  "longitude to search by"
-// @Param        handicap query     boolean false "filter spots by handicap accessibility"
-// @Success      200  {object}  database.Spot
-// @Failure      404  {string}  "Could not load the list of spots"
-// @Router       /spots/near [get]
+//
+// @Summary		Get spots near
+// @Description	Get a spot near a longitude and latitude
+// @Tags			spot
+// @Accept			json
+// @Produce		json
+// @Param			lat	query		decimal	true	"Latitude to search near"
+// @Param			lng	query		decimal	true	"Longitude to search near"
+// @Param			handicap	query		boolean	false	"To filter spots by handicap spots"
+// @Success		200	{object}	database.Spot
+// @Failure		400	{string} string "Latitude must be a number."
+// @Failure		400	{string} string "Longitude must be a number."
+// @Failure		404	{string} string "Could not load the list of spots."
+// @Router			/spots/near [get]
 func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	latParam := c.Query("lat")
 	lngParam := c.Query("lng")
-	handicapParam := c.Query("handicap")
 
 	lat, perr := strconv.ParseFloat(latParam, 64)
 	if perr != nil {
-		c.String(http.StatusNotFound, "Latitude must be a float.")
+		c.String(http.StatusBadRequest, "Latitude must be a number.")
 		return
 	}
 
 	lng, perr := strconv.ParseFloat(lngParam, 64)
 	if perr != nil {
-		c.String(http.StatusNotFound, "Longitude must be a float.")
+		c.String(http.StatusBadRequest, "Longitude must be a number.")
 		return
-	}
-
-	var filterByHandicap, applyHandicapFilter bool
-	if handicapParam != "" {
-		filterByHandicap, perr = strconv.ParseBool(handicapParam)
-		if perr != nil {
-			c.String(http.StatusNotFound, "Handicap must be a boolean.")
-			return
-		}
-		applyHandicapFilter = true
 	}
 
 	point := database.Coordinates{Longitude: lng, Latitude: lat}
 	spots := []database.Spot{}
 	query := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10)
-	if applyHandicapFilter {
-		query = query.Where("handicap = ?", filterByHandicap)
+	if c.Query("handicap") == "true" {
+		query = query.Where("handicap = ?", true)
 	}
 	result := query.Find(&spots)
-	err := result.Error
-
-	if err != nil {
+	if result.Error != nil {
 		c.String(http.StatusNotFound, "Could not load the list of spots.")
 		return
 	}
 
-	c.IndentedJSON(http.StatusAccepted, spots)
+	c.IndentedJSON(http.StatusOK, spots)
 }
 
 type GetSpotOutput struct {
@@ -71,13 +64,17 @@ type GetSpotOutput struct {
 	Price float64 `json:"price"`
 }
 
-// GetSpot godoc
-// @Summary      Get the spots near a longitude and latitude
-// @Produce      json
-// @Param        id    path     uuid  true  "Guid of the spot"
-// @Success      200  {object}  database.Spot
-// @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id} [get]
+// GetSpotsNear godoc
+//
+// @Summary		Get a spot
+// @Description	Get a spot by its ID
+// @Tags		spot
+// @Accept		json
+// @Produce		json
+// @Param		id  path		string	true	"The ID of the spot"
+// @Success		200	{object}	database.Spot
+// @Failure		404	{string} string	"Spot was not found"
+// @Router		/spots/{id} [get]
 func (*SpotRoutes) GetSpot(c *gin.Context) {
 
 	id := c.Param("id")
@@ -98,36 +95,35 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 }
 
 // UpdateSpot godoc
-// @Summary      Update a spot by its ID
-// @Success      200  {string}  "Successfully deleted spot"
-
-// @Failure      400  {string}  "Invalid body"
-// @Failure      401  {string}  "Invalid token"
-// @Router       /spots/{id} [put]
+//
+// @Summary		Update a spot
+// @Description	Update a spot's information such as pricing table, name or longitude and latitude
+// @Tags		spot
+// @Accept		json
+// @Produce		json
+// @Param		id  path		string	true	"The ID of the spot"
+// @Success		200	{string} string	"Successfully updated spot."
+// @Failure		400	{string} string	"Invalid body."
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		404	{string} string	"That spot does not exist."
+// @Router		/spots/{id} [put]
+// @Security 	BearerToken
 func (*SpotRoutes) UpdateSpot(c *gin.Context) {
-
-	guid := c.MustGet("guid")
-
-	user := database.User{}
-	if result := database.Db.Where("guid = ?", guid).First(&user); result.Error != nil {
-		c.String(http.StatusBadRequest, "You literally don't exist")
-		return
-	}
 
 	input := database.Pricing{}
 	if err := c.BindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "Invalid body")
+		c.String(http.StatusBadRequest, "Invalid body.")
 		return
 	}
 
 	id := c.Param("id")
 	table, _ := json.Marshal(input)
 	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table); result.Error != nil {
-		c.String(http.StatusNotFound, "That spot does not exist")
+		c.String(http.StatusNotFound, "That spot does not exist.")
 		return
 	}
 
-	c.String(http.StatusOK, "Successfully updated spot")
+	c.String(http.StatusOK, "Successfully updated spot.")
 }
 
 type CreateSpotInput struct {
@@ -136,41 +132,42 @@ type CreateSpotInput struct {
 }
 
 // CreateSpot godoc
-// @Summary      Create a spot at a longitude and latitude
-// @Produce      json
-// @Accept		 json
-// @Success      200  {object}  database.Spot
-// @Failure      400  {string}  "Invalid body"
-// @Failure      401  {string}  "Invalid token"
-// @Router       /spots [post]
+//
+// @Summary		Create a spot
+// @Description	Create a spot at a longitude and latitude
+// @Tags		spot
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	database.Spot
+// @Failure		400 {string} string	"Invalid body."
+// @Failure		400 {string} string	"Longitude must be between -180 and 180."
+// @Failure		400 {string} string	"Latitude must be between -90 and 90."
+// @Failure		400 {string} string "A spot with this name already exists for the organization."
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		409 {string} string "A spot with this name already exists for the organization."
+// @Router		/spots [post]
+// @Security 	BearerToken
 func (*SpotRoutes) CreateSpot(c *gin.Context) {
-
-	guid := c.MustGet("guid")
-
-	user := database.User{}
-	if result := database.Db.Where("guid = ?", guid).First(&user); result.Error != nil {
-		c.String(http.StatusNotFound, "For some reason, you don't exist!")
-		return
-	}
 
 	var input CreateSpotInput
 	if err := c.BindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "Invalid body")
+		c.String(http.StatusBadRequest, "Invalid body.")
 		return
 	}
 
 	if input.Coords.Longitude < -180 || input.Coords.Longitude > 180 {
-		c.String(http.StatusBadRequest, "Longitude must be between -180 and 180")
+		c.String(http.StatusBadRequest, "Longitude must be between -180 and 180.")
 		return
 	}
 	if input.Coords.Latitude < -90 || input.Coords.Latitude > 90 {
-		c.String(http.StatusBadRequest, "Latitude must be between -90 and 90")
+		c.String(http.StatusBadRequest, "Latitude must be between -90 and 90.")
 		return
 	}
 
+	user := c.MustGet("user").(database.User)
 	existingSpot := database.Spot{}
 	if err := database.Db.Where("name = ? AND organization_id = ?", input.Name, user.OrganizationID).First(&existingSpot).Error; err == nil {
-		c.String(http.StatusBadRequest, "A spot with this name already exists for the organization")
+		c.String(http.StatusConflict, "A spot with this name already exists for the organization.")
 		return
 	}
 
@@ -180,7 +177,7 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		OrganizationID: user.OrganizationID,
 	}
 	if result := database.Db.Create(&spot); result.Error != nil {
-		c.String(http.StatusBadRequest, "Failed to create a spot")
+		c.String(http.StatusBadRequest, "Failed to create a spot.")
 		return
 	}
 
@@ -188,28 +185,27 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 }
 
 // DeleteSpot godoc
-// @Summary      Delete a spot by its ID
-// @Success      200  {string}  "Successfully deleted spot"
-// @Failure      400  {string}  "Invalid body"
-// @Failure      401  {string}  "Invalid token"
-// @Router       /spots/{id} [delete]
+//
+// @Summary		Delete a spot
+// @Description	Delete a spot by its ID
+// @Tags		spot
+// @Accept		json
+// @Produce		json
+// @Param		id  path		string	true	"The ID of the spot"
+// @Success		200	{string} string	"Spot successfully deleted."
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		404 {string} string	"That spot does not exist."
+// @Router		/spots/{id} [delete]
+// @Security 	BearerToken
 func (*SpotRoutes) DeleteSpot(c *gin.Context) {
 
-	guid := c.MustGet("guid")
-
-	user := database.User{}
-	if result := database.Db.Where("guid = ?", guid).First(&user); result.Error != nil {
-		c.String(http.StatusBadRequest, "You literally don't exist")
-		return
-	}
-
+	user := c.MustGet("user").(database.User)
 	spot_id := c.Param("id")
-
 	spot := database.Spot{}
 	if result := database.Db.Where("id = ?", spot_id).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
-		c.String(http.StatusNotFound, "That spot does not exist")
+		c.String(http.StatusNotFound, "That spot does not exist.")
 		return
 	}
 
-	c.String(http.StatusOK, "Spot successfully deleted")
+	c.String(http.StatusOK, "Spot successfully deleted.")
 }

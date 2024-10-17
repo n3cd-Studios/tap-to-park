@@ -13,24 +13,38 @@ import (
 
 type StripeRoutes struct{}
 
+// SuccessfulPurchaseSpot godoc
+//
+// @Summary		Success callback for Stripe
+// @Description	Create a Reservation from a Stripe Session ID
+// @Tags		spot,reservation,stripe
+// @Accept		json
+// @Produce		json
+// @Param		id	path		string true	"The ID of the Spot"
+// @Param		session_id	query		string	true	"The Session ID passed from Stripe"
+// @Success		301	{string} string "This will redirect you to a page on the frontend."
+// @Failure		400	{string} string "That spot ID is invalid."
+// @Failure		400	{string} string "Invalid Stripe session."
+// @Failure		400	{string} string "Something went wrong (did you resubmit the request?)"
+// @Router		/stripe/{id}/success [get]
 func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 
 	spot_id := c.Param("id")
 	spot := database.Spot{}
 	if result := database.Db.Where("guid = ?", spot_id).First(&spot); result.Error != nil {
-		c.String(http.StatusBadRequest, "That spot ID is invalid")
+		c.String(http.StatusBadRequest, "That spot ID is invalid.")
 		return
 	}
 
 	session_id := c.Query("session_id")
 	if session_id == "" {
-		c.String(http.StatusBadRequest, "Invalid Stripe session")
+		c.String(http.StatusBadRequest, "Invalid Stripe session.")
 		return
 	}
 
 	sess, err := session.Get(session_id, nil)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Invalid Stripe session")
+		c.String(http.StatusBadRequest, "Invalid Stripe session.")
 		return
 	}
 
@@ -50,6 +64,17 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, os.Getenv("FRONTEND_HOST")+"/"+spot.Guid+"/success")
 }
 
+// CancelPurchaseSpot godoc
+//
+// @Summary		Cancel callback for Stripe
+// @Description	This is just a dummy route, it redirects to the frontend
+// @Tags		spot,reservation,stripe
+// @Accept		json
+// @Produce		json
+// @Param		id	path		string true	"The ID of the Spot"
+// @Success		301	{string} string "This will redirect you to a page on the frontend."
+// @Failure		400	{string} string "That spot ID is invalid."
+// @Router		/stripe/{id}/cancel [get]
 func (*StripeRoutes) CancelPurchaseSpot(c *gin.Context) {
 
 	spot_id := c.Param("id")
@@ -68,18 +93,24 @@ type PurchaseSpotInput struct {
 }
 
 // PurchaseSpot godoc
-// @Summary      Purchase a spot with a certain price
-// @Produce      json
-// @Param        id    path     uuid  true  "Guid of the spot"
-// @Success      200  {string}  "URL of the stripe checkout"
-// @Failure      400  {string}  "Invalid body"
-// @Failure      404  {string}  "Spot was not found"
-// @Router       /spots/{id}/purchase [post]
+//
+// @Summary		Create a checkout session
+// @Description	Create a Stripe checkout session and forward the user to Stripe
+// @Tags		spot,reservation,stripe
+// @Accept		json
+// @Produce		json
+// @Param		id	path		string true	"The ID of the Spot"
+// @Param		session_id	query		string	true	"The Session ID passed from Stripe"
+// @Success		200	{string} string "The Stripe checkout URL"
+// @Failure		400	{string} string "That spot ID is invalid."
+// @Failure		400	{string} string "Invalid body."
+// @Failure		500	{string} string "Failed to create stripe session."
+// @Router		/stripe/{id} [post]
 func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 
 	var input PurchaseSpotInput
 	if err := c.BindJSON(&input); err != nil {
-		c.String(http.StatusBadRequest, "Invalid body")
+		c.String(http.StatusBadRequest, "Invalid body.")
 		return
 	}
 
@@ -112,7 +143,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 
 	sess, err := session.New(params)
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to create stripe session.")
+		c.String(http.StatusInternalServerError, "Failed to create Stripe session.")
 		return
 	}
 

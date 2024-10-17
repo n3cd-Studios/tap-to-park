@@ -20,15 +20,19 @@ import (
 // @version         1.0
 // @description     This is the API for interacting with internal Tap-To-Park services
 // @termsOfService  http://n3cd.io/terms/
-
+//
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-
+//
 // @host      localhost:8080
 // @BasePath  /api/
-
+//
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 
 	// Load .env file
@@ -56,8 +60,7 @@ func main() {
 	reservations := api.Group("/reservations")
 	{
 		routing := routes.ReservationRoutes{}
-		reservations.POST("/", routing.CreateReservation)
-		reservations.GET("/:id", routing.GetReservationByID)
+		reservations.GET("/:id", routing.GetReservation)
 	}
 
 	// Spot routes
@@ -71,7 +74,7 @@ func main() {
 		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
 	}
 
-	// Spot routes
+	// Stripe routes
 	stripe := api.Group("/stripe")
 	{
 		routing := routes.StripeRoutes{}
@@ -96,7 +99,7 @@ func main() {
 		organization.GET("/me", routing.GetOrganization)
 		organization.GET("/spots", routing.GetSpots)
 		organization.GET("/invites", routing.GetInvites)
-		organization.POST("/code", routing.CreateInvite)
+		organization.POST("/invites", routing.CreateInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
