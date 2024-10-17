@@ -1,8 +1,7 @@
 <script lang="ts">
+    import type { Spot } from "$lib/models";
     import { onMount } from "svelte";
     import Map from "../../../components/Map.svelte";
-    import type { Spot } from "$lib/models";
-    import { get } from "$lib/api";
 
     export let data: Spot;
 

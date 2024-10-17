@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 	"tap-to-park/database"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm/clause"
@@ -68,6 +66,11 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	c.IndentedJSON(http.StatusAccepted, spots)
 }
 
+type GetSpotOutput struct {
+	database.Spot
+	Price float64 `json:"price"`
+}
+
 // GetSpot godoc
 // @Summary      Get the spots near a longitude and latitude
 // @Produce      json
@@ -88,19 +91,10 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 		return
 	}
 
-	now := time.Now()
-	weekday := strings.ToLower(now.Weekday().String())
-	hour := strconv.FormatInt(int64(now.Hour()), 10)
-
-	// WHY DOES THIS WORK
-	var price float64
-	if result := database.Db.Raw("select ((pricing->?)::JSON->>CAST(? AS INT))::DECIMAL as price from spots where id=?", weekday, hour, spot.ID).Scan(&price); result.Error != nil {
-		return
-	}
-
-	println(price)
-
-	c.IndentedJSON(http.StatusOK, spot)
+	c.IndentedJSON(http.StatusOK, GetSpotOutput{
+		Spot:  spot,
+		Price: spot.GetPrice(),
+	})
 }
 
 // UpdateSpot godoc

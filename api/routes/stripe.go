@@ -90,8 +90,6 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		return
 	}
 
-	const costPerHour = 2
-
 	domain := "http://" + os.Getenv("BACKEND_HOST")
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -102,7 +100,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 						Name:        stripe.String("Parking"),
 						Description: stripe.String("Parking at " + spot.Name),
 					},
-					UnitAmount: stripe.Int64(int64(input.End.Sub(input.Start).Hours() * costPerHour * 100)),
+					UnitAmount: stripe.Int64(int64(input.End.Sub(input.Start).Hours() * spot.GetPrice() * 100)),
 				},
 				Quantity: stripe.Int64(1),
 			},

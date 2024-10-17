@@ -4,6 +4,9 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type Pricing struct {
@@ -28,4 +31,17 @@ func (a *Pricing) Scan(value interface{}) error {
 		return errors.New("type assertion to []byte failed")
 	}
 	return json.Unmarshal(b, &a)
+}
+
+func (spot *Spot) GetPrice() float64 {
+	now := time.Now()
+	weekday := strings.ToLower(now.Weekday().String())
+	hour := strconv.FormatInt(int64(now.Hour()), 10)
+
+	// WHY DOES THIS WORK
+	var price float64
+	if result := Db.Raw("select ((pricing->?)::JSON->>CAST(? AS INT))::DECIMAL as price from spots where id=?", weekday, hour, spot.ID).Scan(&price); result.Error != nil {
+		return 0
+	}
+	return price
 }
