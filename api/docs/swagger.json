@@ -303,6 +303,35 @@
                 }
             }
         },
+        "/reservation/{id}": {
+            "get": {
+                "description": "Create an invite for User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservation"
+                ],
+                "summary": "Create an invite",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Reservation"
+                        }
+                    },
+                    "404": {
+                        "description": "That reservation does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/spots": {
             "post": {
                 "security": [

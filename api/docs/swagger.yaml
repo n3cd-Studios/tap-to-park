@@ -315,6 +315,26 @@ paths:
       summary: Register a user
       tags:
       - auth
+  /reservation/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Create an invite for User's organization based on their Bearer
+        token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Reservation'
+        "404":
+          description: That reservation does not exist.
+          schema:
+            type: string
+      summary: Create an invite
+      tags:
+      - reservation
   /spots:
     post:
       consumes:

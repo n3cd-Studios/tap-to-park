@@ -60,8 +60,7 @@ func main() {
 	reservations := api.Group("/reservations")
 	{
 		routing := routes.ReservationRoutes{}
-		reservations.POST("/", routing.CreateReservation)
-		reservations.GET("/:id", routing.GetReservationByID)
+		reservations.GET("/:id", routing.GetReservation)
 	}
 
 	// Spot routes
@@ -100,7 +99,7 @@ func main() {
 		organization.GET("/me", routing.GetOrganization)
 		organization.GET("/spots", routing.GetSpots)
 		organization.GET("/invites", routing.GetInvites)
-		organization.POST("/code", routing.CreateInvite)
+		organization.POST("/invites", routing.CreateInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
