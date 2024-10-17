@@ -24,7 +24,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuth": []
+                        "BearerToken": []
                     }
                 ],
                 "description": "Get a user's info based on a Bearer token",
@@ -43,6 +43,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/database.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -123,6 +129,12 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "404": {
                         "description": "No invites were found for your organization.",
                         "schema": {
@@ -160,6 +172,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/database.Invite"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "404": {
@@ -215,6 +233,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -263,6 +287,12 @@ const docTemplate = `{
                                     "$ref": "#/definitions/database.Spot"
                                 }
                             }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "500": {
@@ -365,6 +395,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "A spot with this name already exists for the organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
                         "schema": {
                             "type": "string"
                         }
@@ -497,6 +533,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "404": {
                         "description": "That spot does not exist.",
                         "schema": {
@@ -534,6 +576,12 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "Spot successfully deleted.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
                         "schema": {
                             "type": "string"
                         }

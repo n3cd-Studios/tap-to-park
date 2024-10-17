@@ -21,6 +21,7 @@ type OrganizationRoutes struct{}
 // @Param		deep  query		boolean	false	"Pull a deep copy of all of the organization's information"
 // @Success		200	{object} database.Organization
 // @Failure		400	{string} string	"You don't seem to have an organization."
+// @Failure		401	{string} string "Unauthorized."
 // @Router		/organization/me [get]
 // @Security 	BearerToken
 func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
@@ -54,6 +55,7 @@ func (*OrganizationRoutes) GetOrganization(c *gin.Context) {
 // @Param		page  query		number	false	"The page"
 // @Success		200	{array} []database.Spot
 // @Failure		500	{string} string	"Couldn't count all of the spots in the organization."
+// @Failure		401	{string} string "Unauthorized."
 // @Router		/organization/spots [get]
 // @Security 	BearerToken
 func (*OrganizationRoutes) GetSpots(c *gin.Context) {
@@ -95,6 +97,7 @@ func (*OrganizationRoutes) GetSpots(c *gin.Context) {
 // @Success		200	{object} database.Invite
 // @Failure		404 {string} string "Failed to find your organization."
 // @Failure		500	{string} string	"Failed to create invite."
+// @Failure		401	{string} string "Unauthorized."
 // @Router		/organization/invites [post]
 // @Security 	BearerToken
 func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
@@ -134,6 +137,7 @@ func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 // @Success		200	{array} []database.Invite
 // @Failure		404 {string} string	"No invites were found for your organization."
 // @Failure		500	{string} string	"Couldn't count all of the invites in the organization."
+// @Failure		401	{string} string "Unauthorized."
 // @Router		/organization/invites [get]
 // @Security 	BearerToken
 func (*OrganizationRoutes) GetInvites(c *gin.Context) {

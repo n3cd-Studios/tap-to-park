@@ -166,8 +166,9 @@ func (*AuthRoutes) Register(c *gin.Context) {
 // @Accept		json
 // @Produce		json
 // @Success		200	{object}	database.User
+// @Failure		401	{string} string "Unauthorized."
 // @Router		/info [post]
-// @Security	BearerAuth
+// @Security	BearerToken
 func (*AuthRoutes) Info(c *gin.Context) {
 	user := c.MustGet("guid").(database.User)
 	c.IndentedJSON(http.StatusOK, user)

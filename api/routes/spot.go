@@ -104,6 +104,7 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 // @Param		id  path		string	true	"The ID of the spot"
 // @Success		200	{string} string	"Successfully updated spot."
 // @Failure		400	{string} string	"Invalid body."
+// @Failure		401	{string} string "Unauthorized."
 // @Failure		404	{string} string	"That spot does not exist."
 // @Router		/spots/{id} [put]
 // @Security 	BearerToken
@@ -141,8 +142,9 @@ type CreateSpotInput struct {
 // @Failure		400 {string} string	"Invalid body."
 // @Failure		400 {string} string	"Longitude must be between -180 and 180."
 // @Failure		400 {string} string	"Latitude must be between -90 and 90."
-// @Failure		400 {string} string    "A spot with this name already exists for the organization."
-// @Failure		409 {string} string    "A spot with this name already exists for the organization."
+// @Failure		400 {string} string "A spot with this name already exists for the organization."
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		409 {string} string "A spot with this name already exists for the organization."
 // @Router		/spots [post]
 // @Security 	BearerToken
 func (*SpotRoutes) CreateSpot(c *gin.Context) {
@@ -191,6 +193,7 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 // @Produce		json
 // @Param		id  path		string	true	"The ID of the spot"
 // @Success		200	{string} string	"Spot successfully deleted."
+// @Failure		401	{string} string "Unauthorized."
 // @Failure		404 {string} string	"That spot does not exist."
 // @Router		/spots/{id} [delete]
 // @Security 	BearerToken

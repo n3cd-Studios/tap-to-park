@@ -137,8 +137,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.User'
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
       security:
-      - BearerAuth: []
+      - BearerToken: []
       summary: Get user info
       tags:
       - auth
@@ -188,6 +192,10 @@ paths:
                 $ref: '#/definitions/database.Invite'
               type: array
             type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
         "404":
           description: No invites were found for your organization.
           schema:
@@ -214,6 +222,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Invite'
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
         "404":
           description: Failed to find your organization.
           schema:
@@ -250,6 +262,10 @@ paths:
           description: You don't seem to have an organization.
           schema:
             type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
       security:
       - BearerToken: []
       summary: Get your organization
@@ -281,6 +297,10 @@ paths:
                 $ref: '#/definitions/database.Spot'
               type: array
             type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
         "500":
           description: Couldn't count all of the spots in the organization.
           schema:
@@ -351,6 +371,10 @@ paths:
           description: A spot with this name already exists for the organization.
           schema:
             type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
         "409":
           description: A spot with this name already exists for the organization.
           schema:
@@ -376,6 +400,10 @@ paths:
       responses:
         "200":
           description: Spot successfully deleted.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
           schema:
             type: string
         "404":
@@ -431,6 +459,10 @@ paths:
             type: string
         "400":
           description: Invalid body.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
           schema:
             type: string
         "404":
