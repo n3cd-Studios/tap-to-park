@@ -40,6 +40,17 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Login godoc
+//
+// @Summary		Login a user
+// @Description Login a user, this will generate a Bearer token to be used with Authenticated requests.
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	JWTResponse
+// @Failure		400	{string}	string	"Failed to login."
+// @Failure		400	{string}	string	"Invalid body recieved."
+// @Router		/login [post]
 func (*AuthRoutes) Login(c *gin.Context) {
 
 	var input LoginInput
@@ -76,6 +87,18 @@ type RegisterInput struct {
 	InviteCode string `json:"invite"`
 }
 
+// Register godoc
+//
+// @Summary		Register a user
+// @Description Register a user using an organization's invite code, this will generate a Bearer token to be used with Authenticated requests.
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	JWTResponse
+// @Failure		400	{string}	string	"Failed to register."
+// @Failure		400	{string}	string	"Invalid body recieved."
+// @Failure		500	{string}	string	"Failed to update invite."
+// @Router		/register [post]
 func (*AuthRoutes) Register(c *gin.Context) {
 
 	// TODO: CHANGE ALL ERRORS TO GENERIC ERROR FOR SECURITY
@@ -95,19 +118,19 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to create user.")
+		c.String(http.StatusBadRequest, "Failed to register.")
 		return
 	}
 
 	var invite database.Invite
 	var organizationID uint
 	if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
-		c.String(http.StatusBadRequest, "Invalid invite code.")
+		c.String(http.StatusBadRequest, "Failed to register.")
 		return
 	}
 
 	if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
-		c.String(http.StatusBadRequest, "Invalid invite code.")
+		c.String(http.StatusBadRequest, "Failed to register.")
 		return
 	}
 
@@ -116,7 +139,7 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: organizationID}
 
 	if err := database.Db.Create(&user).Error; err != nil {
-		c.String(http.StatusBadRequest, "Failed to create user.")
+		c.String(http.StatusBadRequest, "Failed to register.")
 		return
 	}
 
@@ -135,15 +158,17 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
 }
 
+// Info godoc
+//
+// @Summary		Get user info
+// @Description Get a user's info based on a Bearer token
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	database.User
+// @Router		/info [post]
+// @Security	BearerAuth
 func (*AuthRoutes) Info(c *gin.Context) {
-
-	uuid := c.MustGet("guid")
-
-	user := database.User{}
-	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
-		c.String(http.StatusNotFound, "For some reason, you don't exist!")
-		return
-	}
-
+	user := c.MustGet("guid").(database.User)
 	c.IndentedJSON(http.StatusOK, user)
 }

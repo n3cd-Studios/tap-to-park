@@ -86,6 +86,18 @@ definitions:
       table:
         $ref: '#/definitions/database.Pricing'
     type: object
+  database.User:
+    properties:
+      email:
+        type: string
+      guid:
+        type: string
+    type: object
+  routes.JWTResponse:
+    properties:
+      token:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -100,6 +112,43 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
+  /info:
+    post:
+      consumes:
+      - application/json
+      description: Get a user's info based on a Bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+      security:
+      - BearerAuth: []
+      summary: Get user info
+      tags:
+      - auth
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user, this will generate a Bearer token to be used with
+        Authenticated requests.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Invalid body recieved.
+          schema:
+            type: string
+      summary: Login a user
+      tags:
+      - auth
   /organization/code:
     post:
       produces:
@@ -124,6 +173,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Get's all the invites for an organization
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a user using an organization's invite code, this will
+        generate a Bearer token to be used with Authenticated requests.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Invalid body recieved.
+          schema:
+            type: string
+        "500":
+          description: Failed to update invite.
+          schema:
+            type: string
+      summary: Register a user
+      tags:
+      - auth
   /spots:
     post:
       consumes:
@@ -259,4 +332,9 @@ paths:
       summary: Get spots near
       tags:
       - spots
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
