@@ -80,6 +80,19 @@ definitions:
       start:
         type: string
     type: object
+  database.Session:
+    properties:
+      device:
+        type: string
+      expires:
+        type: string
+      guid:
+        type: string
+      ip:
+        type: string
+      lastUsed:
+        type: string
+    type: object
   database.Spot:
     properties:
       coords:
@@ -105,6 +118,10 @@ definitions:
         type: string
       guid:
         type: string
+      sessions:
+        items:
+          $ref: '#/definitions/database.Session'
+        type: array
     type: object
   routes.JWTResponse:
     properties:
@@ -125,7 +142,7 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
-  /info:
+  /auth/info:
     post:
       consumes:
       - application/json
@@ -146,7 +163,7 @@ paths:
       summary: Get user info
       tags:
       - auth
-  /login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -164,6 +181,86 @@ paths:
           schema:
             type: string
       summary: Login a user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a user using an organization's invite code, this will
+        generate a Bearer token to be used with Authenticated requests.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Invalid body recieved.
+          schema:
+            type: string
+        "500":
+          description: Failed to update invite.
+          schema:
+            type: string
+      summary: Register a user
+      tags:
+      - auth
+  /auth/sessions:
+    get:
+      consumes:
+      - application/json
+      description: Get a user's sessions based on a Bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Session'
+              type: array
+            type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: You don't have any sessions.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get user's sessions
+      tags:
+      - auth
+  /auth/sessions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke a session based on an ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Revoked session.
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: Failed to revoke session.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Revoke a session
       tags:
       - auth
   /organization/invites:
@@ -311,30 +408,6 @@ paths:
       tags:
       - organization
       - spot
-  /register:
-    post:
-      consumes:
-      - application/json
-      description: Register a user using an organization's invite code, this will
-        generate a Bearer token to be used with Authenticated requests.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.JWTResponse'
-        "400":
-          description: Invalid body recieved.
-          schema:
-            type: string
-        "500":
-          description: Failed to update invite.
-          schema:
-            type: string
-      summary: Register a user
-      tags:
-      - auth
   /reservation/{id}:
     get:
       consumes:

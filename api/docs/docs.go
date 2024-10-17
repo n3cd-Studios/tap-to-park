@@ -20,7 +20,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/info": {
+        "/auth/info": {
             "post": {
                 "security": [
                     {
@@ -54,7 +54,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/login": {
+        "/auth/login": {
             "post": {
                 "description": "Login a user, this will generate a Bearer token to be used with Authenticated requests.",
                 "consumes": [
@@ -76,6 +76,130 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid body recieved.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Register a user using an organization's invite code, this will generate a Bearer token to be used with Authenticated requests.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.JWTResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid body recieved.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to update invite.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sessions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get a user's sessions based on a Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get user's sessions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/database.Session"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "You don't have any sessions.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sessions/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Revoke a session based on an ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Revoke a session",
+                "responses": {
+                    "200": {
+                        "description": "Revoked session.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Failed to revoke session.",
                         "schema": {
                             "type": "string"
                         }
@@ -297,41 +421,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Couldn't count all of the spots in the organization.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/register": {
-            "post": {
-                "description": "Register a user using an organization's invite code, this will generate a Bearer token to be used with Authenticated requests.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Register a user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.JWTResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid body recieved.",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to update invite.",
                         "schema": {
                             "type": "string"
                         }
@@ -859,6 +948,26 @@ const docTemplate = `{
                 }
             }
         },
+        "database.Session": {
+            "type": "object",
+            "properties": {
+                "device": {
+                    "type": "string"
+                },
+                "expires": {
+                    "type": "string"
+                },
+                "guid": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "lastUsed": {
+                    "type": "string"
+                }
+            }
+        },
         "database.Spot": {
             "type": "object",
             "properties": {
@@ -896,6 +1005,12 @@ const docTemplate = `{
                 },
                 "guid": {
                     "type": "string"
+                },
+                "sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Session"
+                    }
                 }
             }
         },

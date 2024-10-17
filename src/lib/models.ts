@@ -18,6 +18,14 @@ export interface User {
     email: string;
 }
 
+export interface Session {
+    guid: string;
+	device: string;
+    ip: string;
+	expires: string;
+	lastUsed: string;
+}
+
 export interface Organization {
     name: string;
     spots: Spot[]

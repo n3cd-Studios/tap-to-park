@@ -23,12 +23,14 @@ type Invite struct {
 	UsedByID       uint      `gorm:"" json:"usedBy"`
 }
 
+// User has many Sessions, UserID is the foreign key
 type User struct {
-	ID             uint   `gorm:"primarykey" json:"-"`
-	Guid           string `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
-	Email          string `gorm:"not null;unique;" json:"email"`
-	PasswordHash   string `gorm:"not null;" json:"-"`
-	OrganizationID uint   `gorm:"not null;" json:"-"`
+	ID             uint      `gorm:"primarykey" json:"-"`
+	Guid           string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
+	Email          string    `gorm:"not null;unique;" json:"email"`
+	PasswordHash   string    `gorm:"not null;" json:"-"`
+	Sessions       []Session `json:"sessions"`
+	OrganizationID uint      `gorm:"not null;" json:"-"`
 }
 
 // Spot has many Reservations, SpotID is the foreign key
@@ -53,4 +55,14 @@ type Reservation struct {
 	StripeTransactionID string    `gorm:"not null;unique;" json:"-"`
 	SpotID              uint      `gorm:"not null;" json:"-"`
 	// Transactions []Transaction `gorm:"not null;" json:"transactions"`
+}
+
+type Session struct {
+	ID       uint      `gorm:"primarykey" json:"-"`
+	Guid     string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
+	IP       string    `gorm:"not null;" json:"ip"`
+	Device   string    `gorm:"not null;" json:"device"`
+	Expires  time.Time `gorm:"not null;" json:"expires"`
+	LastUsed time.Time `gorm:"not null;" json:"lastUsed"`
+	UserID   uint      `gorm:"not null;" json:"-"`
 }

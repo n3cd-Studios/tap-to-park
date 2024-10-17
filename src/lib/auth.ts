@@ -26,8 +26,10 @@ export const login = async (email: string, password: string) => {
     authStore.set({ token, user });
 }
 
+export const getAuthHeader = () => ({ "Authentication": `Bearer ${storeGet(authStore).token}` })
+
 export const getUserInfo = async () => {
-    return get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${storeGet(authStore).token}` }});
+    return get<User>({ route: "auth/info", headers: getAuthHeader() });
 }
 
 export const logout = () => {

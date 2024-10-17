@@ -89,7 +89,9 @@ func main() {
 		routing := routes.AuthRoutes{}
 		auth.POST("/login", routing.Login)
 		auth.POST("/register", routing.Register)
-		auth.GET("/info", routes.AuthMiddleware(), routing.Info)
+		auth.GET("/info", routes.AuthMiddleware(), routing.GetInfo)
+		auth.GET("/sessions", routes.AuthMiddleware(), routing.GetSessions)
+		auth.DELETE("/sessions/:id", routes.AuthMiddleware(), routing.RevokeSession)
 	}
 
 	// Organization routes

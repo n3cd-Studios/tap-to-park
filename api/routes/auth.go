@@ -11,15 +11,25 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
-		guid, err := auth.TokenExtractID(token)
+		session_id, err := auth.Get(c.Request.Header.Get("Authentication"))
 		if err != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
 		}
+
+		session := database.Session{}
+		if result := database.Db.Where("guid = ?", session_id).Where("expires > ?", time.Now()).First(&session); result.Error != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized.")
+			c.Abort()
+			return
+		}
+
+		session.LastUsed = time.Now()
+		database.Db.Updates(&session)
+
 		user := database.User{}
-		if result := database.Db.Where("guid = ?", guid).Find(&user); result.Error != nil {
+		if result := database.Db.Where("id = ?", session.UserID).First(&user); result.Error != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
@@ -50,7 +60,7 @@ type LoginInput struct {
 // @Success		200	{object}	JWTResponse
 // @Failure		400	{string}	string	"Failed to login."
 // @Failure		400	{string}	string	"Invalid body recieved."
-// @Router		/login [post]
+// @Router		/auth/login [post]
 func (*AuthRoutes) Login(c *gin.Context) {
 
 	var input LoginInput
@@ -72,7 +82,8 @@ func (*AuthRoutes) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.TokenGenerate(user.Guid)
+	request := c.Request
+	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to login.")
 		return
@@ -98,7 +109,7 @@ type RegisterInput struct {
 // @Failure		400	{string}	string	"Failed to register."
 // @Failure		400	{string}	string	"Invalid body recieved."
 // @Failure		500	{string}	string	"Failed to update invite."
-// @Router		/register [post]
+// @Router		/auth/register [post]
 func (*AuthRoutes) Register(c *gin.Context) {
 
 	// TODO: CHANGE ALL ERRORS TO GENERIC ERROR FOR SECURITY
@@ -143,7 +154,8 @@ func (*AuthRoutes) Register(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.TokenGenerate(user.Guid)
+	request := c.Request
+	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
@@ -158,7 +170,7 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
 }
 
-// Info godoc
+// GetInfo godoc
 //
 // @Summary		Get user info
 // @Description Get a user's info based on a Bearer token
@@ -167,9 +179,58 @@ func (*AuthRoutes) Register(c *gin.Context) {
 // @Produce		json
 // @Success		200	{object}	database.User
 // @Failure		401	{string} string "Unauthorized."
-// @Router		/info [post]
+// @Router		/auth/info [post]
 // @Security	BearerToken
-func (*AuthRoutes) Info(c *gin.Context) {
-	user := c.MustGet("guid").(database.User)
+func (*AuthRoutes) GetInfo(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
 	c.IndentedJSON(http.StatusOK, user)
+}
+
+// GetSessions godoc
+//
+// @Summary		Get user's sessions
+// @Description Get a user's sessions based on a Bearer token
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{array}	[]database.Session
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		404	{string} string "You don't have any sessions."
+// @Router		/auth/sessions [get]
+// @Security	BearerToken
+func (*AuthRoutes) GetSessions(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
+
+	sessions := []database.Session{}
+	if result := database.Db.Where("user_id = ?", user.ID).Find(&sessions); result.Error != nil {
+		c.String(http.StatusNotFound, "You don't have any sessions.")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, sessions)
+}
+
+// RevokeSession godoc
+//
+// @Summary		Revoke a session
+// @Description Revoke a session based on an ID
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{array}	string "Revoked session."
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		404	{string} string "Failed to revoke session."
+// @Router		/auth/sessions/{id} [delete]
+// @Security	BearerToken
+func (*AuthRoutes) RevokeSession(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
+	id := c.Param("id")
+
+	session := &database.Session{}
+	if result := database.Db.Where("guid = ?", id).Where("user_id = ?", user.ID).First(&session).Delete(&session); result.Error != nil {
+		c.String(http.StatusNotFound, "Failed to revoke session.")
+		return
+	}
+
+	c.String(http.StatusOK, "Revoked session.")
 }
