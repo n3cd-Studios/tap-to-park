@@ -51,11 +51,20 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 }
 
 func (*StripeRoutes) CancelPurchaseSpot(c *gin.Context) {
-	c.String(http.StatusOK, "Bad job")
+
+	spot_id := c.Param("id")
+	spot := database.Spot{}
+	if result := database.Db.Where("guid = ?", spot_id).First(&spot); result.Error != nil {
+		c.String(http.StatusBadRequest, "That spot ID is invalid")
+		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, os.Getenv("FRONTEND_HOST")+"/"+spot.Guid)
 }
 
 type PurchaseSpotInput struct {
-	Price float64 `json:"price" bindings:"required"`
+	Start time.Time `json:"start" bindings:"required"`
+	End   time.Time `json:"end" bindings:"required"`
 }
 
 // PurchaseSpot godoc
@@ -74,27 +83,33 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		return
 	}
 
-	id := c.Param("id")
+	spot_id := c.Param("id")
+	spot := database.Spot{}
+	if result := database.Db.Where("guid = ?", spot_id).First(&spot); result.Error != nil {
+		c.String(http.StatusBadRequest, "That spot ID is invalid")
+		return
+	}
+
+	const costPerHour = 2
 
 	domain := "http://" + os.Getenv("BACKEND_HOST")
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
-				// Provide the exact Price ID (for example, pr_1234) of the product you want to sell
 				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
 					Currency: stripe.String("usd"),
 					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
 						Name:        stripe.String("Parking"),
-						Description: stripe.String("Parking for " + id),
+						Description: stripe.String("Parking at " + spot.Name),
 					},
-					UnitAmountDecimal: stripe.Float64(input.Price),
+					UnitAmount: stripe.Int64(int64(input.End.Sub(input.Start).Hours() * costPerHour * 100)),
 				},
 				Quantity: stripe.Int64(1),
 			},
 		},
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL: stripe.String(domain + "/api/stripe/" + id + "/success?session_id={CHECKOUT_SESSION_ID}"),
-		CancelURL:  stripe.String(domain + "/api/stripe/" + id + "/cancel"),
+		SuccessURL: stripe.String(domain + "/api/stripe/" + spot.Guid + "/success?session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String(domain + "/api/stripe/" + spot.Guid + "/cancel"),
 	}
 
 	sess, err := session.New(params)

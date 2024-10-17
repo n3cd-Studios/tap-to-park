@@ -2,6 +2,7 @@
     import { get } from "$lib/api";
     import { Formats, pluralize } from "$lib/lang";
     import type { Spot } from "$lib/models";
+    import moment from "moment";
     import { onMount } from "svelte";
     import Button from "../../components/form/Button.svelte";
 
@@ -23,7 +24,8 @@
 
     const checkout = async () => {
         const session = await get<{ url: string }>({ route: `stripe/${data.id}`, method: "POST", body: {
-            price: Number(price.toPrecision(3)) * 100
+            start: moment().toISOString(),
+            end: moment().add(hours, "hours").add(minutes, "minutes").toISOString()
         }});
 
         if (session) window.location.href = session.url;
@@ -38,11 +40,11 @@
                 <p>Claim this space for:</p>
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-row gap-2 items-baseline text-4xl">
-                        <input bind:value={hours} class="bg-white rounded-lg text-black text-center w-1/4 py-5" />
+                        <input bind:value={hours} class="bg-white rounded-lg text-black text-center w-1/4 py-5" max="24"  />
                         <p>{hours == 1 ? "hour" : "hours"}</p>
                     </div>
                     <div class="flex flex-row gap-2 items-baseline text-4xl">
-                        <input bind:value={minutes} class="bg-white rounded-lg text-black text-center w-1/4 py-5" />
+                        <input bind:value={minutes} class="bg-white rounded-lg text-black text-center w-1/4 py-5" max="60" />
                         <p>{minutes == 1 ? "minute" : "minutes"}</p>
                     </div>
                 </div>
