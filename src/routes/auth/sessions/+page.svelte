@@ -26,15 +26,17 @@
     <div class="m-10">
         <Table
             data={sessions}
-            columns={["guid", "device", "expires", "last used", "revoke"]}
+            columns={["guid", "device", "ip", "expires", "last used", "revoke"]}
             loading={false}
             let:guid
             let:device
+            let:ip
             let:expires
             let:lastUsed
         >
             <TableItem>{guid}</TableItem>
             <TableItem>{device}</TableItem>
+            <TableItem>{ip}</TableItem>
             <TableItem>{moment(expires).fromNow()}</TableItem>
             <TableItem>{moment(lastUsed).fromNow()}</TableItem>
             <TableItem><button on:click={() => revokeSession(guid)}><Fa icon={faRemove} /></button></TableItem>

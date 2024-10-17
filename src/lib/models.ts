@@ -21,6 +21,7 @@ export interface User {
 export interface Session {
     guid: string;
 	device: string;
+    ip: string;
 	expires: string;
 	lastUsed: string;
 }

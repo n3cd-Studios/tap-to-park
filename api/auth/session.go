@@ -11,7 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func Generate(user_id uint, host string, device string) (string, error) {
+func Generate(user_id uint, device string, host string) (string, error) {
 
 	token_lifespan, err := strconv.Atoi(os.Getenv("TOKEN_LIFESPAN"))
 
