@@ -2,6 +2,9 @@ package routes
 
 import (
 	"net/http"
+	"os"
+	"tap-to-park/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stripe/stripe-go/v80"
@@ -11,7 +14,40 @@ import (
 type StripeRoutes struct{}
 
 func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
-	c.String(http.StatusOK, "Good job")
+
+	spot_id := c.Param("id")
+	spot := database.Spot{}
+	if result := database.Db.Where("guid = ?", spot_id).First(&spot); result.Error != nil {
+		c.String(http.StatusBadRequest, "That spot ID is invalid")
+		return
+	}
+
+	session_id := c.Query("session_id")
+	if session_id == "" {
+		c.String(http.StatusBadRequest, "Invalid Stripe session")
+		return
+	}
+
+	sess, err := session.Get(session_id, nil)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Invalid Stripe session")
+		return
+	}
+
+	reservation := database.Reservation{
+		Start:               time.Now(),
+		End:                 time.Now(),
+		Email:               sess.CustomerDetails.Email,
+		Price:               float64(sess.AmountTotal),
+		SpotID:              spot.ID,
+		StripeTransactionID: sess.ID,
+	}
+	if result := database.Db.Create(&reservation); result.Error != nil {
+		c.String(http.StatusBadRequest, "Something went wrong (did you resubmit the request?)")
+		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, os.Getenv("FRONTEND_HOST")+"/"+spot.Guid+"/success")
 }
 
 func (*StripeRoutes) CancelPurchaseSpot(c *gin.Context) {
@@ -40,7 +76,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 
 	id := c.Param("id")
 
-	domain := "https://localhost:8080"
+	domain := "http://" + os.Getenv("BACKEND_HOST")
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
@@ -57,8 +93,8 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 			},
 		},
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL: stripe.String(domain + "/stripe/" + id + "/success"),
-		CancelURL:  stripe.String(domain + "/stripe/" + id + "/cancel"),
+		SuccessURL: stripe.String(domain + "/api/stripe/" + id + "/success?session_id={CHECKOUT_SESSION_ID}"),
+		CancelURL:  stripe.String(domain + "/api/stripe/" + id + "/cancel"),
 	}
 
 	sess, err := session.New(params)

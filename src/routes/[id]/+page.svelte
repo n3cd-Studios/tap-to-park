@@ -22,7 +22,7 @@
     })
 
     const checkout = async () => {
-        const session = await get<{ url: string }>({ route: `spots/${data.id}/purchase`, method: "POST", body: {
+        const session = await get<{ url: string }>({ route: `stripe/${data.id}`, method: "POST", body: {
             price: Number(price.toPrecision(3)) * 100
         }});
 
