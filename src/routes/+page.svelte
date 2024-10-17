@@ -50,8 +50,7 @@
         </div>
         <div class="flex flex-row justify-between">
             <div class="flex gap-2">
-                <Button on:click={() => console.log("Find nearest")}
-                    >Find Nearest</Button>
+                <Button on:click={() => { activeSpot = 0; updateSpot()}}>Find Nearest</Button>
                 <Button on:click={toggleHandicapFilter}>
                     <Fa icon={faFilter} class="text-white w-4 h-4 mr-0.5" />
                 </Button>
