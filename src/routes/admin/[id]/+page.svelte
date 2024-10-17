@@ -2,21 +2,12 @@
     import { get } from "$lib/api";
     import { authStore } from "$lib/auth";
     import { Region, type Point } from "$lib/geometry";
-    import { DayOfWeek, daysOfWeek, Formats } from "$lib/lang";
+    import { daysOfWeek, Formats } from "$lib/lang";
     import type { Spot } from "$lib/models";
     import { onMount } from "svelte";
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
     import { toaster } from "../../../components/toaster/toaster";
-
-    interface ScheduleItem {
-        day: DayOfWeek;
-        times: {
-            time: string;
-            price: number;
-            point: Point;
-        }[];
-    }
 
     // external
     export let data;
@@ -26,7 +17,7 @@
     let region = new Region();
     let dragging = false;
     let times = Array(24).fill(0).map((_, num) => `${num % 12}:00`);
-    let schedule: ScheduleItem[] = daysOfWeek.map((day, x) => ({ day, times: times.map((time, y) => ({ point: [x, y], time, price: 0 })) }));
+    let schedule: number[][] = daysOfWeek.map((_) => Array(24).fill(0));
 
     onMount(async () => {
         const spot = await get<Spot>({
@@ -43,43 +34,27 @@
         }
 
         const pricing = spot.table;
-        schedule.forEach(({ day, times }, i) => {
-            const prices = pricing[day];
-            if (prices) {
-                times.forEach((_, j) => {
-                    schedule[i].times[j].price = prices[j];
-                });
-            }
-        })
-
+        schedule.forEach((inner, x) => {
+            inner.forEach((_, y) => schedule[x][y] = pricing[daysOfWeek[x]][y]);
+        });
     });
 
     // TODO: this is odd, maybe fix??
-    const updateItems = (val: number) =>
-        schedule.forEach((item, x) =>
-            item.times.forEach((time, y) =>
-                region.in(time.point)
-                    ? (schedule[x].times[y].price = val)
-                    : undefined,
-            ),
-        );
-
-    const namedItem = ([x, y]: Point) => {
-        let item = schedule[x];
-        let time = item.times[y];
-        return `${item.day} at ${time.time}`;
-    };
+    const updateItems = (val: number) => schedule.forEach((inner, x) => inner.forEach((_, y) => region.in([x, y]) ? schedule[x][y] = val : undefined));
+    const exportSchedule = () => schedule.reduce((prev: any, item, x) => { prev[daysOfWeek[x]] = item; return prev; }, {});
+    const namedItem = ([x, y]: Point) => `${daysOfWeek[x]} at ${times[y]}`;
 
     const handleSave = async () => {
         updateItems(Number(price));
         await get<string>({
             route: `spots/${data.id}`,
             headers: { Authentication: `Bearer ${$authStore.token}` },
-            body: schedule.reduce((prev: any, item) => {
-                prev[item.day] = item.times.map(time => time.price);
-                return prev;
-            }, {}),
+            body: exportSchedule(),
             method: "PUT",
+        });
+        toaster.push({
+            type: "success",
+            message: "Updated pricing schedule.",
         });
     };
 </script>
@@ -110,26 +85,26 @@
                 <div>{time}</div>
             {/each}
         </div>
-        {#each schedule as { day, times }}
+        {#each daysOfWeek as day, x }
             <div class="grid grid-rows-12">
                 <h1 class="border-b-2 capitalize">{day}</h1>
-                {#each times as { point, price }}
+                {#each times as _, y }
                     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
                     <button
                         on:mousedown={() => {
                             dragging = true;
-                            region.lower = point;
+                            region.lower = [x, y];
                         }}
                         on:mouseover={() => {
-                            if (dragging) region.upper = point;
+                            if (dragging) region.upper = [x, y];
                         }}
                         on:click={() => {
-                            region.lower = point;
-                            region.upper = point;
+                            region.lower = [x, y];
+                            region.upper = [x, y];
                         }}
                         on:mouseup={() => (dragging = false)}
-                        class={`bg-${region.in(point) ? "green-500" : "white"} hover:bg-gray-400`}
-                        >{Formats.USDollar.format(price)}</button
+                        class={`bg-${region.in([x, y]) ? "green-500" : "white"} hover:bg-gray-400`}
+                        >{Formats.USDollar.format(schedule[x][y])}</button
                     >
                 {/each}
             </div>
