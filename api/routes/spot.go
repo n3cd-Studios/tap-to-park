@@ -12,6 +12,11 @@ import (
 
 type SpotRoutes struct{}
 
+type GetSpotsNearOutput struct {
+	Guid   string               `json:"guid"`
+	Coords database.Coordinates `json:"coords"`
+}
+
 // GetSpotsNear godoc
 //
 // @Summary		Get spots near
@@ -44,12 +49,12 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 		return
 	}
 
-	point := database.Coordinates{Longitude: lng, Latitude: lat}
-	spots := []database.Spot{}
-	query := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10)
+	spots := []GetSpotsNearOutput{}
+	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lng, lat}, WithoutParentheses: true}}).Limit(10)
 	if c.Query("handicap") == "true" {
 		query = query.Where("handicap = ?", true)
 	}
+
 	result := query.Find(&spots)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "Could not load the list of spots.")

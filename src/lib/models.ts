@@ -7,8 +7,8 @@ export interface Coords {
 
 export interface Spot {
     guid: string;
-    name: string;
     coords: Coords;
+    name: string;
     price?: number;
     reservation?: Reservation;
     table: Pricing;

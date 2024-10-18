@@ -55,7 +55,6 @@
                 <p>This spot will be free in:</p>
                 <div class="flex flex-row items-baseline">
                     <p class="text-7xl font-bold">{moment(reservation.end).fromNow(true)}</p>
-                    <!-- <p>/hour</p> -->
                 </div>
             </div>
         </div>
