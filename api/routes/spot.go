@@ -61,7 +61,8 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 type GetSpotOutput struct {
 	database.Spot
-	Price float64 `json:"price"`
+	Price       float64               `json:"price"`
+	Reservation *database.Reservation `json:"reservation"`
 }
 
 // GetSpotsNear godoc
@@ -80,17 +81,15 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 	id := c.Param("id")
 
 	spot := database.Spot{}
-	result := database.Db.Where("guid = ?", id).First(&spot)
-	err := result.Error
-
-	if err != nil {
+	if result := database.Db.Where("guid = ?", id).First(&spot); result.Error != nil {
 		c.IndentedJSON(http.StatusNotFound, "Spot was not found")
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, GetSpotOutput{
-		Spot:  spot,
-		Price: spot.GetPrice(),
+		Spot:        spot,
+		Price:       spot.GetPrice(),
+		Reservation: spot.GetReservation(),
 	})
 }
 

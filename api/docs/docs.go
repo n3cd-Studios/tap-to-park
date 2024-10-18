@@ -723,7 +723,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid body.",
+                        "description": "You can't purchase a spot for this amount of time.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "409": {
+                        "description": "This spot has already been reserved.",
                         "schema": {
                             "type": "string"
                         }
@@ -817,6 +823,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Something went wrong (did you resubmit the request?)",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Malformed metadata.",
                         "schema": {
                             "type": "string"
                         }

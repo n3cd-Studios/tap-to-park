@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"tap-to-park/database"
 	"time"
 
@@ -26,6 +27,7 @@ type StripeRoutes struct{}
 // @Failure		400	{string} string "That spot ID is invalid."
 // @Failure		400	{string} string "Invalid Stripe session."
 // @Failure		400	{string} string "Something went wrong (did you resubmit the request?)"
+// @Failure		500	{string} string "Malformed metadata."
 // @Router		/stripe/{id}/success [get]
 func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 
@@ -33,6 +35,11 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 	spot := database.Spot{}
 	if result := database.Db.Where("guid = ?", spot_id).First(&spot); result.Error != nil {
 		c.String(http.StatusBadRequest, "That spot ID is invalid.")
+		return
+	}
+
+	if spot.GetReservation() != nil {
+		c.String(http.StatusConflict, "This spot has already been reserved.")
 		return
 	}
 
@@ -48,9 +55,16 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 		return
 	}
 
+	hours, err := strconv.ParseFloat(sess.Metadata["hours"], 64)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Malformed metadata.")
+		return
+	}
+
+	now := time.Now()
 	reservation := database.Reservation{
-		Start:               time.Now(),
-		End:                 time.Now(),
+		Start:               now,
+		End:                 now.Add(time.Hour * time.Duration(hours)),
 		Email:               sess.CustomerDetails.Email,
 		Price:               float64(sess.AmountTotal),
 		SpotID:              spot.ID,
@@ -104,6 +118,8 @@ type PurchaseSpotInput struct {
 // @Success		200	{string} string "The Stripe checkout URL"
 // @Failure		400	{string} string "That spot ID is invalid."
 // @Failure		400	{string} string "Invalid body."
+// @Failure		400 {string} string "You can't purchase a spot for this amount of time."
+// @Failure		409 {string} string "This spot has already been reserved."
 // @Failure		500	{string} string "Failed to create stripe session."
 // @Router		/stripe/{id} [post]
 func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
@@ -121,6 +137,17 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		return
 	}
 
+	if spot.GetReservation() != nil {
+		c.String(http.StatusConflict, "This spot has already been reserved.")
+		return
+	}
+
+	hours := input.End.Sub(input.Start).Hours()
+	if hours < 0 {
+		c.String(http.StatusBadRequest, "You can't purchase a spot for this amount of time.")
+		return
+	}
+
 	domain := "http://" + os.Getenv("BACKEND_HOST")
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -131,7 +158,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 						Name:        stripe.String("Parking"),
 						Description: stripe.String("Parking at " + spot.Name),
 					},
-					UnitAmount: stripe.Int64(int64(input.End.Sub(input.Start).Hours() * spot.GetPrice() * 100)),
+					UnitAmount: stripe.Int64(int64(hours * spot.GetPrice() * 100)),
 				},
 				Quantity: stripe.Int64(1),
 			},
@@ -139,6 +166,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
 		SuccessURL: stripe.String(domain + "/api/stripe/" + spot.Guid + "/success?session_id={CHECKOUT_SESSION_ID}"),
 		CancelURL:  stripe.String(domain + "/api/stripe/" + spot.Guid + "/cancel"),
+		Metadata:   map[string]string{"hours": strconv.FormatFloat(hours, 'E', -1, 64)},
 	}
 
 	sess, err := session.New(params)
