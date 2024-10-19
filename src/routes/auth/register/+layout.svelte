@@ -1,10 +1,9 @@
 <script>
 
     import AuthRoute from "../../../components/auth/AuthRoute.svelte";
-    import { authStore } from "$lib/auth";
 
 </script>
 
-<AuthRoute pass={!$authStore.token} redirect="/register" signOut={false}>
+<AuthRoute authorized={false} signOut={false} redirect="/admin">
     <slot />
 </AuthRoute>
