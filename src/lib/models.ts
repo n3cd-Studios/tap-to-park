@@ -7,9 +7,10 @@ export interface Coords {
 
 export interface Spot {
     guid: string;
-    name: string;
     coords: Coords;
+    name: string;
     price?: number;
+    reservation?: Reservation;
     table: Pricing;
 }
 
@@ -37,6 +38,14 @@ export interface Invite {
     organization: number,
     createdBy: number,
     usedBy: number
+}
+
+export interface Reservation {
+	guid: string;
+	start: string;
+	end: string;
+	price: number;
+	email: string;
 }
 
 export type Pricing = {

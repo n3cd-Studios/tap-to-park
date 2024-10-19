@@ -12,6 +12,11 @@ import (
 
 type SpotRoutes struct{}
 
+type GetSpotsNearOutput struct {
+	Guid   string               `json:"guid"`
+	Coords database.Coordinates `json:"coords"`
+}
+
 // GetSpotsNear godoc
 //
 // @Summary		Get spots near
@@ -44,12 +49,12 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 		return
 	}
 
-	point := database.Coordinates{Longitude: lng, Latitude: lat}
-	spots := []database.Spot{}
-	query := database.Db.Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{point.Latitude, point.Longitude}, WithoutParentheses: true}}).Limit(10)
+	spots := []GetSpotsNearOutput{}
+	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lng, lat}, WithoutParentheses: true}}).Limit(10)
 	if c.Query("handicap") == "true" {
 		query = query.Where("handicap = ?", true)
 	}
+
 	result := query.Find(&spots)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "Could not load the list of spots.")
@@ -61,7 +66,8 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 type GetSpotOutput struct {
 	database.Spot
-	Price float64 `json:"price"`
+	Price       float64               `json:"price"`
+	Reservation *database.Reservation `json:"reservation"`
 }
 
 // GetSpotsNear godoc
@@ -80,17 +86,15 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 	id := c.Param("id")
 
 	spot := database.Spot{}
-	result := database.Db.Where("guid = ?", id).First(&spot)
-	err := result.Error
-
-	if err != nil {
+	if result := database.Db.Where("guid = ?", id).First(&spot); result.Error != nil {
 		c.IndentedJSON(http.StatusNotFound, "Spot was not found")
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, GetSpotOutput{
-		Spot:  spot,
-		Price: spot.GetPrice(),
+		Spot:        spot,
+		Price:       spot.GetPrice(),
+		Reservation: spot.GetReservation(),
 	})
 }
 

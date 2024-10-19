@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getWithDefault } from "$lib/api";
+    import { get, getWithDefault } from "$lib/api";
     import type { Marker } from "leaflet";
     import { onMount } from "svelte";
     import Button from "../components/form/Button.svelte";
@@ -7,6 +7,8 @@
     import type { Coords, Spot } from "../lib/models";
     import Fa from 'svelte-fa';
     import { faFilter } from '@fortawesome/free-solid-svg-icons';
+    import { Formats } from "$lib/lang";
+    import moment from "moment";
 
     let map: L.Map;
     let spots: Marker<any>[];
@@ -20,19 +22,25 @@
         const { longitude, latitude } = await promisifyGeolocation();
         map.setView([latitude, longitude], 13);
 
-        const nearbySpots = await getWithDefault<Spot[]>({ route: "spots/near", params: { lng: longitude.toString(), lat: latitude.toString() }}, []);
-        spots = nearbySpots.map(({ guid, name, coords }) =>
+        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lng: longitude.toString(), lat: latitude.toString() }}, []);
+        spots = nearbySpots.map(({ guid, coords }) =>
             leaflet
                 .marker([coords.longitude, coords.latitude])
-                .bindPopup(`<a href="/${guid}">${name}</a>`)
+                .bindPopup(`Loading`)
+                .on("popupopen", async ({ popup }) => {
+                    const spot = await get<Spot>({ route: `spots/${guid}` })
+                    if (spot) {
+                        if (spot.reservation) popup.setContent(
+                           `<p>This spot is <span class="text-red-800">reserved</span>. It will become free in <span class="font-bold">${moment(spot.reservation.end).fromNow(true)}</span>.</p>`)
+                        else popup.setContent(`
+                            <p>This spot is <span class="text-green-800">available</span>, it costs <span class="font-bold">${Formats.USDollar.format(spot.price ?? 0)}</span></p>
+                            <p>You can purchase this spot <a href="/${guid}">here</a>.</p>
+                        `)
+                    } else popup.setContent("Failed to load.");
+                })
                 .addTo(map),
         );
     });
-
-    // TODO: logic to handle filter button
-    const toggleHandicapFilter = async () => {
-        handicapFilter = !handicapFilter;
-    };
 
     let activeSpot = 0;
     const updateSpot = () => {
@@ -51,7 +59,7 @@
         <div class="flex flex-row justify-between">
             <div class="flex gap-2">
                 <Button on:click={() => { activeSpot = 0; updateSpot()}}>Find Nearest</Button>
-                <Button on:click={toggleHandicapFilter}>
+                <Button on:click={() => handicapFilter = !handicapFilter}>
                     <Fa icon={faFilter} class="text-white w-4 h-4 mr-0.5" />
                 </Button>
             </div>
