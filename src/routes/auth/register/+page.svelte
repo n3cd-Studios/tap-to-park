@@ -11,7 +11,7 @@
 
     const handleRegister = async () => {
     await register(email, password, invite)
-        .then(() => goto("/login"))
+        .then(() => goto("/auth/login"))
         .catch(() => toaster.push({ type: "error", message: "Failed to register." }, 5000));
     };
 
@@ -21,7 +21,7 @@
     <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleRegister}>
         <Input bind:value={email} name="Email"/>
         <Input bind:value={password} name="Password" type="password"/>
-        <Input bind:value={invite} name="Invite Code" placeholder="Registration currently restricted for users without an invite"/>
+        <Input bind:value={invite} name="Invite Code" placeholder="Invite only for now:)"/>
         <div class="flex flex-row justify-end">
             <Button type="submit">Register</Button>
         </div>
