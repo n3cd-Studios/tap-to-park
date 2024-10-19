@@ -9,50 +9,22 @@ import (
 
 type ReservationRoutes struct{}
 
-// GetReservationByID godoc
-// @Summary      Get a reservation by an ID
-// @Produce      json
-// @Param        id    path     string  true  "ID of the reservation"
-// @Success      200  {object}  database.Spot
-// @Failure      404  {object}  database.Error
-// @Router       /reservations/{id} [get]
-func (*ReservationRoutes) GetReservationByID(c *gin.Context) {
+// GetReservation godoc
+//
+// @Summary		Create an invite
+// @Description	Create an invite for User's organization based on their Bearer token
+// @Tags		reservation
+// @Accept		json
+// @Produce		json
+// @Success		200	{object} database.Reservation
+// @Failure		404 {string} string "That reservation does not exist."
+// @Router		/reservation/{id} [get]
+func (*ReservationRoutes) GetReservation(c *gin.Context) {
 
 	id := c.Param("id")
-
-	var reservation database.Reservation
-	result := database.Db.Where("id = ?", id).First(&reservation)
-	err := result.Error
-
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-		return
-	}
-
-	c.IndentedJSON(http.StatusAccepted, reservation)
-}
-
-type ReservationInput struct {
-	SpotID uint `json:"spotID"`
-}
-
-// CreateReservation godoc
-// @Summary      Creates a reservation using a spotID and specified time
-// @Produce      json
-// @Success      200  {object}  ReservationInput
-// @Failure      404  {object}  database.Error
-// @Router       /reservations [post]
-func (*ReservationRoutes) CreateReservation(c *gin.Context) {
-	var input ReservationInput
-	if err := c.BindJSON(&input); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-		return
-	}
-
-	reservation := database.Reservation{SpotID: input.SpotID}
-	result := database.Db.Create(&reservation)
-	if err := result.Error; err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	reservation := database.Reservation{}
+	if result := database.Db.Where("id = ?", id).First(&reservation); result.Error != nil {
+		c.IndentedJSON(http.StatusNotFound, "That reservation does not exist.")
 		return
 	}
 

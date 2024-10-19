@@ -10,11 +10,6 @@ definitions:
     - latitude
     - longitude
     type: object
-  database.Error:
-    properties:
-      message:
-        type: string
-    type: object
   database.Invite:
     properties:
       code:
@@ -41,17 +36,61 @@ definitions:
           $ref: '#/definitions/database.Spot'
         type: array
     type: object
+  database.Pricing:
+    properties:
+      friday:
+        items:
+          type: number
+        type: array
+      monday:
+        items:
+          type: number
+        type: array
+      saturday:
+        items:
+          type: number
+        type: array
+      sunday:
+        items:
+          type: number
+        type: array
+      thursday:
+        items:
+          type: number
+        type: array
+      tuesday:
+        items:
+          type: number
+        type: array
+      wednesday:
+        items:
+          type: number
+        type: array
+    type: object
   database.Reservation:
     properties:
-      costPerHour:
-        type: integer
+      email:
+        type: string
       end:
         type: string
       guid:
         type: string
-      id:
-        type: integer
+      price:
+        type: number
       start:
+        type: string
+    type: object
+  database.Session:
+    properties:
+      device:
+        type: string
+      expires:
+        type: string
+      guid:
+        type: string
+      ip:
+        type: string
+      lastUsed:
         type: string
     type: object
   database.Spot:
@@ -70,16 +109,24 @@ definitions:
         items:
           $ref: '#/definitions/database.Reservation'
         type: array
+      table:
+        $ref: '#/definitions/database.Pricing'
+    type: object
+  database.User:
+    properties:
+      email:
+        type: string
+      guid:
+        type: string
+      sessions:
+        items:
+          $ref: '#/definitions/database.Session'
+        type: array
     type: object
   routes.JWTResponse:
     properties:
       token:
         type: string
-    type: object
-  routes.ReservationInput:
-    properties:
-      spotID:
-        type: integer
     type: object
 externalDocs:
   description: OpenAPI
@@ -95,8 +142,76 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
-  /admin/organization:
+  /auth/info:
+    post:
+      consumes:
+      - application/json
+      description: Get a user's info based on a Bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get user info
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user, this will generate a Bearer token to be used with
+        Authenticated requests.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Invalid body recieved.
+          schema:
+            type: string
+      summary: Login a user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a user using an organization's invite code, this will
+        generate a Bearer token to be used with Authenticated requests.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.JWTResponse'
+        "400":
+          description: Invalid body recieved.
+          schema:
+            type: string
+        "500":
+          description: Failed to update invite.
+          schema:
+            type: string
+      summary: Register a user
+      tags:
+      - auth
+  /auth/sessions:
     get:
+      consumes:
+      - application/json
+      description: Get a user's sessions based on a Bearer token
       produces:
       - application/json
       responses:
@@ -105,15 +220,98 @@ paths:
           schema:
             items:
               items:
-                $ref: '#/definitions/database.Organization'
+                $ref: '#/definitions/database.Session'
               type: array
             type: array
-        "400":
-          description: Unauthorized
+        "401":
+          description: Unauthorized.
           schema:
             type: string
-      summary: Get all of the organizations associated with an admin
+        "404":
+          description: You don't have any sessions.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get user's sessions
+      tags:
+      - auth
+  /auth/sessions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke a session based on an ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Revoked session.
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: Failed to revoke session.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Revoke a session
+      tags:
+      - auth
+  /organization/invites:
+    get:
+      consumes:
+      - application/json
+      description: Get the invites associated with a User's organization based on
+        their Bearer token
+      parameters:
+      - description: The size of a page
+        in: query
+        name: size
+        type: number
+      - description: The page
+        in: query
+        name: page
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Invite'
+              type: array
+            type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: No invites were found for your organization.
+          schema:
+            type: string
+        "500":
+          description: Couldn't count all of the invites in the organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get the invites for your organization
+      tags:
+      - organization
+      - invite
     post:
+      consumes:
+      - application/json
+      description: Create an invite for User's organization based on their Bearer
+        token
       produces:
       - application/json
       responses:
@@ -122,22 +320,69 @@ paths:
           schema:
             $ref: '#/definitions/database.Invite'
         "401":
-          description: Unauthorized
+          description: Unauthorized.
           schema:
             type: string
         "404":
-          description: User or Organization not found
+          description: Failed to find your organization.
           schema:
             type: string
         "500":
-          description: Failed to create invite
+          description: Failed to create invite.
           schema:
             type: string
       security:
-      - BearerAuth: []
-      summary: Create an invite to allow new user to join admin's organization
-  /admin/organization/data:
+      - BearerToken: []
+      summary: Create an invite
+      tags:
+      - organization
+      - invite
+  /organization/me:
     get:
+      consumes:
+      - application/json
+      description: Get the organization associated with a User based on their Bearer
+        token
+      parameters:
+      - description: Pull a deep copy of all of the organization's information
+        in: query
+        name: deep
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Organization'
+        "400":
+          description: You don't seem to have an organization.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get your organization
+      tags:
+      - organization
+  /organization/spots:
+    get:
+      consumes:
+      - application/json
+      description: Get the spots associated with a User's organization based on their
+        Bearer token
+      parameters:
+      - description: The size of a page
+        in: query
+        name: size
+        type: number
+      - description: The page
+        in: query
+        name: page
+        type: number
       produces:
       - application/json
       responses:
@@ -149,71 +394,106 @@ paths:
                 $ref: '#/definitions/database.Spot'
               type: array
             type: array
-        "400":
-          description: Unauthorized
+        "401":
+          description: Unauthorized.
           schema:
             type: string
-      summary: Get all of the spots data associated with an organization
-  /auth/info:
+        "500":
+          description: Couldn't count all of the spots in the organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get the spots for your organization
+      tags:
+      - organization
+      - spot
+  /reservation/{id}:
     get:
+      consumes:
+      - application/json
+      description: Create an invite for User's organization based on their Bearer
+        token
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.JWTResponse'
-        "400":
-          description: Failed to use token to retrieve user information
-          schema:
-            type: string
-      summary: Gets the info of the current user
-  /auth/login:
-    post:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.JWTResponse'
-        "400":
-          description: Failed to log in
-          schema:
-            type: string
-      summary: Logs a User in using a username and a password
-  /auth/register:
-    post:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.JWTResponse'
-        "400":
-          description: Failed to register user
-          schema:
-            type: string
-      summary: Registers a User in using a username and a password
-  /reservations:
-    post:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/routes.ReservationInput'
+            $ref: '#/definitions/database.Reservation'
         "404":
-          description: Not Found
+          description: That reservation does not exist.
           schema:
-            $ref: '#/definitions/database.Error'
-      summary: Creates a reservation using a spotID and specified time
-  /reservations/{id}:
-    get:
+            type: string
+      summary: Create an invite
+      tags:
+      - reservation
+  /spots:
+    post:
+      consumes:
+      - application/json
+      description: Create a spot at a longitude and latitude
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Spot'
+        "400":
+          description: A spot with this name already exists for the organization.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "409":
+          description: A spot with this name already exists for the organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Create a spot
+      tags:
+      - spot
+  /spots/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a spot by its ID
       parameters:
-      - description: ID of the reservation
+      - description: The ID of the spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spot successfully deleted.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: That spot does not exist.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Delete a spot
+      tags:
+      - spot
+    get:
+      consumes:
+      - application/json
+      description: Get a spot by its ID
+      parameters:
+      - description: The ID of the spot
         in: path
         name: id
         required: true
@@ -226,74 +506,54 @@ paths:
           schema:
             $ref: '#/definitions/database.Spot'
         "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/database.Error'
-      summary: Get a reservation by an ID
-  /spots/create:
-    post:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/database.Spot'
-        "400":
-          description: Invalid body
-          schema:
-            type: string
-        "401":
-          description: Invalid token
-          schema:
-            type: string
-      summary: Create a spot at a longitude and latitude
-  /spots/delete:
-    delete:
-      responses:
-        "200":
-          description: Successfully deleted spot
-          schema:
-            type: string
-        "400":
-          description: Invalid body
-          schema:
-            type: string
-        "401":
-          description: Invalid token
-          schema:
-            type: string
-      summary: Delete a spot by it's ID
-  /spots/info:
-    get:
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/database.Spot'
-        "404":
           description: Spot was not found
           schema:
             type: string
-      summary: Get the spots near a longitude and latitude
+      summary: Get a spot
+      tags:
+      - spot
+    put:
+      consumes:
+      - application/json
+      description: Update a spot's information such as pricing table, name or longitude
+        and latitude
+      parameters:
+      - description: The ID of the spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated spot.
+          schema:
+            type: string
+        "400":
+          description: Invalid body.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: That spot does not exist.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Update a spot
+      tags:
+      - spot
   /spots/near:
     get:
+      consumes:
+      - application/json
+      description: Get a spot near a longitude and latitude
       parameters:
-      - description: latitude to search by
-        in: query
-        name: lat
-        required: true
-        type: number
-      - description: longitude to search by
-        in: query
-        name: lng
-        required: true
-        type: number
-      - description: filter spots by handicap accessibility
+      - description: To filter spots by handicap spots
         in: query
         name: handicap
         type: boolean
@@ -304,10 +564,123 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/database.Spot'
-        "404":
-          description: Could not load the list of spots
+        "400":
+          description: Longitude must be a number.
           schema:
             type: string
-      summary: Get the spots near a longitude and latitude, with optional handicap
-        filter
+        "404":
+          description: Could not load the list of spots.
+          schema:
+            type: string
+      summary: Get spots near
+      tags:
+      - spot
+  /stripe/{id}:
+    post:
+      consumes:
+      - application/json
+      description: Create a Stripe checkout session and forward the user to Stripe
+      parameters:
+      - description: The ID of the Spot
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: The Session ID passed from Stripe
+        in: query
+        name: session_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The Stripe checkout URL
+          schema:
+            type: string
+        "400":
+          description: You can't purchase a spot for this amount of time.
+          schema:
+            type: string
+        "409":
+          description: This spot has already been reserved.
+          schema:
+            type: string
+        "500":
+          description: Failed to create stripe session.
+          schema:
+            type: string
+      summary: Create a checkout session
+      tags:
+      - spot
+      - reservation
+      - stripe
+  /stripe/{id}/cancel:
+    get:
+      consumes:
+      - application/json
+      description: This is just a dummy route, it redirects to the frontend
+      parameters:
+      - description: The ID of the Spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: This will redirect you to a page on the frontend.
+          schema:
+            type: string
+        "400":
+          description: That spot ID is invalid.
+          schema:
+            type: string
+      summary: Cancel callback for Stripe
+      tags:
+      - spot
+      - reservation
+      - stripe
+  /stripe/{id}/success:
+    get:
+      consumes:
+      - application/json
+      description: Create a Reservation from a Stripe Session ID
+      parameters:
+      - description: The ID of the Spot
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: The Session ID passed from Stripe
+        in: query
+        name: session_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: This will redirect you to a page on the frontend.
+          schema:
+            type: string
+        "400":
+          description: Something went wrong (did you resubmit the request?)
+          schema:
+            type: string
+        "500":
+          description: Malformed metadata.
+          schema:
+            type: string
+      summary: Success callback for Stripe
+      tags:
+      - spot
+      - reservation
+      - stripe
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

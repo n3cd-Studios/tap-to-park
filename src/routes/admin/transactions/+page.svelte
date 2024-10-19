@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import Table from "../../../components/Table.svelte";
+    import Table from "../../../components/table/Table.svelte";
 
     let loading = true;
     let error: string;
@@ -31,7 +31,6 @@
         <p class="text-center"> X transactions found</p>
         <Table
             columns={['Date', 'Description', 'Amount', 'Type']}
-            {error}
             {loading}
         />
     {/if}

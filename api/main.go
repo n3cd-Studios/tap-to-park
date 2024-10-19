@@ -20,15 +20,19 @@ import (
 // @version         1.0
 // @description     This is the API for interacting with internal Tap-To-Park services
 // @termsOfService  http://n3cd.io/terms/
-
+//
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-
+//
 // @host      localhost:8080
 // @BasePath  /api/
-
+//
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 
 	// Load .env file
@@ -45,6 +49,7 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins: true,
+		AllowMethods:    []string{"PUT", "POST", "OPTIONS", "GET", "DELETE"},
 		AllowHeaders:    []string{"Authentication"},
 	}))
 
@@ -55,8 +60,7 @@ func main() {
 	reservations := api.Group("/reservations")
 	{
 		routing := routes.ReservationRoutes{}
-		reservations.POST("/", routing.CreateReservation)
-		reservations.GET("/:id", routing.GetReservationByID)
+		reservations.GET("/:id", routing.GetReservation)
 	}
 
 	// Spot routes
@@ -64,10 +68,19 @@ func main() {
 	{
 		routing := routes.SpotRoutes{}
 		spots.GET("/near", routing.GetSpotsNear)
-		spots.POST("/create", routes.AuthMiddleware(), routing.CreateSpot)
-		spots.DELETE("/delete", routes.AuthMiddleware(), routing.DeleteSpot)
-		spots.GET("/:id/info", routing.GetSpotByID)
-		spots.POST("/:id/purchase", routing.PurchaseSpot)
+		spots.GET("/:id", routing.GetSpot)
+		spots.POST("", routes.AuthMiddleware(), routing.CreateSpot)
+		spots.PUT("/:id", routes.AuthMiddleware(), routing.UpdateSpot)
+		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
+	}
+
+	// Stripe routes
+	stripe := api.Group("/stripe")
+	{
+		routing := routes.StripeRoutes{}
+		stripe.POST("/:id", routing.PurchaseSpot)
+		stripe.GET("/:id/success", routing.SuccessfulPurchaseSpot)
+		stripe.GET("/:id/cancel", routing.CancelPurchaseSpot)
 	}
 
 	// Auth routes
@@ -76,7 +89,9 @@ func main() {
 		routing := routes.AuthRoutes{}
 		auth.POST("/login", routing.Login)
 		auth.POST("/register", routing.Register)
-		auth.GET("/info", routes.AuthMiddleware(), routing.Info)
+		auth.GET("/info", routes.AuthMiddleware(), routing.GetInfo)
+		auth.GET("/sessions", routes.AuthMiddleware(), routing.GetSessions)
+		auth.DELETE("/sessions/:id", routes.AuthMiddleware(), routing.RevokeSession)
 	}
 
 	// Organization routes
@@ -86,7 +101,7 @@ func main() {
 		organization.GET("/me", routing.GetOrganization)
 		organization.GET("/spots", routing.GetSpots)
 		organization.GET("/invites", routing.GetInvites)
-		organization.POST("/code", routing.CreateInvite)
+		organization.POST("/invites", routing.CreateInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

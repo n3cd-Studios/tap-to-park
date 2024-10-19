@@ -11,14 +11,30 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token := auth.TokenExtract(c.Request.Header.Get("Authentication"))
-		guid, err := auth.TokenExtractID(token)
+		session_id, err := auth.Get(c.Request.Header.Get("Authentication"))
 		if err != nil {
-			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.String(http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
 		}
-		c.Set("guid", guid)
+
+		session := database.Session{}
+		if result := database.Db.Where("guid = ?", session_id).Where("expires > ?", time.Now()).First(&session); result.Error != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized.")
+			c.Abort()
+			return
+		}
+
+		session.LastUsed = time.Now()
+		database.Db.Updates(&session)
+
+		user := database.User{}
+		if result := database.Db.Where("id = ?", session.UserID).First(&user); result.Error != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized.")
+			c.Abort()
+			return
+		}
+		c.Set("user", user)
 		c.Next()
 	}
 }
@@ -35,11 +51,16 @@ type LoginInput struct {
 }
 
 // Login godoc
-// @Summary      Logs a User in using a username and a password
-// @Produce      json
-// @Success      200  {object}  JWTResponse
-// @Failure      400  {string}  "Failed to log in"
-// @Router       /auth/login [post]
+//
+// @Summary		Login a user
+// @Description Login a user, this will generate a Bearer token to be used with Authenticated requests.
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	JWTResponse
+// @Failure		400	{string}	string	"Failed to login."
+// @Failure		400	{string}	string	"Invalid body recieved."
+// @Router		/auth/login [post]
 func (*AuthRoutes) Login(c *gin.Context) {
 
 	var input LoginInput
@@ -61,7 +82,8 @@ func (*AuthRoutes) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.TokenGenerate(user.Guid)
+	request := c.Request
+	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to login.")
 		return
@@ -77,11 +99,17 @@ type RegisterInput struct {
 }
 
 // Register godoc
-// @Summary      Registers a User using a username, password, and an optional invite code
-// @Produce      json
-// @Success      200  {object}  JWTResponse
-// @Failure      400  {string}  "Failed to register user"
-// @Router       /auth/register [post]
+//
+// @Summary		Register a user
+// @Description Register a user using an organization's invite code, this will generate a Bearer token to be used with Authenticated requests.
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	JWTResponse
+// @Failure		400	{string}	string	"Failed to register."
+// @Failure		400	{string}	string	"Invalid body recieved."
+// @Failure		500	{string}	string	"Failed to update invite."
+// @Router		/auth/register [post]
 func (*AuthRoutes) Register(c *gin.Context) {
 
 	// TODO: CHANGE ALL ERRORS TO GENERIC ERROR FOR SECURITY
@@ -90,32 +118,6 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	if err := c.BindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "Invalid body recieved.")
 		return
-	}
-
-	var existingUser database.User
-	if result := database.Db.Where("email = ?", input.Email).First(&existingUser); result.Error == nil {
-		c.String(http.StatusBadRequest, "Email already in use.")
-		return
-	}
-
-	var organizationID uint
-	if input.InviteCode != "" {
-		// Validate invite code
-		var invite database.Invite
-		if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
-			c.String(http.StatusBadRequest, "Invalid invite code.")
-			return
-		}
-
-		if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
-			c.String(http.StatusBadRequest, "Invalid or expired invite code.")
-			return
-		}
-		organizationID = invite.OrganizationID
-	} else {
-		// No invite code
-		c.String(http.StatusBadRequest, "Currently, you need an invite to register.")
-		organizationID = 0
 	}
 
 	hash, err := auth.GenerateFromPassword(input.Password, &auth.Params{
@@ -127,51 +129,108 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to create user.")
+		c.String(http.StatusBadRequest, "Failed to register.")
 		return
 	}
+
+	var invite database.Invite
+	var organizationID uint
+	if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
+		c.String(http.StatusBadRequest, "Failed to register.")
+		return
+	}
+
+	if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
+		c.String(http.StatusBadRequest, "Failed to register.")
+		return
+	}
+
+	organizationID = invite.OrganizationID
 
 	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: organizationID}
 
 	if err := database.Db.Create(&user).Error; err != nil {
+		c.String(http.StatusBadRequest, "Failed to register.")
+		return
+	}
+
+	request := c.Request
+	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
+	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
 		return
 	}
 
-	// mark inv code used
-	if input.InviteCode != "" {
-		var invite database.Invite
-		invite.UsedByID = user.ID
-		if err := database.Db.Save(&invite).Error; err != nil {
-			c.String(http.StatusInternalServerError, "Failed to update invite.")
-			return
-		}
-	}
-
-	token, err := auth.TokenGenerate(user.Guid)
-	if err != nil {
-		c.String(http.StatusBadRequest, "Failed to create user.")
+	invite.UsedByID = user.ID
+	if err := database.Db.Save(&invite).Error; err != nil {
+		c.String(http.StatusInternalServerError, "Failed to update invite.")
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
 }
 
-// Info godoc
-// @Summary      Gets the info of the current user
-// @Produce      json
-// @Success      200  {object}  JWTResponse
-// @Failure      400  {string}  "Failed to use token to retrieve user information"
-// @Router       /auth/info [get]
-func (*AuthRoutes) Info(c *gin.Context) {
+// GetInfo godoc
+//
+// @Summary		Get user info
+// @Description Get a user's info based on a Bearer token
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{object}	database.User
+// @Failure		401	{string} string "Unauthorized."
+// @Router		/auth/info [post]
+// @Security	BearerToken
+func (*AuthRoutes) GetInfo(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
+	c.IndentedJSON(http.StatusOK, user)
+}
 
-	uuid := c.MustGet("guid")
+// GetSessions godoc
+//
+// @Summary		Get user's sessions
+// @Description Get a user's sessions based on a Bearer token
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{array}	[]database.Session
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		404	{string} string "You don't have any sessions."
+// @Router		/auth/sessions [get]
+// @Security	BearerToken
+func (*AuthRoutes) GetSessions(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
 
-	user := database.User{}
-	if result := database.Db.Where("guid = ?", uuid).First(&user); result.Error != nil {
-		c.String(http.StatusNotFound, "For some reason, you don't exist!")
+	sessions := []database.Session{}
+	if result := database.Db.Where("user_id = ?", user.ID).Find(&sessions); result.Error != nil {
+		c.String(http.StatusNotFound, "You don't have any sessions.")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, user)
+	c.IndentedJSON(http.StatusOK, sessions)
+}
+
+// RevokeSession godoc
+//
+// @Summary		Revoke a session
+// @Description Revoke a session based on an ID
+// @Tags		auth
+// @Accept		json
+// @Produce		json
+// @Success		200	{array}	string "Revoked session."
+// @Failure		401	{string} string "Unauthorized."
+// @Failure		404	{string} string "Failed to revoke session."
+// @Router		/auth/sessions/{id} [delete]
+// @Security	BearerToken
+func (*AuthRoutes) RevokeSession(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
+	id := c.Param("id")
+
+	session := &database.Session{}
+	if result := database.Db.Where("guid = ?", id).Where("user_id = ?", user.ID).First(&session).Delete(&session); result.Error != nil {
+		c.String(http.StatusNotFound, "Failed to revoke session.")
+		return
+	}
+
+	c.String(http.StatusOK, "Revoked session.")
 }

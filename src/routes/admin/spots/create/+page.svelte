@@ -17,7 +17,7 @@
     }
 
     export const createSpot = async (name: string, longitude: number, latitude: number) => {
-        const response = await get({ route: "spots/create", method: "POST", headers: { "Authentication": `Bearer ${storeGet(authStore).token}` }, body: { name, coords: { longitude: longitude, latitude: latitude }}});
+        const response = await get({ route: "spots", method: "POST", headers: { "Authentication": `Bearer ${storeGet(authStore).token}` }, body: { name, coords: { longitude: longitude, latitude: latitude }}});
         if (!response) throw "Failed to login.";
     }
 
