@@ -5,8 +5,7 @@ import type { User } from "./models";
 import { get as storeGet } from 'svelte/store';
 
 export interface AuthStore {
-    token?: string,
-    user?: User,
+    token?: string
 };
 
 export interface TokenResponse {
@@ -23,7 +22,7 @@ export const login = async (email: string, password: string) => {
     const user = await get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${token}` }, method: "GET" });
     if (!user) throw "Failed to login.";
 
-    authStore.set({ token, user });
+    authStore.set({ token });
 }
 
 export const getAuthHeader = () => ({ "Authentication": `Bearer ${storeGet(authStore).token}` })

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthMiddleware() gin.HandlerFunc {
+func AuthMiddleware(roles ...database.UserRole) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session_id, err := auth.Get(c.Request.Header.Get("Authentication"))
 		if err != nil {
@@ -29,7 +29,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		database.Db.Updates(&session)
 
 		user := database.User{}
-		if result := database.Db.Where("id = ?", session.UserID).First(&user); result.Error != nil {
+		if result := database.Db.Where("id = ?", session.UserID).Where("role in ?", roles).First(&user); result.Error != nil {
 			c.String(http.StatusUnauthorized, "Unauthorized.")
 			c.Abort()
 			return
@@ -211,6 +211,11 @@ func (*AuthRoutes) OAuthCallback(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
+}
+
+type GetInfoOutput struct {
+	database.User
+	Admin bool `json:"admin"`
 }
 
 // GetInfo godoc

@@ -14,9 +14,15 @@ export interface Spot {
     table: Pricing;
 }
 
+export enum UserRole {
+    USER = 0,
+    ADMIN
+}
+
 export interface User {
     guid: string;
     email: string;
+    role: UserRole;
 }
 
 export interface Session {

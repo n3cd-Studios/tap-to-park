@@ -21,16 +21,24 @@ type Invite struct {
 	UsedByID       uint      `gorm:"" json:"usedBy"`
 }
 
+type UserRole = uint
+
+const (
+	USER UserRole = iota
+	ADMIN
+)
+
 // User has many Sessions, UserID is the foreign key
 type User struct {
 	ID             uint      `gorm:"primarykey" json:"-"`
 	Guid           string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Email          string    `gorm:"not null;unique;" json:"email"`
+	Role           UserRole  `gorm:"not null;default:0" json:"role"`
 	PasswordHash   string    `gorm:"not null;default:''" json:"-"`
 	Type           string    `gorm:"not null;default:'local'" json:"-"`
 	ExternalID     string    `gorm:"not null;default:''" json:"-"`
 	Sessions       []Session `json:"sessions"`
-	OrganizationID uint      `gorm:"not null;" json:"-"`
+	OrganizationID uint      `gorm:"not null;default:0" json:"-"`
 }
 
 type Reservation struct {
