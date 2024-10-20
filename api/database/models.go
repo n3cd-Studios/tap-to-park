@@ -38,7 +38,7 @@ type User struct {
 	Type           string    `gorm:"not null;default:'local'" json:"-"`
 	ExternalID     string    `gorm:"not null;default:''" json:"-"`
 	Sessions       []Session `json:"sessions"`
-	OrganizationID uint      `gorm:"not null;default:0" json:"-"`
+	OrganizationID uint      `json:"-"`
 }
 
 type Reservation struct {

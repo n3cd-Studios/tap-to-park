@@ -111,8 +111,6 @@ type RegisterInput struct {
 // @Router		/auth/register [post]
 func (*AuthRoutes) Register(c *gin.Context) {
 
-	// TODO: CHANGE ALL ERRORS TO GENERIC ERROR FOR SECURITY
-
 	var input RegisterInput
 	if err := c.BindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "Invalid body recieved.")
@@ -146,7 +144,7 @@ func (*AuthRoutes) Register(c *gin.Context) {
 
 	organizationID = invite.OrganizationID
 
-	user := database.User{Email: input.Email, PasswordHash: hash, OrganizationID: organizationID}
+	user := database.User{Email: input.Email, PasswordHash: hash, Role: database.ADMIN, OrganizationID: organizationID}
 
 	if err := database.Db.Create(&user).Error; err != nil {
 		c.String(http.StatusBadRequest, "Failed to register.")
@@ -176,6 +174,16 @@ type OAuthLogin interface {
 
 var oauthTypes = map[string]OAuthLogin{"github": Github{}}
 
+// OAuthInitialize godoc
+//
+// @Summary		Initialize an OAuth flow
+// @Description Direct user to the OAuth page of another sight, with correct scopes.
+// @Tags		auth,oauth
+// @Accept		json
+// @Produce		json
+// @Param		type  path		string	true	"The type of auth flow you want to initialize"
+// @Failure		400	{string}	string	"That OAuth flow does not exist."
+// @Router		/auth/{type} [get]
 func (*AuthRoutes) OAuthInitialize(c *gin.Context) {
 
 	authType := c.Param("type")
@@ -188,6 +196,19 @@ func (*AuthRoutes) OAuthInitialize(c *gin.Context) {
 	handler.Initialize(c)
 }
 
+// OAuthCallback godoc
+//
+// @Summary		The callback for an OAuth flow
+// @Description This route is used to forward information from the OAuth initialization to the handler to generate an access token and a JWT.
+// @Tags		auth,oauth
+// @Accept		json
+// @Produce		json
+// @Param		type  path		string	true	"The type of auth flow you want to callback"
+// @Success		200	{object}	JWTResponse
+// @Failure		400	{string}	string	"That OAuth flow does not exist."
+// @Failure		400	{string}	string	"OAuth flow failed to sign you in."
+// @Failure		400	{string}	string	"Failed to create session."
+// @Router		/auth/{type} [post]
 func (*AuthRoutes) OAuthCallback(c *gin.Context) {
 
 	authType := c.Param("type")
@@ -265,6 +286,7 @@ func (*AuthRoutes) GetSessions(c *gin.Context) {
 // @Tags		auth
 // @Accept		json
 // @Produce		json
+// @Param		id  path		string	true	"The ID of the session"
 // @Success		200	{array}	string "Revoked session."
 // @Failure		401	{string} string "Unauthorized."
 // @Failure		404	{string} string "Failed to revoke session."

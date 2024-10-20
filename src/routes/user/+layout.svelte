@@ -4,5 +4,7 @@
 </script>
 
 <AuthRoute roles={[ UserRole.USER, UserRole.ADMIN ]}>
-    <slot/>
+    <div class="flex flex-row justify-center">
+        <slot/>
+    </div>
 </AuthRoute>

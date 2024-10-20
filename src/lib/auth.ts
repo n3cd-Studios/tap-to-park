@@ -23,6 +23,7 @@ export const login = async (email: string, password: string) => {
     if (!user) throw "Failed to login.";
 
     authStore.set({ token });
+    return user;
 }
 
 export const getAuthHeader = () => ({ "Authentication": `Bearer ${storeGet(authStore).token}` })
