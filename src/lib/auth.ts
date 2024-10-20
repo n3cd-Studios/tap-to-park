@@ -26,6 +26,21 @@ export const login = async (email: string, password: string) => {
     return user;
 }
 
+export const register = async (email: string, password: string, invite?: string) => {
+    try {
+        const response = await get<TokenResponse>({ route: "auth/register", method: "POST", body: { email, password, invite } });
+        if (!response) throw "Currently, you need an invite to register.";
+
+        const { token } = response;
+        const user = await get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${token}` }, method: "GET" });
+        if (!user) throw "Failed to register.";
+
+        authStore.set({ token, user });
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const getAuthHeader = () => ({ "Authentication": `Bearer ${storeGet(authStore).token}` })
 
 export const getUserInfo = async () => {

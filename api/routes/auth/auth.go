@@ -132,7 +132,7 @@ func (*AuthRoutes) Register(c *gin.Context) {
 
 	var invite database.Invite
 	var organizationID uint
-	if result := database.Db.Where("ID = ?", input.InviteCode).First(&invite); result.Error != nil {
+	if result := database.Db.Where("code = ?", input.InviteCode).First(&invite); result.Error != nil {
 		c.String(http.StatusBadRequest, "Failed to register.")
 		return
 	}
