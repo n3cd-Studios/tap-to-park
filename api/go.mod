@@ -3,6 +3,7 @@ module tap-to-park
 go 1.23.1
 
 require (
+	github.com/carlmjohnson/requests v0.24.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/static v1.1.2

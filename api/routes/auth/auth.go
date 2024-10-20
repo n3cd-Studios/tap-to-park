@@ -1,4 +1,4 @@
-package routes
+package auth
 
 import (
 	"net/http"
@@ -81,7 +81,6 @@ func (*AuthRoutes) Login(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Failed to login.")
 		return
 	}
-
 	request := c.Request
 	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
 	if err != nil {
@@ -164,6 +163,50 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	invite.UsedByID = user.ID
 	if err := database.Db.Save(&invite).Error; err != nil {
 		c.String(http.StatusInternalServerError, "Failed to update invite.")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, JWTResponse{Token: token})
+}
+
+type OAuthLogin interface {
+	Initialize(c *gin.Context)
+	Callback(c *gin.Context) *database.User
+}
+
+var oauthTypes = map[string]OAuthLogin{"github": Github{}}
+
+func (*AuthRoutes) OAuthInitialize(c *gin.Context) {
+
+	authType := c.Param("type")
+	handler, exists := oauthTypes[authType]
+	if !exists {
+		c.String(http.StatusBadRequest, "That OAuth flow does not exist.")
+		return
+	}
+
+	handler.Initialize(c)
+}
+
+func (*AuthRoutes) OAuthCallback(c *gin.Context) {
+
+	authType := c.Param("type")
+	handler, exists := oauthTypes[authType]
+	if !exists {
+		c.String(http.StatusBadRequest, "That OAuth flow does not exist.")
+		return
+	}
+
+	user := handler.Callback(c)
+	if user == nil {
+		c.String(http.StatusBadRequest, "OAuth flow failed to sign you in.")
+		return
+	}
+
+	request := c.Request
+	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
+	if err != nil {
+		c.String(http.StatusBadRequest, "Failed to create session.")
 		return
 	}
 
