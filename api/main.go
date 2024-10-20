@@ -5,6 +5,7 @@ import (
 	"os"
 	"tap-to-park/database"
 	"tap-to-park/routes"
+	"tap-to-park/routes/auth"
 
 	_ "tap-to-park/docs"
 
@@ -69,9 +70,9 @@ func main() {
 		routing := routes.SpotRoutes{}
 		spots.GET("/near", routing.GetSpotsNear)
 		spots.GET("/:id", routing.GetSpot)
-		spots.POST("", routes.AuthMiddleware(), routing.CreateSpot)
-		spots.PUT("/:id", routes.AuthMiddleware(), routing.UpdateSpot)
-		spots.DELETE("/:id", routes.AuthMiddleware(), routing.DeleteSpot)
+		spots.POST("", auth.AuthMiddleware(database.ADMIN), routing.CreateSpot)
+		spots.PUT("/:id", auth.AuthMiddleware(database.ADMIN), routing.UpdateSpot)
+		spots.DELETE("/:id", auth.AuthMiddleware(database.ADMIN), routing.DeleteSpot)
 	}
 
 	// Stripe routes
@@ -84,18 +85,25 @@ func main() {
 	}
 
 	// Auth routes
-	auth := api.Group("/auth")
+	authr := api.Group("/auth")
 	{
-		routing := routes.AuthRoutes{}
-		auth.POST("/login", routing.Login)
-		auth.POST("/register", routing.Register)
-		auth.GET("/info", routes.AuthMiddleware(), routing.GetInfo)
-		auth.GET("/sessions", routes.AuthMiddleware(), routing.GetSessions)
-		auth.DELETE("/sessions/:id", routes.AuthMiddleware(), routing.RevokeSession)
+		routing := auth.AuthRoutes{}
+
+		// regular login
+		authr.POST("/login", routing.Login)
+		authr.POST("/register", routing.Register)
+
+		// oauth login
+		authr.GET("/:type", routing.OAuthInitialize)
+		authr.GET("/:type/callback", routing.OAuthCallback)
+
+		authr.GET("/info", auth.AuthMiddleware(database.ADMIN, database.USER), routing.GetInfo)
+		authr.GET("/sessions", auth.AuthMiddleware(database.ADMIN, database.USER), routing.GetSessions)
+		authr.DELETE("/sessions/:id", auth.AuthMiddleware(database.ADMIN, database.USER), routing.RevokeSession)
 	}
 
 	// Organization routes
-	organization := api.Group("/organization", routes.AuthMiddleware())
+	organization := api.Group("/organization", auth.AuthMiddleware(database.ADMIN))
 	{
 		routing := routes.OrganizationRoutes{}
 		organization.GET("/me", routing.GetOrganization)

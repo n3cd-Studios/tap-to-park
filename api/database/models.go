@@ -5,14 +5,12 @@ import (
 )
 
 // Organization has many Spots, OrganizationID is the foreign key
-// Organization has many Admins, OrganizationID is the foreign key
 // Organization has many Invites, OrganizationID is the foreign key
 type Organization struct {
 	ID      uint     `gorm:"primarykey" json:"-"`
 	Name    string   `gorm:"not null;unique;" json:"name"`
 	Spots   []Spot   `json:"spots"`
 	Invites []Invite `json:"invites"`
-	Admins  []User   `json:"-"`
 }
 
 type Invite struct {
@@ -23,14 +21,24 @@ type Invite struct {
 	UsedByID       uint      `gorm:"" json:"usedBy"`
 }
 
+type UserRole = uint
+
+const (
+	USER UserRole = iota
+	ADMIN
+)
+
 // User has many Sessions, UserID is the foreign key
 type User struct {
 	ID             uint      `gorm:"primarykey" json:"-"`
 	Guid           string    `gorm:"not null;type:uuid;unique;default:gen_random_uuid()" json:"guid"`
 	Email          string    `gorm:"not null;unique;" json:"email"`
-	PasswordHash   string    `gorm:"not null;" json:"-"`
+	Role           UserRole  `gorm:"not null;default:0" json:"role"`
+	PasswordHash   string    `gorm:"not null;default:''" json:"-"`
+	Type           string    `gorm:"not null;default:'local'" json:"-"`
+	ExternalID     string    `gorm:"not null;default:''" json:"-"`
 	Sessions       []Session `json:"sessions"`
-	OrganizationID uint      `gorm:"not null;" json:"-"`
+	OrganizationID uint      `json:"-"`
 }
 
 type Reservation struct {

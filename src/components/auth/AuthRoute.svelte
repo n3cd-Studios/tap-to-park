@@ -1,22 +1,19 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
-    import { getUserInfo, logout } from "$lib/auth";
+    import { getUserInfo } from "$lib/auth";
+    import { UserRole } from "$lib/models";
     import { onMount } from "svelte";
 
-    export let authorized: boolean = true;
-    export let signOut: boolean = true;
-    export let redirect: string = "/auth/login";
+    export let roles: UserRole[] = [ UserRole.USER ];
+    export let redirect = "/auth/login";
     
     let pass = false;
     onMount(async () => {
         const user = await getUserInfo();
-        if (browser) {
-            if (authorized && !user) {
-                if (signOut) logout();
-                goto(redirect);
-            } else pass = true;
-        }
+        if (user) {
+            if (!roles.includes(user.role)) goto(redirect);
+            else pass = true;
+        } else goto("/auth/login");
     });
 </script>
 

@@ -29,7 +29,9 @@ export class Paginator<T> {
     private update?: (items: typeof this.items) => any;
     items: T[] = [];
 
-    constructor(private params: GetParams, private pageSize: number = 10) {}
+    constructor(private params: GetParams, private pageSize: number = 10, preload: T[] = []) {
+        this.items = preload;
+    }
 
     hasNext = () => this.page < this.pages;
     next = () => {

@@ -5,8 +5,7 @@ import type { User } from "./models";
 import { get as storeGet } from 'svelte/store';
 
 export interface AuthStore {
-    token?: string,
-    user?: User,
+    token?: string
 };
 
 export interface TokenResponse {
@@ -18,34 +17,19 @@ export const authStore = persisted<AuthStore>("auth", {});
 export const login = async (email: string, password: string) => {
     const response = await get<TokenResponse>({ route: "auth/login", method: "POST", body: { email, password } });
     if (!response) throw "Failed to login.";
-
-    const { token } = response;
-    const user = await get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${token}` }, method: "GET" });
-    if (!user) throw "Failed to login.";
-
-    authStore.set({ token, user });
+    authStore.set({ token: response.token });
+    return await getUserInfo();
 }
 
-export const register = async (email: string, password: string, invite?: string) => {
-    try {
-        const response = await get<TokenResponse>({ route: "auth/register", method: "POST", body: { email, password, invite } });
-        if (!response) throw "Currently, you need an invite to register.";
-
-        const { token } = response;
-        const user = await get<User>({ route: "auth/info", headers: { "Authentication": `Bearer ${token}` }, method: "GET" });
-        if (!user) throw "Failed to register.";
-
-        authStore.set({ token, user });
-    } catch (error) {
-        throw error;
-    }
+export const register = async (email: string, password: string, invite: string = "") => {
+    const response = await get<TokenResponse>({ route: "auth/register", method: "POST", body: { email, password }, params: { invite } });
+    if (!response) throw "Failed to register you.";
+    authStore.set({ token: response.token });
+    return await getUserInfo();
 }
 
 export const getAuthHeader = () => ({ "Authentication": `Bearer ${storeGet(authStore).token}` })
-
-export const getUserInfo = async () => {
-    return get<User>({ route: "auth/info", headers: getAuthHeader() });
-}
+export const getUserInfo = async () => get<User>({ route: "auth/info", headers: getAuthHeader() });
 
 export const logout = () => {
     authStore.set({}); // clear

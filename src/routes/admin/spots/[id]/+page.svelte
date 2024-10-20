@@ -4,9 +4,9 @@
     import { Region, type Point } from "$lib/geometry";
     import { daysOfWeek, Formats } from "$lib/lang";
     import { onMount } from "svelte";
-    import Button from "../../../components/form/Button.svelte";
-    import Input from "../../../components/form/Input.svelte";
-    import { toaster } from "../../../components/toaster/toaster";
+    import Button from "../../../../components/form/Button.svelte";
+    import Input from "../../../../components/form/Input.svelte";
+    import { toaster } from "../../../../components/toaster/toaster";
     import type { Spot } from "$lib/models";
 
     // external

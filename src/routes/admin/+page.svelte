@@ -80,7 +80,7 @@
     >
         <TableItem>{name}</TableItem>
         <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
-        <TableItem><a href={`/admin/${guid}`}><Fa icon={faDollar} /></a></TableItem>
+        <TableItem><a href={`/admin/spots/${guid}`}><Fa icon={faDollar} /></a></TableItem>
     </Table>
     <div class="flex flex-row justify-center gap-2">
         <Button on:click={() => paginator.last()}>{"<"}</Button>
