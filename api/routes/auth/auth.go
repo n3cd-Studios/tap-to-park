@@ -175,7 +175,7 @@ type OAuthLogin interface {
 	Callback(c *gin.Context) *database.User
 }
 
-var oauthTypes = map[string]OAuthLogin{"github": Github{}}
+var oauthTypes = map[string]OAuthLogin{"github": Github{}, "google": Google{}}
 
 // OAuthInitialize godoc
 //

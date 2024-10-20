@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"tap-to-park/database"
@@ -16,7 +17,10 @@ import (
 type Github struct{}
 
 func (Github) Initialize(c *gin.Context) {
-	c.Redirect(http.StatusMovedPermanently, "https://github.com/login/oauth/authorize?scope=user&client_id="+os.Getenv("GITHUB_CLIENT_ID"))
+	vals := url.Values{}
+	vals.Set("client_id", os.Getenv("GITHUB_CLIENT_ID"))
+	vals.Set("scope", "user")
+	c.Redirect(http.StatusMovedPermanently, "https://github.com/login/oauth/authorize?"+vals.Encode())
 }
 
 type GithubAccessTokenRequest struct {

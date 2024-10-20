@@ -26,8 +26,8 @@
         <div class="flex flex-row justify-between">
             <div class="flex flex-row gap-1">
                 <Button type="button" on:click={() => window.location.href = "http://localhost:8080/api/auth/github"}><Fa icon={faGithub}/></Button>
-                <!-- <Button type="button" on:click={() => window.location.href = "http://localhost:8080/api/auth/google"}><Fa icon={faGoogle}/></Button>
-                <Button type="button" on:click={() => window.location.href = "http://localhost:8080/api/auth/microsoft"}><Fa icon={faMicrosoft}/></Button> -->
+                <Button type="button" on:click={() => window.location.href = "http://localhost:8080/api/auth/google"}><Fa icon={faGoogle}/></Button>
+                <!-- <Button type="button" on:click={() => window.location.href = "http://localhost:8080/api/auth/microsoft"}><Fa icon={faMicrosoft}/></Button> -->
             </div>
             <Button type="submit">Login</Button>
         </div>
