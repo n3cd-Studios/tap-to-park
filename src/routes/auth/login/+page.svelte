@@ -13,7 +13,7 @@
 
     const handleLogin = async () => {
         await login(email, password)
-            .then(user => user.role == UserRole.ADMIN ? goto("/admin") : goto("/user"))
+            .then(user => user?.role == UserRole.ADMIN ? goto("/admin") : goto("/user"))
             .catch(() => toaster.push({ type: "error", message: "Failed to login." }, 5000));
     };
 

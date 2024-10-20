@@ -92,9 +92,8 @@ func (*AuthRoutes) Login(c *gin.Context) {
 }
 
 type RegisterInput struct {
-	Email      string `json:"email" binding:"required"`
-	Password   string `json:"password" binding:"required"`
-	InviteCode string `json:"invite"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 // Register godoc
@@ -104,6 +103,7 @@ type RegisterInput struct {
 // @Tags		auth
 // @Accept		json
 // @Produce		json
+// @Param		invite  query		string	false	"The invite code, if you were invited to an organization"
 // @Success		200	{object}	JWTResponse
 // @Failure		400	{string}	string	"Failed to register."
 // @Failure		400	{string}	string	"Invalid body recieved."
@@ -130,21 +130,30 @@ func (*AuthRoutes) Register(c *gin.Context) {
 		return
 	}
 
-	var invite database.Invite
-	var organizationID uint
-	if result := database.Db.Where("code = ?", input.InviteCode).First(&invite); result.Error != nil {
-		c.String(http.StatusBadRequest, "Failed to register.")
-		return
+	user := database.User{Email: input.Email, PasswordHash: hash, Role: database.USER}
+
+	inviteCode := c.Query("invite")
+	if inviteCode != "" {
+		var invite database.Invite
+		if result := database.Db.Where("code = ?", inviteCode).First(&invite); result.Error != nil {
+			c.String(http.StatusBadRequest, "Failed to register.")
+			return
+		}
+
+		if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
+			c.String(http.StatusBadRequest, "Failed to register.")
+			return
+		}
+
+		invite.UsedByID = user.ID
+		if err := database.Db.Save(&invite).Error; err != nil {
+			c.String(http.StatusInternalServerError, "Failed to update invite.")
+			return
+		}
+
+		user.OrganizationID = invite.OrganizationID
+		user.Role = database.ADMIN
 	}
-
-	if time.Now().After(invite.Expiration) || invite.UsedByID != 0 {
-		c.String(http.StatusBadRequest, "Failed to register.")
-		return
-	}
-
-	organizationID = invite.OrganizationID
-
-	user := database.User{Email: input.Email, PasswordHash: hash, Role: database.ADMIN, OrganizationID: organizationID}
 
 	if err := database.Db.Create(&user).Error; err != nil {
 		c.String(http.StatusBadRequest, "Failed to register.")
@@ -155,12 +164,6 @@ func (*AuthRoutes) Register(c *gin.Context) {
 	token, err := auth.Generate(user.ID, request.UserAgent(), request.Host)
 	if err != nil {
 		c.String(http.StatusBadRequest, "Failed to create user.")
-		return
-	}
-
-	invite.UsedByID = user.ID
-	if err := database.Db.Save(&invite).Error; err != nil {
-		c.String(http.StatusInternalServerError, "Failed to update invite.")
 		return
 	}
 
