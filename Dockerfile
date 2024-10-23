@@ -11,14 +11,11 @@ COPY vite.config.ts ./
 COPY ./src ./src
 COPY ./static ./static
 
-RUN npm install
-RUN npm run build
-RUN npm prune --production
+RUN npm ci
+RUN npx vite build
 
-FROM node:22 as run
+RUN rm -rf src/ static/
 
-WORKDIR /app
-COPY --from=build /.svelte-kit/build ./build
-COPY --from=build /app/package.json ./package.json
+EXPOSE 3000
 
-FROM 
+RUN npx vite preview --port 3000
