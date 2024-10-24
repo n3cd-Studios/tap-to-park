@@ -18,4 +18,4 @@ RUN rm -rf src/ static/
 
 EXPOSE 3000
 
-RUN npx vite preview --port 3000
+CMD [ "npx", "vite", "preview", "--port", "3000" ]

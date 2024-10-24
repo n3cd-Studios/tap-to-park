@@ -5,15 +5,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080" # Adjust as needed
-    environment:
-      - DATABASE_URL="host=localhost user=postgres password=secure dbname=ttp port=5432 sslmode=disable TimeZone=US/Eastern"
-      - BACKEND_HOST=localhost:8080
-      - FRONTEND_HOST=https://localhost:8081
-      - GITHUB_CLIENT_ID=Ov23liJTqVNXxUgj5NbC
-      - GITHUB_CLIENT_SECRET=2c8df7fb36fd7a6799940c6eea9d985d46e15af2
-      - TOKEN_LIFESPAN=12
-      - TOKEN_SECRET=yeah this is pretty good
-      - STRIPE_API_KEY=sk_test_51Q8AF32Mdd14BwUhOBc7nMrxJcdTiQXqxqiRvZJsUF4Ibce8VNCy5qM21UbLm6FA67fcPbBBcQ5cxeucSjpf8tf100HhlSzOZ0
     depends_on:
       - db
 
