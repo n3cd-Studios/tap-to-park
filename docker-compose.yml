@@ -5,6 +5,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080" # Adjust as needed
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=host=db user=postgres password=secure dbname=ttp port=5432 sslmode=disable TimeZone=US/Eastern
+      - GO_ENV=production
     depends_on:
       - db
 

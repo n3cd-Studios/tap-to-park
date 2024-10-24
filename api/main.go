@@ -37,9 +37,11 @@ import (
 func main() {
 
 	// Load .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Panic("Error loading .env file")
+	if !IsProduction() {
+		err := godotenv.Load("../.env")
+		if err != nil {
+			log.Panic("Error loading .env file")
+		}
 	}
 
 	stripe.Key = os.Getenv("STRIPE_API_KEY")
@@ -114,4 +116,8 @@ func main() {
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.Run(os.Getenv("BACKEND_HOST"))
+}
+
+func IsProduction() bool {
+	return os.Getenv("GO_ENV") == "production"
 }
