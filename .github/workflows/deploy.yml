@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  pull_request:
+    branches: [ "production" ]
+
+jobs:
+  build:
+    runs-on: self-hosted 
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "Deployment"
+          git config --global user.email "deployment@n3cd.io"
+
+      - name: Pull Latest Changes
+        run: |
+          git pull origin production
+
+      - name: Build Project
+        run: |
+          docker compose down
+          docker compose up --build
