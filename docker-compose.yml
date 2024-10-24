@@ -1,0 +1,38 @@
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080" # Adjust as needed
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=host=db user=postgres password=secure dbname=ttp port=5432 sslmode=disable TimeZone=US/Eastern
+      - GO_ENV=production
+    depends_on:
+      - db
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secure
+      POSTGRES_DB: ttp
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:

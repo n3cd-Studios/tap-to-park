@@ -6,6 +6,7 @@ export default defineConfig({
 	plugins: [basicSsl(), sveltekit()],
 	server: {
 		https: true,
+		host: '0.0.0.0',
 		proxy: {}
 	}
 });

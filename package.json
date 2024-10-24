@@ -3,7 +3,6 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"install": "cd api && go get",
 		"frontend": "vite dev --port 8081",
 		"backend": "cd api && go run .",
 		"start": "concurrently --kill-others \"npm run backend\" \"vite build && vite preview --port 8081\"",
