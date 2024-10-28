@@ -4,7 +4,8 @@
   export let data: any[] = [];
   export let loading = true;
   export let columns: string[] = [];
-  export let showAddSpot: boolean = false;
+  export let addRowItem: string | null = null;
+  export let addRowFunctionality: (() => void) | null = null;
 
 </script>
 
@@ -23,18 +24,15 @@
       </tr>
     </thead>
     <tbody class="bg-white divide-y divide-gray-200">
-      {#if showAddSpot}
-      <tr class="bg-blue-100 cursor-pointer" on:click={() => {/* Functionality for adding a new row */}}>
+      {#if addRowItem && addRowFunctionality}
+      <tr class="bg-blue-100 cursor-pointer" on:click={addRowFunctionality}>
         <td 
-          class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider bg-blue-100 cursor-pointer" 
-          on:click={() => goto("/admin/spots/create")}
-        >
-          Add Row
+          class="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider bg-blue-100 cursor-pointer">
+          Add {addRowItem}
         </td>
         {#each columns.slice(1) as column}
           <td 
             class="bg-blue-100 cursor-pointer" 
-            on:click={() => goto("/admin/spots/create")} 
           >
         {/each}
       </tr>

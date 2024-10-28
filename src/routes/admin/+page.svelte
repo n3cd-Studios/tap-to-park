@@ -10,6 +10,7 @@
     import Table from "../../components/table/Table.svelte";
     import TableItem from "../../components/table/TableItem.svelte";
     import { toaster } from "../../components/toaster/toaster";
+    import { goto } from "$app/navigation";
 
     let map: L.Map;
 
@@ -73,7 +74,8 @@
         columns={["name", "coords", "manage pricing"]}
         data={items}
         {loading}
-        showAddSpot={true}
+        addRowItem={"spot"}
+        addRowFunctionality={ () => goto("/admin/spots/create") }
         let:name
         let:coords
         let:guid
