@@ -7,16 +7,16 @@ import (
 )
 
 type Coordinates struct {
-	Longitude float64 `json:"longitude" binding:"required"`
 	Latitude  float64 `json:"latitude" binding:"required"`
+	Longitude float64 `json:"longitude" binding:"required"`
 }
 
 // thx https://stackoverflow.com/questions/37889726/how-to-store-a-point-in-postgres-sql-database-using-gorm
 func (c Coordinates) Value() (driver.Value, error) {
 	out := []byte{'('}
-	out = strconv.AppendFloat(out, c.Longitude, 'f', -1, 64)
-	out = append(out, ',')
 	out = strconv.AppendFloat(out, c.Latitude, 'f', -1, 64)
+	out = append(out, ',')
+	out = strconv.AppendFloat(out, c.Longitude, 'f', -1, 64)
 	out = append(out, ')')
 	return out, nil
 }
@@ -41,10 +41,10 @@ func (c *Coordinates) Scan(src interface{}) (err error) {
 	data = data[1 : len(data)-1] // drop the surrounding parentheses
 	for i := 0; i < len(data); i++ {
 		if data[i] == ',' {
-			if c.Longitude, err = strconv.ParseFloat(string(data[:i]), 64); err != nil {
+			if c.Latitude, err = strconv.ParseFloat(string(data[i+1:]), 64); err != nil {
 				return err
 			}
-			if c.Latitude, err = strconv.ParseFloat(string(data[i+1:]), 64); err != nil {
+			if c.Longitude, err = strconv.ParseFloat(string(data[:i]), 64); err != nil {
 				return err
 			}
 			break
