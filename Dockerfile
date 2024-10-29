@@ -7,7 +7,7 @@ COPY postcss.config.js ./
 COPY svelte.config.js ./
 COPY tailwind.config.js ./
 COPY tsconfig.json ./
-COPY vite.config.ts ./
+COPY vite.build.config.ts ./vite.config.ts
 COPY ./src ./src
 COPY ./static ./static
 
