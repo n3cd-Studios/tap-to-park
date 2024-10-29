@@ -50,7 +50,7 @@
         const leaflet = await import("leaflet");
         items.map(({ guid, coords }) =>
             leaflet
-                .marker([coords.longitude, coords.latitude])
+                .marker([coords.latitude, coords.longitude])
                 .bindPopup("Loading...")
                 .on("popupopen", ({ popup }) =>
                     getSpot(guid).then((spot) =>
@@ -79,7 +79,7 @@
         let:guid
     >
         <TableItem>{name}</TableItem>
-        <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
+        <TableItem>({coords.latitude}, {coords.longitude})</TableItem>
         <TableItem><a href={`/admin/spots/${guid}`}><Fa icon={faDollar} /></a></TableItem>
     </Table>
     <div class="flex flex-row justify-center gap-2">

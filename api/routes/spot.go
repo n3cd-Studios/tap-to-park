@@ -20,7 +20,7 @@ type GetSpotsNearOutput struct {
 // GetSpotsNear godoc
 //
 // @Summary		Get spots near
-// @Description	Get a spot near a longitude and latitude
+// @Description	Get a spot near a latitude and longitude
 // @Tags			spot
 // @Accept			json
 // @Produce		json
@@ -50,7 +50,7 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	}
 
 	spots := []GetSpotsNearOutput{}
-	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lng, lat}, WithoutParentheses: true}}).Limit(10)
+	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).Limit(10)
 	if c.Query("handicap") == "true" {
 		query = query.Where("handicap = ?", true)
 	}
@@ -101,7 +101,7 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 // UpdateSpot godoc
 //
 // @Summary		Update a spot
-// @Description	Update a spot's information such as pricing table, name or longitude and latitude
+// @Description	Update a spot's information such as pricing table, name or latitude and longitude
 // @Tags		spot
 // @Accept		json
 // @Produce		json
@@ -138,14 +138,14 @@ type CreateSpotInput struct {
 // CreateSpot godoc
 //
 // @Summary		Create a spot
-// @Description	Create a spot at a longitude and latitude
+// @Description	Create a spot at a latitude and longitude
 // @Tags		spot
 // @Accept		json
 // @Produce		json
 // @Success		200	{object}	database.Spot
 // @Failure		400 {string} string	"Invalid body."
-// @Failure		400 {string} string	"Longitude must be between -180 and 180."
 // @Failure		400 {string} string	"Latitude must be between -90 and 90."
+// @Failure		400 {string} string	"Longitude must be between -180 and 180."
 // @Failure		400 {string} string "A spot with this name already exists for the organization."
 // @Failure		401	{string} string "Unauthorized."
 // @Failure		409 {string} string "A spot with this name already exists for the organization."
@@ -159,12 +159,12 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		return
 	}
 
-	if input.Coords.Longitude < -180 || input.Coords.Longitude > 180 {
-		c.String(http.StatusBadRequest, "Longitude must be between -180 and 180.")
-		return
-	}
 	if input.Coords.Latitude < -90 || input.Coords.Latitude > 90 {
 		c.String(http.StatusBadRequest, "Latitude must be between -90 and 90.")
+		return
+	}
+	if input.Coords.Longitude < -180 || input.Coords.Longitude > 180 {
+		c.String(http.StatusBadRequest, "Longitude must be between -180 and 180.")
 		return
 	}
 

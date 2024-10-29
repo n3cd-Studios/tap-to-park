@@ -1,5 +1,10 @@
 basePath: /api/
 definitions:
+  auth.JWTResponse:
+    properties:
+      token:
+        type: string
+    type: object
   database.Coordinates:
     properties:
       latitude:
@@ -118,16 +123,21 @@ definitions:
         type: string
       guid:
         type: string
+      role:
+        $ref: '#/definitions/database.UserRole'
       sessions:
         items:
           $ref: '#/definitions/database.Session'
         type: array
     type: object
-  routes.JWTResponse:
-    properties:
-      token:
-        type: string
-    type: object
+  database.UserRole:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - USER
+    - ADMIN
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -142,6 +152,54 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
+  /auth/{type}:
+    get:
+      consumes:
+      - application/json
+      description: Direct user to the OAuth page of another sight, with correct scopes.
+      parameters:
+      - description: The type of auth flow you want to initialize
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: That OAuth flow does not exist.
+          schema:
+            type: string
+      summary: Initialize an OAuth flow
+      tags:
+      - auth
+      - oauth
+    post:
+      consumes:
+      - application/json
+      description: This route is used to forward information from the OAuth initialization
+        to the handler to generate an access token and a JWT.
+      parameters:
+      - description: The type of auth flow you want to callback
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.JWTResponse'
+        "400":
+          description: Failed to create session.
+          schema:
+            type: string
+      summary: The callback for an OAuth flow
+      tags:
+      - auth
+      - oauth
   /auth/info:
     post:
       consumes:
@@ -175,7 +233,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.JWTResponse'
+            $ref: '#/definitions/auth.JWTResponse'
         "400":
           description: Invalid body recieved.
           schema:
@@ -189,13 +247,18 @@ paths:
       - application/json
       description: Register a user using an organization's invite code, this will
         generate a Bearer token to be used with Authenticated requests.
+      parameters:
+      - description: The invite code, if you were invited to an organization
+        in: query
+        name: invite
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.JWTResponse'
+            $ref: '#/definitions/auth.JWTResponse'
         "400":
           description: Invalid body recieved.
           schema:
@@ -241,6 +304,12 @@ paths:
       consumes:
       - application/json
       description: Revoke a session based on an ID
+      parameters:
+      - description: The ID of the session
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -432,7 +501,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a spot at a longitude and latitude
+      description: Create a spot at a latitude and longitude
       produces:
       - application/json
       responses:
@@ -515,8 +584,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update a spot's information such as pricing table, name or longitude
-        and latitude
+      description: Update a spot's information such as pricing table, name or latitude
+        and longitude
       parameters:
       - description: The ID of the spot
         in: path
@@ -551,7 +620,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a spot near a longitude and latitude
+      description: Get a spot near a latitude and longitude
       parameters:
       - description: To filter spots by handicap spots
         in: query
