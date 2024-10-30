@@ -11,13 +11,13 @@
         const leaflet = await import("leaflet");
 
         if (data) {
-            const { longitude, latitude } = data.coords;
+            const { latitude, longitude } = data.coords;
             leaflet
-                .marker([longitude, latitude])
+                .marker([latitude, longitude])
                 .bindPopup(`${data.name}`)
                 .addTo(map)
                 .openPopup();
-            map.setView([longitude, latitude], 13);
+            map.setView([latitude, longitude], 13);
         }
     });
 

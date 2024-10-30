@@ -71,7 +71,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.JWTResponse"
+                            "$ref": "#/definitions/auth.JWTResponse"
                         }
                     },
                     "400": {
@@ -96,11 +96,19 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Register a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The invite code, if you were invited to an organization",
+                        "name": "invite",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.JWTResponse"
+                            "$ref": "#/definitions/auth.JWTResponse"
                         }
                     },
                     "400": {
@@ -182,6 +190,15 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Revoke a session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the session",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Revoked session.",
@@ -200,6 +217,76 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Failed to revoke session.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/{type}": {
+            "get": {
+                "description": "Direct user to the OAuth page of another sight, with correct scopes.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth",
+                    "oauth"
+                ],
+                "summary": "Initialize an OAuth flow",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The type of auth flow you want to initialize",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "That OAuth flow does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "This route is used to forward information from the OAuth initialization to the handler to generate an access token and a JWT.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth",
+                    "oauth"
+                ],
+                "summary": "The callback for an OAuth flow",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The type of auth flow you want to callback",
+                        "name": "type",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.JWTResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to create session.",
                         "schema": {
                             "type": "string"
                         }
@@ -464,7 +551,7 @@ const docTemplate = `{
                         "BearerToken": []
                     }
                 ],
-                "description": "Create a spot at a longitude and latitude",
+                "description": "Create a spot at a latitude and longitude",
                 "consumes": [
                     "application/json"
                 ],
@@ -505,7 +592,7 @@ const docTemplate = `{
         },
         "/spots/near": {
             "get": {
-                "description": "Get a spot near a longitude and latitude",
+                "description": "Get a spot near a latitude and longitude",
                 "consumes": [
                     "application/json"
                 ],
@@ -589,7 +676,7 @@ const docTemplate = `{
                         "BearerToken": []
                     }
                 ],
-                "description": "Update a spot's information such as pricing table, name or longitude and latitude",
+                "description": "Update a spot's information such as pricing table, name or latitude and longitude",
                 "consumes": [
                     "application/json"
                 ],
@@ -838,6 +925,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "auth.JWTResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "database.Coordinates": {
             "type": "object",
             "required": [
@@ -1018,6 +1113,9 @@ const docTemplate = `{
                 "guid": {
                     "type": "string"
                 },
+                "role": {
+                    "$ref": "#/definitions/database.UserRole"
+                },
                 "sessions": {
                     "type": "array",
                     "items": {
@@ -1026,13 +1124,16 @@ const docTemplate = `{
                 }
             }
         },
-        "routes.JWTResponse": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                }
-            }
+        "database.UserRole": {
+            "type": "integer",
+            "enum": [
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "USER",
+                "ADMIN"
+            ]
         }
     },
     "securityDefinitions": {

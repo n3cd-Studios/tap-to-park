@@ -35,13 +35,13 @@
             new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
 
         const leaflet = await import("leaflet");
-        const { longitude, latitude } = await promisifyGeolocation();
+        const { latitude, longitude } = await promisifyGeolocation();
         map.setView([latitude, longitude], 13);
 
-        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lng: longitude.toString(), lat: latitude.toString() }}, []);
+        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString() }}, []);
         spots = nearbySpots.map(({ guid, coords }) =>
             leaflet
-                .marker([coords.longitude, coords.latitude])
+                .marker([coords.latitude, coords.longitude])
                 .bindPopup(`Loading`)
                 .on("popupopen", async ({ popup }) => {
                     const spot = await get<Spot>({ route: `spots/${guid}` })

@@ -10,6 +10,7 @@
     import Table from "../../components/table/Table.svelte";
     import TableItem from "../../components/table/TableItem.svelte";
     import { toaster } from "../../components/toaster/toaster";
+    import { goto } from "$app/navigation";
 
     let map: L.Map;
 
@@ -50,7 +51,7 @@
         const leaflet = await import("leaflet");
         items.map(({ guid, coords }) =>
             leaflet
-                .marker([coords.longitude, coords.latitude])
+                .marker([coords.latitude, coords.longitude])
                 .bindPopup("Loading...")
                 .on("popupopen", ({ popup }) =>
                     getSpot(guid).then((spot) =>
@@ -73,13 +74,14 @@
         columns={["name", "coords", "manage pricing"]}
         data={items}
         {loading}
-        showAddSpot={true}
+        addRowItem={"spot"}
+        addRowFunctionality={ () => goto("/admin/spots/create") }
         let:name
         let:coords
         let:guid
     >
         <TableItem>{name}</TableItem>
-        <TableItem>({coords.longitude}, {coords.latitude})</TableItem>
+        <TableItem>({coords.latitude}, {coords.longitude})</TableItem>
         <TableItem><a href={`/admin/spots/${guid}`}><Fa icon={faDollar} /></a></TableItem>
     </Table>
     <div class="flex flex-row justify-center gap-2">
