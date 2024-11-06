@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { authStore } from "$lib/auth";
+    import { authStore, getAuthHeader } from "$lib/auth";
     import Button from "../../../../components/form/Button.svelte";
     import type { Coords } from "$lib/models";
     import { get } from "$lib/api";
@@ -17,7 +17,7 @@
     }
 
     export const createSpot = async (name: string, latitude: number, longitude: number) => {
-        const response = await get({ route: "spots", method: "POST", headers: { "Authentication": `Bearer ${storeGet(authStore).token}` }, body: { name, coords: { latitude: latitude, longitude: longitude }}});
+        const response = await get({ route: "spots", method: "POST", headers: getAuthHeader(), body: { name, coords: { latitude: latitude, longitude: longitude }}});
         if (!response) throw "Failed to login.";
     }
 
@@ -46,7 +46,7 @@
             <Input bind:value={latitude} type="number" step="0.000000000001" name="Latitude" required/>
             <Input bind:value={longitude} type="number" step="0.000000000001" name="Longitude" required/>
         {/if}
-            <div class="flex flex-row justify-between">  
+            <div class="flex flex-row justify-between">
             <Button type="button" on:click={toggleCoordinates} class="text-blue-800 underline">
                 {inputCoordinates ? "Use My Current Location" : "Specify Coordinates"}
             </Button>

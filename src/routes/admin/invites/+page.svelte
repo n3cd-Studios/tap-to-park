@@ -22,7 +22,7 @@
     {
       route: "organization/invites",
       method: "GET",
-      headers: { Authentication: `Bearer ${$authStore.token}` },
+      headers: getAuthHeader(),
     },
     10,
   );

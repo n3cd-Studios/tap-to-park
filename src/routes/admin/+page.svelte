@@ -1,6 +1,6 @@
 <script lang="ts">
     import { get, Paginator } from "$lib/api";
-    import { authStore } from "$lib/auth";
+    import { authStore, getAuthHeader } from "$lib/auth";
     import { type Organization, type Spot } from "$lib/models";
     import { faEdit } from "@fortawesome/free-solid-svg-icons";
     import { onMount } from "svelte";
@@ -18,7 +18,7 @@
     let paginator = new Paginator<Spot>(
         {
             route: "organization/spots",
-            headers: { Authentication: `Bearer ${$authStore.token}` },
+            headers: getAuthHeader(),
             method: "GET",
         },
         7,
@@ -34,7 +34,7 @@
     onMount(async () => {
         organization = await get<Organization>({
             route: "organization/me",
-            headers: { Authentication: `Bearer ${$authStore.token}` },
+            headers: getAuthHeader(),
             method: "GET",
         });
         if (!organization) {
