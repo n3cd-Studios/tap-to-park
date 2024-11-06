@@ -3,10 +3,12 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"tap-to-park/database"
 
 	"github.com/gin-gonic/gin"
+	"github.com/skip2/go-qrcode"
 	"gorm.io/gorm/clause"
 )
 
@@ -79,7 +81,7 @@ type GetSpotOutput struct {
 // @Produce		json
 // @Param		id  path		string	true	"The ID of the spot"
 // @Success		200	{object}	database.Spot
-// @Failure		404	{string} string	"Spot was not found"
+// @Failure		404	{string} string	"Spot was not found."
 // @Router		/spots/{id} [get]
 func (*SpotRoutes) GetSpot(c *gin.Context) {
 
@@ -87,7 +89,7 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 
 	spot := database.Spot{}
 	if result := database.Db.Where("guid = ?", id).First(&spot); result.Error != nil {
-		c.IndentedJSON(http.StatusNotFound, "Spot was not found")
+		c.String(http.StatusNotFound, "Spot was not found.")
 		return
 	}
 
@@ -96,6 +98,39 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 		Price:       spot.GetPrice(),
 		Reservation: spot.GetReservation(),
 	})
+}
+
+// GetSpotQRCode godoc
+//
+// @Summary		Get a spot's QRCode
+// @Description	Generates the QRCode that is associated with a spot
+// @Tags		spot
+// @Accept		json
+// @Produce		png
+// @Param		id  path		string	true	"The ID of the spot"
+// @Success		200	{png} png "The QR Code that was generated"
+// @Failure		404	{string} string	"Spot was not found."
+// @Failure		500	{string} string	"Failed to generate QR Code."
+// @Router		/spots/{id}/qr [get]
+func (*SpotRoutes) GetSpotQR(c *gin.Context) {
+
+	id := c.Param("id")
+
+	spot := database.Spot{}
+	if result := database.Db.Where("guid = ?", id).First(&spot); result.Error != nil {
+		c.String(http.StatusNotFound, "Spot was not found.")
+		return
+	}
+
+	link := os.Getenv("FRONTEND_HOST") + "/" + spot.Guid
+	qr, err := qrcode.Encode(link, qrcode.Medium, 256)
+
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to generate QR Code.")
+		return;
+	}
+
+	c.Data(http.StatusOK, "image/png", qr)
 }
 
 // UpdateSpot godoc
