@@ -161,7 +161,7 @@ func (*OrganizationRoutes) GetInvites(c *gin.Context) {
 
 	count := int64(0)
 	var invites []database.Invite
-	if result := database.Db.Where("organization_id = ?", organization.ID).Count(&count).Offset(int(page * size)).Limit(int(size)).Find(&invites); result.Error != nil {
+	if result := database.Db.Model(&database.Invite{}).Where("organization_id = ?", organization.ID).Count(&count).Offset(int(page * size)).Limit(int(size)).Find(&invites); result.Error != nil {
 		c.String(http.StatusNotFound, "No invites were found for your organization.")
 		return
 	}
