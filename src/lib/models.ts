@@ -9,6 +9,8 @@ export interface Spot {
     guid: string;
     coords: Coords;
     name: string;
+    maxHours: number;
+    handicap: boolean;
     price?: number;
     reservation?: Reservation;
     table: Pricing;

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { apiURL, get } from "$lib/api";
-    import { authStore } from "$lib/auth";
+    import { authStore, getAuthHeader } from "$lib/auth";
     import { Region, type Point } from "$lib/geometry";
     import { daysOfWeek, Formats, properNoun } from "$lib/lang";
     import { onMount } from "svelte";
@@ -13,10 +13,11 @@
     export let data: Spot;
 
     // setup variables
-    let price = "0";
-    let maxHours = "2";
+    let maxHours = data.maxHours.toString();
     let name = data.name;
 
+    // region management for price
+    let price = "0";
     let region = new Region();
     let dragging = false;
     let times = Array(24).fill(0).map((_, num) => `${num % 12}:00 ${num / 12 < 1 ? "AM" : "PM"}`);
@@ -24,10 +25,7 @@
 
     onMount(async () => {
         if (!data) {
-            toaster.push({
-                type: "error",
-                message: "Failed to load spot information.",
-            });
+            toaster.push({ type: "error", message: "Failed to load spot information." });
             return;
         }
 
@@ -46,14 +44,15 @@
         updateItems(Number(price));
         await get<string>({
             route: `spots/${data.guid}`,
-            headers: { Authentication: `Bearer ${$authStore.token}` },
-            body: exportSchedule(),
+            headers: getAuthHeader(),
+            body: {
+              table: exportSchedule(),
+              name,
+              maxHours: Number(maxHours)
+            },
             method: "PUT",
         });
-        toaster.push({
-            type: "success",
-            message: `Updated ${name}.`,
-        });
+        toaster.push({ type: "success", message: `Updated ${name}.` });
     };
 </script>
 

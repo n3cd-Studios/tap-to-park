@@ -127,10 +127,16 @@ func (*SpotRoutes) GetSpotQR(c *gin.Context) {
 
 	if err != nil {
 		c.String(http.StatusInternalServerError, "Failed to generate QR Code.")
-		return;
+		return
 	}
 
 	c.Data(http.StatusOK, "image/png", qr)
+}
+
+type UpdateSpotInput struct {
+	Table    database.Pricing `json:"table"`
+	Name     string           `json:"name"`
+	MaxHours uint             `json:"maxHours"`
 }
 
 // UpdateSpot godoc
@@ -149,15 +155,17 @@ func (*SpotRoutes) GetSpotQR(c *gin.Context) {
 // @Security 	BearerToken
 func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 
-	input := database.Pricing{}
+	input := UpdateSpotInput{}
 	if err := c.BindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "Invalid body.")
 		return
 	}
 
 	id := c.Param("id")
-	table, _ := json.Marshal(input)
-	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table); result.Error != nil {
+
+	table, _ := json.Marshal(input.Table)
+	result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table).Update("name", input.Name).Update("max_hours", input.MaxHours);
+	if result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist.")
 		return
 	}
