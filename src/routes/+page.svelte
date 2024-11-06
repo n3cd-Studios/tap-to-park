@@ -9,12 +9,28 @@
     import { faFilter } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
     import moment from "moment";
+    import { getUserInfo } from "$lib/auth";
 
     let map: L.Map;
     let spots: Marker<any>[];
     let handicapFilter = false;
+    let loggedIn = false;
+    let userEmail: string | null = null;
 
     onMount(async () => {
+        try {
+            let user = await getUserInfo();
+            if (user && user.email) {
+                userEmail = user.email;
+                loggedIn = true;
+            } else {
+                loggedIn = false;
+            }
+        } catch (error) {
+            loggedIn = false;
+            console.error("Failed to fetch user info:", error);
+        }
+
         const promisifyGeolocation = (): Promise<Coords> =>
             new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
 
@@ -49,6 +65,14 @@
         spots[activeSpot].openPopup();
     };
 
+    const handleLoginButton = () => {
+            if (loggedIn) {
+                location.href = "/user";
+            } else {
+                location.href = "/auth/login";
+            }
+        };
+
 </script>
 
 <div class="flex h-full items-center justify-center">
@@ -66,6 +90,15 @@
             <div>
                 <Button on:click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
                 <Button on:click={() => { activeSpot++; updateSpot(); }}>{">"}</Button>
+            </div>
+            <div class="absolute top-0 right-0 p-4">
+                <Button on:click={handleLoginButton}>
+                    {#if loggedIn}
+                        {userEmail}
+                    {:else}
+                        Login
+                    {/if}
+                </Button>
             </div>
         </div>
     </div>
