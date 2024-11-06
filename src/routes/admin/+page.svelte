@@ -2,7 +2,7 @@
     import { get, Paginator } from "$lib/api";
     import { authStore } from "$lib/auth";
     import { type Organization, type Spot } from "$lib/models";
-    import { faDollar } from "@fortawesome/free-solid-svg-icons";
+    import { faEdit } from "@fortawesome/free-solid-svg-icons";
     import { onMount } from "svelte";
     import Fa from "svelte-fa";
     import Button from "../../components/form/Button.svelte";
@@ -71,7 +71,7 @@
         <Map bind:map />
     </div>
     <Table
-        columns={["name", "coords", "manage pricing"]}
+        columns={["name", "coords", "manage"]}
         data={items}
         {loading}
         addRowItem={"spot"}
@@ -82,7 +82,7 @@
     >
         <TableItem>{name}</TableItem>
         <TableItem>({coords.latitude}, {coords.longitude})</TableItem>
-        <TableItem><a href={`/admin/spots/${guid}`}><Fa icon={faDollar} /></a></TableItem>
+        <TableItem><a href={`/admin/spots/${guid}`}><Fa icon={faEdit} /></a></TableItem>
     </Table>
     <div class="flex flex-row justify-center gap-2">
         <Button on:click={() => paginator.last()}>{"<"}</Button>
