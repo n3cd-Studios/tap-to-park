@@ -71,7 +71,7 @@
         <Map bind:map />
     </div>
     <Table
-        columns={["name", "coords", "manage"]}
+        columns={["name", "coords", ""]}
         data={items}
         {loading}
         addRowItem={"spot"}
@@ -82,7 +82,7 @@
     >
         <TableItem>{name}</TableItem>
         <TableItem>({coords.latitude}, {coords.longitude})</TableItem>
-        <TableItem><a href={`/admin/spots/${guid}`}><Fa icon={faEdit} /></a></TableItem>
+        <TableItem><a class="inline-flex justify-center min-w-full" href={`/admin/spots/${guid}`}><Fa icon={faEdit} /></a></TableItem>
     </Table>
     <div class="flex flex-row justify-center gap-2">
         <Button on:click={() => paginator.last()}>{"<"}</Button>

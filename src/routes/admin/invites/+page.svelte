@@ -61,6 +61,7 @@
 <Modal
   visible={showModal}
   title={"Invite Code Created"}
+  error={false}
   on:close={() => showModal=false}
 >
   <div slot="message" class="mt-2 flex" >

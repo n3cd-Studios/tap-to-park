@@ -8,6 +8,7 @@
     import Input from "../../../../components/form/Input.svelte";
     import { toaster } from "../../../../components/toaster/toaster";
     import type { Spot } from "$lib/models";
+    import Modal from "../../../../components/Modal.svelte";
 
     // external
     export let data: Spot;
@@ -15,6 +16,9 @@
     // setup variables
     let maxHours = data.maxHours.toString();
     let name = data.name;
+
+    // modal
+    let deleting = false;
 
     // region management for price
     let price = "0";
@@ -54,10 +58,34 @@
         });
         toaster.push({ type: "success", message: `Updated ${name}.` });
     };
+
+    const handleDelete = async () => {
+      await get<string>({
+          route: `spots/${data.guid}`,
+          headers: getAuthHeader(),
+          body: {
+            table: exportSchedule(),
+            name,
+            maxHours: Number(maxHours)
+          },
+          method: "PUT",
+      });
+      toaster.push({ type: "error", message: `Deleted ${name}.` });
+    }
 </script>
 
+<Modal
+  visible={deleting}
+  title={`Are you sure you want to delete "${name}?"`}
+  on:close={() => deleting=false}
+>
+  <div slot="message" class="mt-2 flex flex-row gap-1" >
+    <Button on:click={handleDelete}>Yes</Button>
+    <Button on:click={() => deleting = false}>No</Button>
+  </div>
+</Modal>
 <h1 class="text-xl font-bold text-center mb-2">Managing "{name}" ({data.guid})</h1>
-<div class="flex flex-col sm:flex-row gap-4">
+<div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
         <Input bind:value={name} type="text" name="Name"/>
         <Input bind:value={maxHours} type="number" name="Max hours"/>
@@ -71,6 +99,7 @@
             <p class="text-gray-700 text-sm font-bold">Spot QR Code</p>
             <img class="rounded-lg mt-2 w-2/3" src={apiURL`spots/${data.guid}/qr`} alt="QR Code"/>
         </div>
+        <Button color="red-500" on:click={() => deleting = true}>Delete</Button>
     </div>
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
