@@ -1,8 +1,6 @@
 name: Build and publish images to registry
 on:
-  push: 
-    branches: [ "main" ]
-  pull_request:  
+  push:
     branches: [ "main" ]
 
 env:
