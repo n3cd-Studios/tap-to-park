@@ -16,7 +16,7 @@
     let price = "0";
     let region = new Region();
     let dragging = false;
-    let times = Array(24).fill(0).map((_, num) => `${num % 12}:00`);
+    let times = Array(24).fill(0).map((_, num) => `${num % 12}:00 ${num / 12 < 1 ? "AM" : "PM"}`);
     let schedule: number[][] = daysOfWeek.map((_) => times.map(_ => 0));
 
     onMount(async () => {
@@ -37,7 +37,7 @@
     // TODO: this is odd, maybe fix??
     const updateItems = (val: number) => schedule.forEach((inner, x) => inner.forEach((_, y) => region.in([x, y]) ? schedule[x][y] = val : undefined));
     const exportSchedule = () => schedule.reduce((prev: any, item, x) => { prev[daysOfWeek[x]] = item; return prev; }, {});
-    const namedItem = ([x, y]: Point) => `${daysOfWeek[x]} at ${times[y]}`;
+    const namedItem = ([x, y]: Point) => `${daysOfWeek[x].toUpperCase()} at ${times[y]}`;
 
     const handleSave = async () => {
         updateItems(Number(price));
@@ -57,16 +57,12 @@
 <h1 class="text-xl font-bold text-center">Pricing information for {data.name}</h1>
 <div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
-        {#if region.size() >= 0}
-            <Input
+        <Input
                 bind:value={price}
                 type="number"
                 name={`Price for ${namedItem(region.lower)} to ${namedItem(region.upper)}`}
-            />
-            <Button on:click={handleSave}>Save</Button>
-        {:else}
-            <p>Select a region</p>
-        {/if}
+        />
+        <Button on:click={handleSave}>Save</Button>
     </div>
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
