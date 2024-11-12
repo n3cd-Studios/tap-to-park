@@ -6,6 +6,7 @@
   import { onMount } from "svelte";
   import { get } from "$lib/api";
   import { getAuthHeader } from "$lib/auth";
+  import { IconType } from "$lib/utils";
   import Fa from "svelte-fa";
   import Button from "../../../components/form/Button.svelte";
   import Modal from "../../../components/Modal.svelte";
@@ -28,12 +29,12 @@
   );
   paginator.subscribe((items) => (data = items));
 
-  function copyInvite() {
+  const copyInvite = () => {
     navigator.clipboard.writeText(inviteCode);
     toaster.push({ type: "success", message: `Code "${inviteCode}" copied` }, 5000);
   }
 
-  export const createInvite = async () => {
+  const createInvite = async () => {
     const response = await get<{ code: string }>({
         route: "organization/invites",
         headers: getAuthHeader(),
@@ -62,6 +63,7 @@
   visible={showModal}
   title={"Invite Code Created"}
   on:close={() => showModal=false}
+  icon = {IconType.SUCCESS}
 >
   <div slot="message" class="mt-2 flex" >
     <button class="text-3xl text-gray-900 hover:text-gray-500 font-bold" on:click={() => copyInvite()}>{inviteCode}</button>
