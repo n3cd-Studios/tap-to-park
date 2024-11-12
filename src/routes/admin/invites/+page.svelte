@@ -23,7 +23,7 @@
     {
       route: "organization/invites",
       method: "GET",
-      headers: { Authentication: `Bearer ${$authStore.token}` },
+      headers: getAuthHeader(),
     },
     10,
   );
@@ -41,7 +41,7 @@
         method: "POST",
     });
     if (!response) throw "Failed to create spot.";
-    inviteCode = await response.code;
+    inviteCode = response.code;
   }
 
   const handleSpotCreation = async () => {
@@ -62,6 +62,7 @@
 <Modal
   visible={showModal}
   title={"Invite Code Created"}
+  error={false}
   on:close={() => showModal=false}
   icon = {IconType.SUCCESS}
 >

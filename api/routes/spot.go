@@ -3,10 +3,12 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"tap-to-park/database"
 
 	"github.com/gin-gonic/gin"
+	"github.com/skip2/go-qrcode"
 	"gorm.io/gorm/clause"
 )
 
@@ -79,7 +81,7 @@ type GetSpotOutput struct {
 // @Produce		json
 // @Param		id  path		string	true	"The ID of the spot"
 // @Success		200	{object}	database.Spot
-// @Failure		404	{string} string	"Spot was not found"
+// @Failure		404	{string} string	"Spot was not found."
 // @Router		/spots/{id} [get]
 func (*SpotRoutes) GetSpot(c *gin.Context) {
 
@@ -87,7 +89,7 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 
 	spot := database.Spot{}
 	if result := database.Db.Where("guid = ?", id).First(&spot); result.Error != nil {
-		c.IndentedJSON(http.StatusNotFound, "Spot was not found")
+		c.String(http.StatusNotFound, "Spot was not found.")
 		return
 	}
 
@@ -96,6 +98,45 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 		Price:       spot.GetPrice(),
 		Reservation: spot.GetReservation(),
 	})
+}
+
+// GetSpotQRCode godoc
+//
+// @Summary		Get a spot's QRCode
+// @Description	Generates the QRCode that is associated with a spot
+// @Tags		spot
+// @Accept		json
+// @Produce		png
+// @Param		id  path		string	true	"The ID of the spot"
+// @Success		200	{png} png "The QR Code that was generated"
+// @Failure		404	{string} string	"Spot was not found."
+// @Failure		500	{string} string	"Failed to generate QR Code."
+// @Router		/spots/{id}/qr [get]
+func (*SpotRoutes) GetSpotQR(c *gin.Context) {
+
+	id := c.Param("id")
+
+	spot := database.Spot{}
+	if result := database.Db.Where("guid = ?", id).First(&spot); result.Error != nil {
+		c.String(http.StatusNotFound, "Spot was not found.")
+		return
+	}
+
+	link := os.Getenv("FRONTEND_HOST") + "/" + spot.Guid
+	qr, err := qrcode.Encode(link, qrcode.Medium, 256)
+
+	if err != nil {
+		c.String(http.StatusInternalServerError, "Failed to generate QR Code.")
+		return
+	}
+
+	c.Data(http.StatusOK, "image/png", qr)
+}
+
+type UpdateSpotInput struct {
+	Table    database.Pricing `json:"table"`
+	Name     string           `json:"name"`
+	MaxHours uint             `json:"maxHours"`
 }
 
 // UpdateSpot godoc
@@ -114,15 +155,17 @@ func (*SpotRoutes) GetSpot(c *gin.Context) {
 // @Security 	BearerToken
 func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 
-	input := database.Pricing{}
+	input := UpdateSpotInput{}
 	if err := c.BindJSON(&input); err != nil {
 		c.String(http.StatusBadRequest, "Invalid body.")
 		return
 	}
 
 	id := c.Param("id")
-	table, _ := json.Marshal(input)
-	if result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table); result.Error != nil {
+
+	table, _ := json.Marshal(input.Table)
+	result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table).Update("name", input.Name).Update("max_hours", input.MaxHours);
+	if result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist.")
 		return
 	}
@@ -206,10 +249,6 @@ func (*SpotRoutes) DeleteSpot(c *gin.Context) {
 	user := c.MustGet("user").(database.User)
 	spot_id := c.Param("id")
 	spot := database.Spot{}
-	if result := database.Db.Where("guid = ?", spot_id).Where("organization_id = ?", user.OrganizationID).First(&spot); result.Error != nil {
-		c.String(http.StatusNotFound, "That spot does not exist.")
-		return
-	}
 
 	if result := database.Db.Where("guid = ?", spot_id).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
 		c.String(http.StatusInternalServerError, "Failed to delete the spot.")

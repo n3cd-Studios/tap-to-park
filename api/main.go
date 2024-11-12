@@ -72,6 +72,7 @@ func main() {
 		routing := routes.SpotRoutes{}
 		spots.GET("/near", routing.GetSpotsNear)
 		spots.GET("/:id", routing.GetSpot)
+		spots.GET("/:id/qr", routing.GetSpotQR)
 		spots.POST("", auth.AuthMiddleware(database.ADMIN), routing.CreateSpot)
 		spots.PUT("/:id", auth.AuthMiddleware(database.ADMIN), routing.UpdateSpot)
 		spots.DELETE("/:id", auth.AuthMiddleware(database.ADMIN), routing.DeleteSpot)
