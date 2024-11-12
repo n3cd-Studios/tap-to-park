@@ -9,6 +9,7 @@
     import { toaster } from "../../../../components/toaster/toaster";
     import type { Spot } from "$lib/models";
     import Modal from "../../../../components/Modal.svelte";
+    import { goto } from "$app/navigation";
 
     // external
     export let data: Spot;
@@ -68,9 +69,10 @@
             name,
             maxHours: Number(maxHours)
           },
-          method: "PUT",
+          method: "DELETE",
       });
       toaster.push({ type: "error", message: `Deleted ${name}.` });
+      await goto("/admin");
     }
 </script>
 

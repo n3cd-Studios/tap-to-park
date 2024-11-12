@@ -40,7 +40,7 @@
         method: "POST",
     });
     if (!response) throw "Failed to create spot.";
-    inviteCode = await response.code;
+    inviteCode = response.code;
   }
 
   const handleSpotCreation = async () => {
