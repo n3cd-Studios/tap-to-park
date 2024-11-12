@@ -249,10 +249,11 @@ func (*SpotRoutes) DeleteSpot(c *gin.Context) {
 	user := c.MustGet("user").(database.User)
 	spot_id := c.Param("id")
 	spot := database.Spot{}
+
 	if result := database.Db.Where("guid = ?", spot_id).Where("organization_id = ?", user.OrganizationID).Delete(&spot); result.Error != nil {
-		c.String(http.StatusNotFound, "That spot does not exist.")
+		c.String(http.StatusInternalServerError, "Failed to delete the spot.")
 		return
 	}
 
-	c.String(http.StatusOK, "Spot successfully deleted.")
+	c.IndentedJSON(http.StatusOK, "Spot successfully deleted.")
 }

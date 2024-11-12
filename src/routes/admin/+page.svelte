@@ -4,6 +4,7 @@
     import { type Organization, type Spot } from "$lib/models";
     import { faEdit } from "@fortawesome/free-solid-svg-icons";
     import { onMount } from "svelte";
+    import { getAuthHeader } from "$lib/auth";
     import Fa from "svelte-fa";
     import Button from "../../components/form/Button.svelte";
     import Map from "../../components/Map.svelte";
@@ -11,6 +12,7 @@
     import TableItem from "../../components/table/TableItem.svelte";
     import { toaster } from "../../components/toaster/toaster";
     import { goto } from "$app/navigation";
+    import { IconType } from "$lib/utils";
 
     let map: L.Map;
 
@@ -31,6 +33,8 @@
     const getSpot = (guid: string) =>
         get<Spot>({ route: `spots/${guid}/info` });
 
+    let markers: [L.Marker, string][] = [];
+
     onMount(async () => {
         organization = await get<Organization>({
             route: "organization/me",
@@ -49,8 +53,8 @@
         loading = false;
 
         const leaflet = await import("leaflet");
-        items.map(({ guid, coords }) =>
-            leaflet
+        items.map(({ guid, coords }) => {
+            const marker = leaflet
                 .marker([coords.latitude, coords.longitude])
                 .bindPopup("Loading...")
                 .on("popupopen", ({ popup }) =>
@@ -58,16 +62,19 @@
                         popup.setContent(`${spot?.name}`),
                     ),
                 )
-                .addTo(map),
-        );
+                .addTo(map);
+                
+            markers.push([marker, guid])
+        });
     });
+    
 </script>
 
 <div class="flex flex-col gap-2">
     <h1 class="text-lg text-center">
         <span class="font-bold">{organization?.name}</span> organization
     </h1>
-    <div class="w-full h-96 rounded-lg border-white border-4">
+    <div class="w-full h-96 rounded-lg border-white border-4 z-0">
         <Map bind:map />
     </div>
     <Table

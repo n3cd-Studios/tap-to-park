@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 // Spot has many Reservations, SpotID is the foreign key
@@ -16,7 +18,8 @@ type Spot struct {
 	MaxHours       uint          `gorm:"not null;default:0" json:"maxHours"`
 	OrganizationID uint          `gorm:"not null;" json:"organization"`
 	Pricing        Pricing       `gorm:"type:json;not null;default:'{\"sunday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"monday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"tuesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"wednesday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"thursday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"friday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"saturday\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}';" json:"table"`
-	Reservations   []Reservation `json:"reservations"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
+  Reservations   []Reservation `json:"reservations"`
 }
 
 func (spot *Spot) GetReservation() *Reservation {
