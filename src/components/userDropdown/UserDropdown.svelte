@@ -1,6 +1,8 @@
 <script lang="ts">
     import Fa from 'svelte-fa';
     import { faBars } from '@fortawesome/free-solid-svg-icons';
+    import Button from '../form/Button.svelte';
+    import { ButtonType } from "$lib/utils";
     import { getUserInfo } from "$lib/auth";
     import { onMount } from "svelte";
     import { UserRole } from '$lib/models';
@@ -11,6 +13,7 @@
     let userEmail: string | null = null;
     let isAdmin = false;
     let dropdownOpen = false;
+    let container: HTMLDivElement;
   
     const generateDropdownOptions = (): { label: string, route: string }[] => {
         const options = [
@@ -55,36 +58,39 @@
         location.href = route;
     };
   
-    //tbd
-    const handleClickOutside = () => {
-        dropdownOpen = !dropdownOpen;
-    };
+    function onWindowClick(e: MouseEvent) {
+        if (container && !container.contains(e.target as Node)) {
+            dropdownOpen = false;
+        }
+    }
 
 </script>
   
+<svelte:window on:click={onWindowClick} />
+<div bind:this={container}>
+    <Button buttonType={ButtonType.DEFAULT} on:click={handleLoginButton}>
+        {#if isLoggedIn}
+            <span style="display: flex; align-items: center;">
+                <Fa icon={faBars} class="mr-2 fa-bounce" /> {userEmail}
+            </span>
+        {:else}
+            Login
+        {/if}
+    </Button>
 
-<button on:click={handleLoginButton} class="btn">
-    {#if isLoggedIn}
-        <span style="display: flex; align-items: center;">
-            <Fa icon={faBars} class="mr-2 fa-bounce" /> <span style="color: #021427;">{userEmail}</span>
-        </span>
-    {:else}
-        Login
-    {/if}
-</button>
-
-{#if dropdownOpen && isLoggedIn}
-    <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
-        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-            {#each dropdownOptions as { label, route }}
-                <button on:click={() => handleDropdownSelection(route)} class="block px-4 py-2 text-sm text-[#021427] hover:bg-gray-100 w-full text-left">
-                    {label}
-                </button>
-            {/each}
+    {#if dropdownOpen && isLoggedIn}
+        <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                {#each dropdownOptions as { label, route }}
+                    <button on:click={() => handleDropdownSelection(route)} class="block px-4 py-2 text-med text-[#021427] hover:bg-gray-100 w-full text-left">
+                        {label}
+                    </button>
+                {/each}
+            </div>
         </div>
-    </div>
-{/if}
-  
+    {/if}
+</div>
+
 <style>
     .btn {
         /* Style your button accordingly */
