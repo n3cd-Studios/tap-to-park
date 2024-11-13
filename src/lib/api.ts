@@ -79,11 +79,14 @@ const getHelper = <T, R>(
   defaultValue: R,
 ): Promise<T | R> =>
   fetch(
-    `${env.PUBLIC_API_URL ?? "http://localhost:8080"}/api/${route}${params ? `?${new URLSearchParams(params).toString()}` : ""}`,
+    apiURL`${route}${params ? `?${new URLSearchParams(params).toString()}` : ""}`,
     { method, headers, body: JSON.stringify(body) },
   )
     .then((r) => r.json() as T)
     .catch((_) => defaultValue);
+
+export const apiURL = (strings: TemplateStringsArray, ...placeholders: string[]) =>
+  `${env.PUBLIC_API_URL ?? "http://localhost:8080"}/api/${strings.map((val, index) => `${val}${placeholders[index] ?? ""}`).join("")}`;
 
 /**
  * A wrapper that simplifies the fetch operation and returns a default

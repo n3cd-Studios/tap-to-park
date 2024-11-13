@@ -575,7 +575,7 @@ paths:
           schema:
             $ref: '#/definitions/database.Spot'
         "404":
-          description: Spot was not found
+          description: Spot was not found.
           schema:
             type: string
       summary: Get a spot
@@ -614,6 +614,35 @@ paths:
       security:
       - BearerToken: []
       summary: Update a spot
+      tags:
+      - spot
+  /spots/{id}/qr:
+    get:
+      consumes:
+      - application/json
+      description: Generates the QRCode that is associated with a spot
+      parameters:
+      - description: The ID of the spot
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: The QR Code that was generated
+          schema:
+            type: png
+        "404":
+          description: Spot was not found.
+          schema:
+            type: string
+        "500":
+          description: Failed to generate QR Code.
+          schema:
+            type: string
+      summary: Get a spot's QRCode
       tags:
       - spot
   /spots/near:

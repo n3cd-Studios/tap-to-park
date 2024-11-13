@@ -657,7 +657,7 @@
                         }
                     },
                     "404": {
-                        "description": "Spot was not found",
+                        "description": "Spot was not found.",
                         "schema": {
                             "type": "string"
                         }
@@ -758,6 +758,50 @@
                     },
                     "404": {
                         "description": "That spot does not exist.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/spots/{id}/qr": {
+            "get": {
+                "description": "Generates the QRCode that is associated with a spot",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "spot"
+                ],
+                "summary": "Get a spot's QRCode",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The ID of the spot",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The QR Code that was generated",
+                        "schema": {
+                            "type": "png"
+                        }
+                    },
+                    "404": {
+                        "description": "Spot was not found.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate QR Code.",
                         "schema": {
                             "type": "string"
                         }
