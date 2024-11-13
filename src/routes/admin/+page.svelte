@@ -4,7 +4,6 @@
     import { type Organization, type Spot } from "$lib/models";
     import { faEdit } from "@fortawesome/free-solid-svg-icons";
     import { onMount } from "svelte";
-    import { getAuthHeader } from "$lib/auth";
     import Fa from "svelte-fa";
     import Button from "../../components/form/Button.svelte";
     import Map from "../../components/Map.svelte";
