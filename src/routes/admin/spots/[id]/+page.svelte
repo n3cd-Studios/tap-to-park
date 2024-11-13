@@ -3,6 +3,7 @@
     import { authStore, getAuthHeader } from "$lib/auth";
     import { Region, type Point } from "$lib/geometry";
     import { daysOfWeek, Formats, properNoun } from "$lib/lang";
+    import { ButtonType, IconType } from "$lib/utils";
     import { onMount } from "svelte";
     import Button from "../../../../components/form/Button.svelte";
     import Input from "../../../../components/form/Input.svelte";
@@ -25,7 +26,7 @@
     let price = "0";
     let region = new Region();
     let dragging = false;
-    let times = Array(24).fill(0).map((_, num) => `${num % 12}:00 ${num / 12 < 1 ? "AM" : "PM"}`);
+    let times = Array(24).fill(0).map((_, num) => `${num % 12 === 0 ? 12 : num % 12}:00 ${num < 12 ? "AM" : "PM"}`);
     let schedule: number[][] = daysOfWeek.map((_) => times.map(_ => 0));
 
     onMount(async () => {
@@ -79,18 +80,19 @@
 <Modal
   visible={deleting}
   title={`Are you sure you want to delete "${name}?"`}
+  icon={IconType.WARNING}
   on:close={() => deleting=false}
 >
-  <div slot="message" class="mt-2 flex flex-row gap-1" >
-    <Button on:click={handleDelete}>Yes</Button>
-    <Button on:click={() => deleting = false}>No</Button>
+  <div slot="button" class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-1" >
+    <Button buttonType={ButtonType.CAUTION} on:click={() => deleting = false}>No</Button>
+    <Button buttonType={ButtonType.CAUTION} on:click={handleDelete}>Yes</Button>
   </div>
 </Modal>
 <h1 class="text-xl font-bold text-center mb-2">Managing "{name}" ({data.guid})</h1>
 <div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
         <Input bind:value={name} type="text" name="Name"/>
-        <Input bind:value={maxHours} type="number" name="Max hours"/>
+        <Input bind:value={maxHours} type="number" name="Maximum reservation hours"/>
         <Input
                 bind:value={price}
                 type="number"
@@ -101,7 +103,7 @@
             <p class="text-gray-700 text-sm font-bold">Spot QR Code</p>
             <img class="rounded-lg mt-2 w-2/3" src={apiURL`spots/${data.guid}/qr`} alt="QR Code"/>
         </div>
-        <Button color="red-500" on:click={() => deleting = true}>Delete</Button>
+        <Button buttonType={ButtonType.NEGATIVE} on:click={() => deleting = true}>Delete</Button>
     </div>
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->

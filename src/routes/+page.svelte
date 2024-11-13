@@ -64,7 +64,7 @@
             <div class="flex gap-2">
                 <Button on:click={() => { activeSpot = 0; updateSpot()}}>Find Nearest</Button>
                 <Button on:click={() => handicapFilter = !handicapFilter}>
-                    <Fa icon={faFilter} class="text-white w-4 h-4 mr-0.5" />
+                    <Fa icon={faFilter} class="w-4 h-4 mr-0.5" />
                 </Button>
             </div>
             <div>
