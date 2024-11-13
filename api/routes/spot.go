@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -164,7 +165,7 @@ func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 	id := c.Param("id")
 
 	table, _ := json.Marshal(input.Table)
-	result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table).Update("name", input.Name).Update("max_hours", input.MaxHours);
+	result := database.Db.Model(&database.Spot{}).Where("guid = ?", id).Update("pricing", table).Update("name", input.Name).Update("max_hours", input.MaxHours)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "That spot does not exist.")
 		return
@@ -174,8 +175,11 @@ func (*SpotRoutes) UpdateSpot(c *gin.Context) {
 }
 
 type CreateSpotInput struct {
-	Name   string               `json:"name" binding:"required"`
-	Coords database.Coordinates `json:"coords" binding:"required"`
+	Name     string               `json:"name" binding:"required"`
+	Coords   database.Coordinates `json:"coords" binding:"required"`
+	Price    float64              `json:"price" binding:"required"`
+	MaxHours uint                 `json:"maxHours" binding:"required"`
+	Handicap *bool                `json:"handicap" binding:"required"`
 }
 
 // CreateSpot godoc
@@ -210,6 +214,14 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		c.String(http.StatusBadRequest, "Longitude must be between -180 and 180.")
 		return
 	}
+	if input.Price < 0 {
+		c.String(http.StatusBadRequest, "Price must be positive.")
+		return
+	}
+	if math.Round(input.Price*100)/100 != input.Price {
+		c.String(http.StatusBadRequest, "Price must have no more than two decimal spaces.")
+		return
+	}
 
 	user := c.MustGet("user").(database.User)
 	existingSpot := database.Spot{}
@@ -218,10 +230,28 @@ func (*SpotRoutes) CreateSpot(c *gin.Context) {
 		return
 	}
 
+	hours := make([]float64, 24)
+	for i := range hours {
+		hours[i] = input.Price
+	}
+
+	pricing := database.Pricing{
+		Monday:    hours,
+		Tuesday:   hours,
+		Wednesday: hours,
+		Thursday:  hours,
+		Friday:    hours,
+		Saturday:  hours,
+		Sunday:    hours,
+	}
+
 	spot := database.Spot{
 		Name:           input.Name,
 		Coords:         input.Coords,
 		OrganizationID: user.OrganizationID,
+		Pricing:        pricing,
+		Handicap:       *input.Handicap,
+		MaxHours:       input.MaxHours,
 	}
 	if result := database.Db.Create(&spot); result.Error != nil {
 		c.String(http.StatusBadRequest, "Failed to create a spot.")
