@@ -4,3 +4,10 @@ export enum IconType {
     ERROR = "error",
     NONE = "none",
 }
+
+export enum ButtonType {
+    POSITIVE = "positive",
+    NEGATIVE = "negative",
+    CAUTION = "caution",
+    DEFAULT = "default",
+}
