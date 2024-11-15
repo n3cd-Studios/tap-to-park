@@ -64,7 +64,7 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 	now := time.Now()
 	reservation := database.Reservation{
 		Start:               now,
-		End:                 now.Add(time.Hour * time.Duration(hours)),
+		End:                 now.Add(time.Duration(hours*60) * time.Minute),
 		Email:               sess.CustomerDetails.Email,
 		Price:               float64(sess.AmountTotal),
 		SpotID:              spot.ID,
@@ -158,7 +158,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 						Name:        stripe.String("Parking"),
 						Description: stripe.String("Parking at " + spot.Name),
 					},
-					UnitAmount: stripe.Int64(int64(hours * spot.GetPrice() * 100)),
+					UnitAmount: stripe.Int64(purchasePrice),
 				},
 				Quantity: stripe.Int64(1),
 			},
