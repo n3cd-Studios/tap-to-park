@@ -35,11 +35,11 @@
             <p>Claim this space for:</p>
             <div class="flex flex-col gap-2">
                 <div class="flex flex-row gap-2 items-baseline text-4xl">
-                    <input bind:value={hours} class="bg-white rounded-lg text-black text-center w-1/4 py-5" max="24"  />
+                    <input bind:value={hours} class="bg-white rounded-lg text-black text-center w-1/4 py-5" type="number" inputmode="numeric" max="24"  />
                     <p>{hours == 1 ? "hour" : "hours"}</p>
                 </div>
                 <div class="flex flex-row gap-2 items-baseline text-4xl">
-                    <input bind:value={minutes} class="bg-white rounded-lg text-black text-center w-1/4 py-5" max="60" />
+                    <input bind:value={minutes} class="bg-white rounded-lg text-black text-center w-1/4 py-5" type="number" inputmode="numeric" max="60" />
                     <p>{minutes == 1 ? "minute" : "minutes"}</p>
                 </div>
             </div>
