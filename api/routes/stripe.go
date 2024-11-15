@@ -119,6 +119,8 @@ type PurchaseSpotInput struct {
 // @Failure		400	{string} string "That spot ID is invalid."
 // @Failure		400	{string} string "Invalid body."
 // @Failure		400 {string} string "You can't purchase a spot for this amount of time."
+// @Failure		400 {string} string "Reservation exceeds spot maximum reservation time."
+// @Failure		400 {string} string "Reservation cost must be at least 50¢."
 // @Failure		409 {string} string "This spot has already been reserved."
 // @Failure		500	{string} string "Failed to create stripe session."
 // @Router		/stripe/{id} [post]
@@ -145,6 +147,17 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 	hours := input.End.Sub(input.Start).Hours()
 	if hours < 0 {
 		c.String(http.StatusBadRequest, "You can't purchase a spot for this amount of time.")
+		return
+	}
+
+	if hours > float64(spot.MaxHours) {
+		c.String(http.StatusBadRequest, "Reservation exceeds spot maximum reservation time.")
+		return
+	}
+
+	var purchasePrice = int64(hours * spot.GetPrice() * 100)
+	if purchasePrice < 50 {
+		c.String(http.StatusBadRequest, "Reservation cost must be at least 50¢.")
 		return
 	}
 
