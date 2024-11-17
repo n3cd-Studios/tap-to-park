@@ -25,9 +25,9 @@
 </script>
 
 <div class="flex h-full items-center justify-center">
-    <div class="flex flex-col gap-2 text-center">
+    <div class="flex flex-col gap-2 text-center" role="status" aria-live="polite">
         <p>Successfully purchased spot!</p>
-        <div class="w-96 h-96 rounded-lg border-white border-4">
+        <div class="w-96 h-96 rounded-lg border-white border-4" role="region" aria-label="Map showing purchased spot location">
             <Map bind:map={map}/>
         </div>
     </div>

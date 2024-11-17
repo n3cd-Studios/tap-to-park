@@ -84,45 +84,44 @@
   on:close={() => deleting=false}
 >
   <div slot="button" class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-1" >
-    <Button buttonType={ButtonType.CAUTION} on:click={() => deleting = false}>No</Button>
-    <Button buttonType={ButtonType.CAUTION} on:click={handleDelete}>Yes</Button>
+    <Button buttonType={ButtonType.CAUTION} aria-label="Cancel delete operation" on:click={() => deleting = false}>No</Button>
+    <Button buttonType={ButtonType.CAUTION} aria-label="Confirm delete operation" on:click={handleDelete}>Yes</Button>
   </div>
 </Modal>
-<h1 class="text-xl font-bold text-center mb-2">Managing "{name}" ({data.guid})</h1>
+<h1 class="text-xl font-bold text-center mb-2" aria-level="1">Managing "{name}" ({data.guid})</h1>
 <div class="flex flex-col sm:flex-row gap-2">
     <div class="flex flex-col w-1/4">
-        <Input bind:value={name} type="text" name="Name"/>
-        <Input bind:value={maxHours} type="number" name="Maximum reservation hours"/>
-        <Input
-                bind:value={price}
-                type="number"
-                name={`Price for ${namedItem(region.lower)} to ${namedItem(region.upper)}`}
-        />
-        <Button on:click={handleSave}>Save</Button>
+        <Input bind:value={name} type="text" name="Name" id="name" aria-label="Name of the item"/>
+        <Input bind:value={maxHours} type="number" name="Maximum reservation hours" id="max-hours" aria-label="Maximum reservation hours"/>
+        <Input bind:value={price} type="number" name={`Price for ${namedItem(region.lower)} to ${namedItem(region.upper)}`} id="price" aria-label={`Price for reservations from ${namedItem(region.lower)} to ${namedItem(region.upper)}`}/>
+        <Button on:click={handleSave} aria-label="Save">Save</Button>
         <div class="flex flex-col justify-center h-full">
             <p class="text-gray-700 text-sm font-bold">Spot QR Code</p>
-            <img class="rounded-lg mt-2 w-2/3" src={apiURL`spots/${data.guid}/qr`} alt="QR Code"/>
+            <img class="rounded-lg mt-2 w-2/3" src={apiURL`spots/${data.guid}/qr`} alt={`QR Code for managing ${name}`}/>
         </div>
-        <Button buttonType={ButtonType.NEGATIVE} on:click={() => deleting = true}>Delete</Button>
+        <Button buttonType={ButtonType.NEGATIVE} aria-label="Delete this item" on:click={() => deleting = true}>Delete</Button>
     </div>
 
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
         class="grid grid-cols-8 bg-white text-center border-gray-200 border-2 w-full rounded-lg mb-10"
+        aria-label="Reservation schedule"
         on:mouseenter={() => (dragging = false)}
     >
-        <div class="grid grid-rows-12 border-r-2">
-            <div class="bg-gray-200">&nbsp;</div>
+        <div class="grid grid-rows-12 border-r-2" role="rowgroup">
+            <div class="bg-gray-200" role="rowheader">&nbsp;</div>
             {#each times as time}
-                <div>{time}</div>
+                <div role="rowheader" aria-label={`Time: ${time}`}>{time}</div>
             {/each}
         </div>
         {#each daysOfWeek as day, x }
-            <div class="grid grid-rows-12">
+            <div class="grid grid-rows-12" role="columnheader" aria-label={day}>
                 <h1 class="border-b-2 capitalize">{day}</h1>
                 {#each times as _, y }
                     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
                     <button
+                        role="gridcell"
+                        aria-label={`Price at ${daysOfWeek[x]} ${times[y]}: ${Formats.USDollar.format(schedule[x][y])}`}
                         on:mousedown={() => {
                             dragging = true;
                             region.lower = [x, y];

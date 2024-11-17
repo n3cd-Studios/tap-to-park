@@ -21,6 +21,6 @@
     })
 </script>
 
-<div class="h-full flex flex-row justify-center items-center">
+<div class="h-full flex flex-row justify-center items-center" role="status" aria-live="polite">
     <p class="text-xl">Give us a second while we sign you in..</p>
 </div>

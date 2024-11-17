@@ -40,20 +40,21 @@
 </script>
 
 <div class="h-full w-full flex flex-col justify-center items-center">
-    <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleSpotCreation}>
-        <Input bind:value={name} name="Name" required/>
+    <form class="p-10 bg-white rounded-xl w-1/3" aria-labelledby="spot-creation-form-title" on:submit|preventDefault={handleSpotCreation}>
+        <h2 id="spot-creation-form" class="sr-only">Create a Parking Spot</h2>
+        <Input bind:value={name} name="Name" required aria-label="Spot name"/>
         {#if inputCoordinates}
-            <Input bind:value={latitude} type="number" step="0.000000000001" name="Latitude" required/>
-            <Input bind:value={longitude} type="number" step="0.000000000001" name="Longitude" required/>
+            <Input bind:value={latitude} type="number" step="0.000000000001" name="Latitude" id="latitude" required aria-label="Latitude of the spot"/>
+            <Input bind:value={longitude} type="number" step="0.000000000001" name="Longitude" id="longitude" required aria-label="Longitude of the spot"/>
         {/if}
-        <Input bind:value={price} type="number" step="0.01" name="Default Price" required/>
-        <Input bind:value={maxHours} type="number" name="Maximum Reservation Hours" required/>
+        <Input bind:value={price} type="number" step="0.01" name="Default Price" id="default-price" required aria-label="Default price for the spot"/>
+        <Input bind:value={maxHours} type="number" name="Maximum Reservation Hours" id="max-reservation-hours" required aria-label="Maximum reservation hours"/>
         <Toggle bind:checked={isHandicapped} name="Handicapped"/>
-            <div class="flex flex-row justify-between">  
-            <Button type="button" on:click={() => inputCoordinates = !inputCoordinates} class="text-blue-800 underline">
+            <div class="flex flex-row justify-between" aria-live="polite">  
+            <Button type="button" on:click={() => inputCoordinates = !inputCoordinates} class="text-blue-800 underline" aria-label={inputCoordinates ? "Switch to use current location" : "Switch to specify coordinates"}>
                 {inputCoordinates ? "Use My Current Location" : "Specify Coordinates"}
             </Button>
-            <Button type="submit">Create Spot</Button>
+            <Button type="submit" aria-label="Create parking spot">Create Spot</Button>
         </div>
     </form>
 </div>
