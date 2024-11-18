@@ -41,10 +41,10 @@ func (c *Coordinates) Scan(src interface{}) (err error) {
 	data = data[1 : len(data)-1] // drop the surrounding parentheses
 	for i := 0; i < len(data); i++ {
 		if data[i] == ',' {
-			if c.Latitude, err = strconv.ParseFloat(string(data[i+1:]), 64); err != nil {
+			if c.Longitude, err = strconv.ParseFloat(string(data[i+1:]), 64); err != nil {
 				return err
 			}
-			if c.Longitude, err = strconv.ParseFloat(string(data[:i]), 64); err != nil {
+			if c.Latitude, err = strconv.ParseFloat(string(data[:i]), 64); err != nil {
 				return err
 			}
 			break
