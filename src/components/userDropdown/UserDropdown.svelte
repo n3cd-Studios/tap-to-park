@@ -46,7 +46,6 @@
     });
   
     const handleLoginButton = (event: MouseEvent) => {
-        event.stopPropagation();
         if (isLoggedIn) {
             dropdownOpen = !dropdownOpen;
         } else {
@@ -82,7 +81,7 @@
         <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                 {#each dropdownOptions as { label, route }}
-                    <button on:click={() => handleDropdownSelection(route)} class="block px-4 py-2 text-med text-[#021427] hover:bg-gray-100 w-full text-left">
+                    <button on:click|stopPropagation={() => handleDropdownSelection(route)} class="block px-4 py-2 text-med text-[#021427] hover:bg-gray-100 w-full text-left">
                         {label}
                     </button>
                 {/each}
