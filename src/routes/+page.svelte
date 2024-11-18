@@ -12,7 +12,7 @@
 
     let map: L.Map;
     let spots: Marker<any>[] = [];
-    let handicapFilter = true;
+    let handicapFilter = false;
 
     const toggleHandicap = () => {
         handicapFilter = !handicapFilter;
