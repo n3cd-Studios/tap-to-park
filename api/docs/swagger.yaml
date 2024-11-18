@@ -106,6 +106,8 @@ definitions:
         type: string
       handicap:
         type: boolean
+      maxHours:
+        type: integer
       name:
         type: string
       organization:
@@ -437,6 +439,51 @@ paths:
       summary: Get your organization
       tags:
       - organization
+  /organization/reservations:
+    get:
+      consumes:
+      - application/json
+      description: Get the transactions associated with a User's organization based
+        on their Bearer token
+      parameters:
+      - description: The size of a page
+        in: query
+        name: size
+        type: number
+      - description: The page
+        in: query
+        name: page
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/database.Reservation'
+              type: array
+            type: array
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: No reservations were found for your organization.
+          schema:
+            type: string
+        "500":
+          description: Couldn't count all of the reservations in the organization.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get the transactions for your organization
+      tags:
+      - organization
+      - transactions
+      - reservations
   /organization/spots:
     get:
       consumes:
@@ -481,8 +528,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Create an invite for User's organization based on their Bearer
-        token
+      description: Get a reservation for a Spot based on the Reservation's GUID
       produces:
       - application/json
       responses:
@@ -494,7 +540,7 @@ paths:
           description: That reservation does not exist.
           schema:
             type: string
-      summary: Create an invite
+      summary: Get a reservation by ID
       tags:
       - reservation
   /spots:
@@ -697,7 +743,7 @@ paths:
           schema:
             type: string
         "400":
-          description: You can't purchase a spot for this amount of time.
+          description: Reservation cost must be at least 50¢.
           schema:
             type: string
         "409":

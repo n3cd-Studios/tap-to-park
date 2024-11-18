@@ -454,6 +454,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/organization/reservations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerToken": []
+                    }
+                ],
+                "description": "Get the transactions associated with a User's organization based on their Bearer token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organization",
+                    "transactions",
+                    "reservations"
+                ],
+                "summary": "Get the transactions for your organization",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "The size of a page",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "The page",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/database.Reservation"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "No reservations were found for your organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Couldn't count all of the reservations in the organization.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/organization/spots": {
             "get": {
                 "security": [
@@ -517,7 +585,7 @@ const docTemplate = `{
         },
         "/reservation/{id}": {
             "get": {
-                "description": "Create an invite for User's organization based on their Bearer token",
+                "description": "Get a reservation for a Spot based on the Reservation's GUID",
                 "consumes": [
                     "application/json"
                 ],
@@ -527,7 +595,7 @@ const docTemplate = `{
                 "tags": [
                     "reservation"
                 ],
-                "summary": "Create an invite",
+                "summary": "Get a reservation by ID",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -854,7 +922,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "You can't purchase a spot for this amount of time.",
+                        "description": "Reservation cost must be at least 50¢.",
                         "schema": {
                             "type": "string"
                         }
@@ -1130,6 +1198,9 @@ const docTemplate = `{
                 },
                 "handicap": {
                     "type": "boolean"
+                },
+                "maxHours": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
