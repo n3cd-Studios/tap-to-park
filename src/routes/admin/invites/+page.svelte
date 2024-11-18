@@ -44,14 +44,34 @@
     inviteCode = response.code;
   }
 
-  const handleSpotCreation = async () => {
+  const handleInviteCreation = async () => {
     try {
         await createInvite();
+        await paginator.load();
         showModal = true;
     } catch (error) {
         toaster.push({ type: "error", message: "Failed to create invite." }, 5000);
     }
-};
+  };
+
+  const deleteInvite = async (codeToDelete: string) => {
+        const response = await get<{ message: string }>({
+            route: `organization/invites/${codeToDelete}`,
+            headers: getAuthHeader(),
+            method: "DELETE",
+        });
+        if (!response) throw "Failed to delete invite.";
+    }
+
+  const handleInviteDeletion = async (codeToDelete: string) => {
+        try {
+            await deleteInvite(codeToDelete);
+            await paginator.load();
+            toaster.push({ type: "success", message: "Invite deleted successfully." }, 5000);
+        } catch (error) {
+            toaster.push({ type: "error", message: "Failed to delete invite." }, 5000);
+        } 
+    }
 
   onMount(async () => {
     await paginator.load();
@@ -78,14 +98,14 @@
   {data}
   {loading}
   addRowItem={"invite"}
-  addRowFunctionality={() => handleSpotCreation()}
+  addRowFunctionality={() => handleInviteCreation()}
   let:code
   let:expiration
 >
   <TableItem>{code}</TableItem>
   <TableItem>{new Date(expiration).toLocaleString()}</TableItem>
   <TableItem
-    ><button aria-label={`Cancel invite code ${code}`} on:click={() => console.log("Cancel")}
+    ><button aria-label={`Cancel invite code ${code}`} class="hover:text-red-500" on:click={() => handleInviteDeletion(code)}
       ><Fa icon={faCancel} /></button
     ></TableItem
   >

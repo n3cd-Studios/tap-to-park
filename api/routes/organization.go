@@ -125,6 +125,37 @@ func (*OrganizationRoutes) CreateInvite(c *gin.Context) {
 	c.String(http.StatusInternalServerError, "Failed to create invite.")
 }
 
+// DeleteInvite godoc
+//
+// @Summary		Delete an invite
+// @Description	Delete an invite from the User's organization based on its code and the User's Bearer token
+// @Tags		organization,invite
+// @Accept		json
+// @Produce		json
+// @Param		id   path		string	true	"The code of the invite to delete"
+// @Success		200	{string} string "Invite successfully deleted."
+// @Failure		404	{string} string "That invite does not exist."
+// @Failure		500	{string} string "Failed to delete the invite."
+// @Failure		401	{string} string "Unauthorized."
+// @Router		/organization/invites/{id} [delete]
+// @Security 	BearerToken
+func (*OrganizationRoutes) DeleteInvite(c *gin.Context) {
+
+	user := c.MustGet("user").(database.User)
+	invite_id := c.Param("id")
+	invite := database.Invite{}
+	if result := database.Db.Where("code = ?", invite_id).Where("organization_id = ?", user.OrganizationID).First(&invite); result.Error != nil {
+		c.String(http.StatusNotFound, "That invite does not exist.")
+		return
+	}
+
+	if result := database.Db.Delete(&invite); result.Error != nil {
+		c.String(http.StatusInternalServerError, "Failed to delete the invite.")
+		return
+	}
+	c.IndentedJSON(http.StatusOK, "Invite successfully deleted.")
+}
+
 // GetInvites godoc
 //
 // @Summary		Get the invites for your organization

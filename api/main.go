@@ -116,6 +116,7 @@ func main() {
 		organization.GET("/spots", routing.GetSpots)
 		organization.GET("/invites", routing.GetInvites)
 		organization.POST("/invites", routing.CreateInvite)
+		organization.DELETE("/invites/:id", routing.DeleteInvite)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
