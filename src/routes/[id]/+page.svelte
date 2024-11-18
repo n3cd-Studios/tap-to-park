@@ -16,6 +16,8 @@
     const costPerMinute = costPerHour / 60;
     $: cost = (costPerHour * hours) + (costPerMinute * minutes);
 
+    $: purchaseDisabled = (hours == 0 && minutes == 0) || (hours < 0 || minutes < 0) || (Number(hours)*60 + Number(minutes) > data.maxHours*60) || (cost < 0.50);
+
     const checkout = async () => {
         const session = await get<{ url: string }>({ route: `stripe/${data.guid}`, method: "POST", body: {
             start: moment().toISOString(),
@@ -42,7 +44,16 @@
                     <p>{minutes == 1 ? "minute" : "minutes"}</p>
                 </div>
             </div>
-            <p class="text-4xl">Total: {Formats.USDollar.format(cost)}</p>
+            {#if (hours == 0 && minutes == 0) || (hours < 0 || minutes < 0)}
+                <p class="text-4xl">Enter a valid time</p>
+            {:else if (Number(hours)*60 + Number(minutes) > data.maxHours*60)}
+                <p class="text-4xl">Time exceeds the spot's maximum of {data.maxHours} hours</p>
+            {:else}
+                <p class="text-4xl">Total: {Formats.USDollar.format(Math.floor(cost*100)/100)}</p>
+                {#if cost < 0.50}
+                    <p class="text-2xl">Cost must be at least 50¢ to purchase</p>
+                {/if}
+            {/if}
         </div>
         <div class="mb-10">
             <Button on:click={() => checkout()} aria-label="Purchase the selected spot">Purchase</Button>
@@ -68,7 +79,7 @@
                     <p class="text-7xl font-bold">{Formats.USDollar.format(costPerHour)}</p>
                     <p>/hour</p>
                 </div>
-                <p>Maximum time: <span class="text-black">{pluralize(2, "hour")}</span></p>
+                <p>Maximum time: <span class="text-black">{pluralize(data.maxHours, "hour")}</span></p>
             </div>
             <div class="mb-10">
                 <Button on:click={() => continued = true} aria-label="Continue to claim this spot">Continue</Button>

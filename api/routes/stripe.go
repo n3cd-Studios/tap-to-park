@@ -64,7 +64,7 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 	now := time.Now()
 	reservation := database.Reservation{
 		Start:               now,
-		End:                 now.Add(time.Hour * time.Duration(hours)),
+		End:                 now.Add(time.Duration(hours*60) * time.Minute),
 		Email:               sess.CustomerDetails.Email,
 		Price:               float64(sess.AmountTotal),
 		SpotID:              spot.ID,
@@ -119,6 +119,8 @@ type PurchaseSpotInput struct {
 // @Failure		400	{string} string "That spot ID is invalid."
 // @Failure		400	{string} string "Invalid body."
 // @Failure		400 {string} string "You can't purchase a spot for this amount of time."
+// @Failure		400 {string} string "Reservation exceeds spot maximum reservation time."
+// @Failure		400 {string} string "Reservation cost must be at least 50¢."
 // @Failure		409 {string} string "This spot has already been reserved."
 // @Failure		500	{string} string "Failed to create stripe session."
 // @Router		/stripe/{id} [post]
@@ -148,6 +150,17 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		return
 	}
 
+	if hours > float64(spot.MaxHours) {
+		c.String(http.StatusBadRequest, "Reservation exceeds spot maximum reservation time.")
+		return
+	}
+
+	var purchasePrice = int64(hours * spot.GetPrice() * 100)
+	if purchasePrice < 50 {
+		c.String(http.StatusBadRequest, "Reservation cost must be at least 50¢.")
+		return
+	}
+
 	domain := "http://" + os.Getenv("BACKEND_HOST")
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -158,7 +171,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 						Name:        stripe.String("Parking"),
 						Description: stripe.String("Parking at " + spot.Name),
 					},
-					UnitAmount: stripe.Int64(int64(hours * spot.GetPrice() * 100)),
+					UnitAmount: stripe.Int64(purchasePrice),
 				},
 				Quantity: stripe.Int64(1),
 			},
