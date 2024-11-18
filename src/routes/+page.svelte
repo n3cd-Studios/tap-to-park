@@ -4,12 +4,13 @@
     import { onMount } from "svelte";
     import Button from "../components/form/Button.svelte";
     import Map from "../components/Map.svelte";
+    import UserDropdown from "../components/userDropdown/UserDropdown.svelte";
     import type { Coords, Spot } from "../lib/models";
     import Fa from 'svelte-fa';
     import { faBan, faWheelchair } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
     import moment from "moment";
-
+    
     let map: L.Map;
     let spots: Marker<any>[] = [];
     let handicapFilter = false;
@@ -70,6 +71,9 @@
     <div class="flex flex-col gap-2">
         <div class="w-96 h-96 rounded-lg border-white border-4" aria-label="Map showing nearby parking spots">
             <Map bind:map={map}/>
+        </div>
+        <div class="absolute top-6 right-12">
+            <UserDropdown onLoginRedirect="/auth/login" />
         </div>
         <div class="flex flex-row justify-between">
             <div class="flex gap-2">
