@@ -115,6 +115,7 @@ func main() {
 		organization.GET("/me", routing.GetOrganization)
 		organization.GET("/spots", routing.GetSpots)
 		organization.GET("/invites", routing.GetInvites)
+		organization.GET("/reservations", routing.GetReservations)
 		organization.POST("/invites", routing.CreateInvite)
 	}
 
