@@ -70,10 +70,10 @@
 </script>
 
 <div class="flex flex-col gap-2">
-    <h1 class="text-lg text-center">
+    <h1 class="text-lg text-center" aria-level="1">
         <span class="font-bold">{organization?.name}</span> organization
     </h1>
-    <div class="w-full h-96 rounded-lg border-white border-4 z-0">
+    <div class="w-full h-96 rounded-lg border-white border-4 z-0" role="region" aria-label="Map showing organization locations">
         <Map bind:map />
     </div>
     <Table
@@ -88,10 +88,10 @@
     >
         <TableItem>{name}</TableItem>
         <TableItem>({coords.latitude}, {coords.longitude})</TableItem>
-        <TableItem><a class="inline-flex justify-center min-w-full hover:text-blue-600" href={`/admin/spots/${guid}`}><Fa icon={faEdit} /></a></TableItem>
+        <TableItem><a class="inline-flex justify-center min-w-full hover:text-blue-600" href={`/admin/spots/${guid}`} aria-label={`Edit details for ${name}`}><Fa icon={faEdit} /></a></TableItem>
     </Table>
     <div class="flex flex-row justify-center gap-2">
-        <Button on:click={() => paginator.last()}>{"<"}</Button>
-        <Button on:click={() => paginator.next()}>{">"}</Button>
+        <Button on:click={() => paginator.last()} aria-label="Go to previous page">{"<"}</Button>
+        <Button on:click={() => paginator.next()} aria-label="Go to next page">{">"}</Button>
     </div>
 </div>
