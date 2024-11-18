@@ -6,15 +6,20 @@
     import Map from "../components/Map.svelte";
     import type { Coords, Spot } from "../lib/models";
     import Fa from 'svelte-fa';
-    import { faFilter } from '@fortawesome/free-solid-svg-icons';
+    import { faBan, faWheelchair } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
     import moment from "moment";
 
     let map: L.Map;
-    let spots: Marker<any>[];
+    let spots: Marker<any>[] = [];
     let handicapFilter = false;
 
-    onMount(async () => {
+    const toggleHandicap = () => {
+        handicapFilter = !handicapFilter;
+        updateMarkers();
+    }
+    
+    const updateMarkers = async () => {
         const promisifyGeolocation = (): Promise<Coords> =>
             new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
 
@@ -22,9 +27,14 @@
         const { latitude, longitude } = await promisifyGeolocation();
         map.setView([latitude, longitude], 13);
 
-        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString() }}, []);
-        spots = nearbySpots.map(({ guid, coords }) =>
-            leaflet
+        if (spots.length > 0) {
+            spots.forEach(marker => map.removeLayer(marker));
+            spots = [];
+        }
+
+        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
+        spots = nearbySpots.map(({ guid, coords }) => {
+            const marker = leaflet
                 .marker([coords.latitude, coords.longitude])
                 .bindPopup(`Loading`)
                 .on("popupopen", async ({ popup }) => {
@@ -38,8 +48,13 @@
                         `)
                     } else popup.setContent("Failed to load.");
                 })
-                .addTo(map),
-        );
+                .addTo(map)
+            return marker;
+        });
+    }
+
+    onMount(async () => {
+        await updateMarkers();
     });
 
     let activeSpot = 0;
@@ -66,8 +81,13 @@
                 <Button
                     aria-presed={handicapFilter}
                     aria-label="Toggle filter for handicap accessible spots"
-                    on:click={() => handicapFilter = !handicapFilter}>
-                    <Fa icon={faFilter} class="w-4 h-4 mr-0.5" />
+                    on:click={toggleHandicap}>
+                    <div class="relative">
+                        <Fa icon={faWheelchair} class="w-4 h-4" />
+                        {#if handicapFilter}
+                            <Fa icon={faBan} class="absolute top-0 left-0 w-4 h-4 text-red-500 opacity-80" />
+                        {/if}
+                    </div>
                 </Button>
             </div>
             <div>

@@ -56,6 +56,8 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).Limit(10)
 	if c.Query("handicap") == "true" {
 		query = query.Where("handicap = ?", true)
+	} else {
+		query = query.Where("handicap = ?", false)
 	}
 
 	result := query.Find(&spots)
