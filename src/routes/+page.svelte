@@ -52,9 +52,9 @@
 
 </script>
 
-<div class="flex h-full items-center justify-center">
+<div class="flex h-full items-center justify-center" role="main" aria-label="Nearby parking spots interface">
     <div class="flex flex-col gap-2">
-        <div class="w-96 h-96 rounded-lg border-white border-4">
+        <div class="w-96 h-96 rounded-lg border-white border-4" aria-label="Map showing nearby parking spots">
             <Map bind:map={map}/>
         </div>
         <div class="absolute top-6 right-12">
@@ -62,14 +62,29 @@
         </div>
         <div class="flex flex-row justify-between">
             <div class="flex gap-2">
-                <Button on:click={() => { activeSpot = 0; updateSpot()}}>Find Nearest</Button>
-                <Button on:click={() => handicapFilter = !handicapFilter}>
+                <Button
+                    aria-label="Find the nearest available parking spot"
+                    on:click={() => { activeSpot = 0; updateSpot()}}>
+                    Find Nearest
+                </Button>
+                <Button
+                    aria-presed={handicapFilter}
+                    aria-label="Toggle filter for handicap accessible spots"
+                    on:click={() => handicapFilter = !handicapFilter}>
                     <Fa icon={faFilter} class="w-4 h-4 mr-0.5" />
                 </Button>
             </div>
             <div>
-                <Button on:click={() => { activeSpot--; updateSpot(); }}>{"<"}</Button>
-                <Button on:click={() => { activeSpot++; updateSpot(); }}>{">"}</Button>
+                <Button
+                    aria-label="Previous parking spot"
+                    on:click={() => { activeSpot--; updateSpot(); }}>
+                    {"<"}
+                </Button>
+                <Button
+                    aria-label="Next parking spot"
+                    on:click={() => { activeSpot++; updateSpot(); }}>
+                    {">"}
+                </Button>
             </div>
         </div>
     </div>

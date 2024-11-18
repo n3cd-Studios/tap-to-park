@@ -62,13 +62,13 @@
 <Modal
   visible={showModal}
   title={"Invite Code Created"}
-  error={false}
   on:close={() => showModal=false}
   icon = {IconType.SUCCESS}
 >
-  <div slot="message" class="mt-2 flex" >
-    <button class="text-3xl text-gray-900 hover:text-gray-500 font-bold" on:click={() => copyInvite()}>{inviteCode}</button>
-    <button class="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none" on:click={() => copyInvite()}>
+  <h2 id="invite-modal" class="sr-only">Invite Code Created</h2>
+  <div id="invite-modal-message" slot="message" class="mt-2 flex" >
+    <button class="text-3xl text-gray-900 hover:text-gray-500 font-bold" aria-label="Copy invite code" on:click={() => copyInvite()}>{inviteCode}</button>
+    <button class="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none" aria-label="Copy invite code" on:click={() => copyInvite()}>
         <Fa icon={faCopy} class="h-5 w-5"/>
     </button>
   </div>
@@ -85,12 +85,12 @@
   <TableItem>{code}</TableItem>
   <TableItem>{expiration}</TableItem>
   <TableItem
-    ><button on:click={() => console.log("Cancel")}
+    ><button aria-label={`Cancel invite code ${code}`} on:click={() => console.log("Cancel")}
       ><Fa icon={faCancel} /></button
     ></TableItem
   >
 </Table>
 <div class="flex flex-row justify-center gap-2">
-  <Button on:click={() => paginator.last()}>Last</Button>
-  <Button on:click={() => paginator.next()}>Next</Button>
+  <Button on:click={() => paginator.last()} aria-label="Go to the last page">Last</Button>
+  <Button on:click={() => paginator.next()} aria-label="Go to the next page">Next</Button>
 </div>

@@ -21,17 +21,24 @@
 </script>
 
 <div class="h-full w-full flex flex-col justify-center items-center">
-    <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleRegister}>
-        <Input bind:value={email} name="Email"/>
-        <Input bind:value={password} name="Password" type="password"/>
+    <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleRegister} aria-labelledby="register-form">
+        <Input bind:value={email} name="Email" id="email" aria-label="Email address"/>
+        <Input bind:value={password} name="Password" type="password" id="password" aria-label="Password"/>
         {#if showInvite}
-            <Input bind:value={invite} name="Invite Code" />
+            <div aria-live="polite">
+                <Input bind:value={invite} name="Invite Code" id="invite-code" aria-label="Invite Code"/>
+            </div>
         {/if}
         <div class="flex flex-row justify-between">
-            <button type="button" class="text-blue-400" on:click={() => showInvite = !showInvite}>
+            <button
+                type="button"
+                class="text-blue-400"
+                aria-expanded={showInvite}
+                aria-controls="invite-code"
+                on:click={() => showInvite = !showInvite}>
                 {`I ${showInvite ? "don't":""} have an invite code`}
             </button>
-            <Button type="submit">Register</Button>
+            <Button type="submit" aria-label="Register">Register</Button>
         </div>
     </form>
 </div>
