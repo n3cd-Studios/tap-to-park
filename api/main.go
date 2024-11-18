@@ -64,6 +64,9 @@ func main() {
 	{
 		routing := routes.ReservationRoutes{}
 		reservations.GET("/:id", routing.GetReservation)
+
+		// DO NOT USE IN PRODUCTION!
+		if !IsProduction() { reservations.POST("", routing.CreateFakeReservation) }
 	}
 
 	// Spot routes
