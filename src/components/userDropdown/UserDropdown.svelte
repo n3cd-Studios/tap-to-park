@@ -8,6 +8,7 @@
     import { UserRole } from '$lib/models';
   
     export let onLoginRedirect = '/auth/login';
+    export let onRegisterRedirect = '/auth/register';
   
     let isLoggedIn = false;
     let userEmail: string | null = null;
@@ -15,19 +16,24 @@
     let dropdownOpen = false;
     let container: HTMLDivElement;
   
-    const generateDropdownOptions = (): { label: string, route: string }[] => {
-        const options = [
-            { label: 'User Profile', route: '/user' },
-            { label: 'Settings & Privacy', route: '/auth/settings' },
-            ...(isAdmin ? [{ label: 'Admin Dashboard', route: '/admin' }] : []),
-            { label: 'Logout', route: '/auth/logout' }
-        ];
-  
-        return options;
+    const generateOptions = (): { label: string, route: string }[] => {
+        if (isLoggedIn) {
+            return [
+                { label: 'User Profile', route: '/user' },
+                { label: 'Settings & Privacy', route: '/auth/settings' },
+                ...(isAdmin ? [{ label: 'Admin Dashboard', route: '/admin' }] : []),
+                { label: 'Logout', route: '/auth/logout' }
+            ];
+        } else {
+            return [
+                { label: 'Login', route: onLoginRedirect },
+                { label: 'Register', route: onRegisterRedirect }
+            ];
+        }
     };
   
-    let dropdownOptions = generateDropdownOptions();
-  
+    let dropdownOptions: { label: string, route: string }[] = [];
+      
     onMount(async () => {
         try {
             const user = await getUserInfo();
@@ -35,17 +41,17 @@
                 userEmail = user.email;
                 isLoggedIn = true;
                 isAdmin = user.role === UserRole.ADMIN;
-                dropdownOptions = generateDropdownOptions();
             } else {
                 isLoggedIn = false;
             }
+            dropdownOptions = generateOptions();
         } catch (error) {
             console.error("Failed to fetch user info:", error);
-            isLoggedIn = false;
         }
     });
   
     const handleLoginButton = (event: MouseEvent) => {
+        dropdownOpen = !dropdownOpen;
         if (isLoggedIn) {
             dropdownOpen = !dropdownOpen;
         } else {
@@ -67,17 +73,18 @@
   
 <svelte:window on:click={onWindowClick} />
 <div bind:this={container}>
-    <Button buttonType={ButtonType.DEFAULT} on:click={handleLoginButton}>
-        {#if isLoggedIn}
-            <span style="display: flex; align-items: center;">
-                <Fa icon={faBars} class="mr-2 fa-bounce" /> {userEmail}
-            </span>
-        {:else}
-            Login
-        {/if}
+    <Button buttonType={ButtonType.DEFAULT} on:click={() => {dropdownOpen = !dropdownOpen;}}>
+        <span style="display: flex; align-items: center;">
+            <Fa icon={faBars} class="mr-2 fa-bounce" /> 
+            {#if isLoggedIn}
+                {userEmail}
+            {:else}
+                Get Started
+            {/if}
+        </span>
     </Button>
 
-    {#if dropdownOpen && isLoggedIn}
+    {#if dropdownOpen}
         <div class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                 {#each dropdownOptions as { label, route }}
