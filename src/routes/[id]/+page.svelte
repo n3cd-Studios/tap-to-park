@@ -16,6 +16,8 @@
     const costPerMinute = costPerHour / 60;
     $: cost = (costPerHour * hours) + (costPerMinute * minutes);
 
+    $: purchaseDisabled = (hours == 0 && minutes == 0) || (hours < 0 || minutes < 0) || (Number(hours)*60 + Number(minutes) > data.maxHours*60) || (cost < 0.50);
+
     const checkout = async () => {
         const session = await get<{ url: string }>({ route: `stripe/${data.guid}`, method: "POST", body: {
             start: moment().toISOString(),
@@ -33,18 +35,27 @@
             <p>Claim this space for:</p>
             <div class="flex flex-col gap-2">
                 <div class="flex flex-row gap-2 items-baseline text-4xl">
-                    <input bind:value={hours} class="bg-white rounded-lg text-black text-center w-1/4 py-5" max="24"  />
+                    <input bind:value={hours} class="bg-white rounded-lg text-black text-center w-1/4 py-5" type="number" inputmode="numeric" max="24"  />
                     <p>{hours == 1 ? "hour" : "hours"}</p>
                 </div>
                 <div class="flex flex-row gap-2 items-baseline text-4xl">
-                    <input bind:value={minutes} class="bg-white rounded-lg text-black text-center w-1/4 py-5" max="60" />
+                    <input bind:value={minutes} class="bg-white rounded-lg text-black text-center w-1/4 py-5" type="number" inputmode="numeric" max="60" />
                     <p>{minutes == 1 ? "minute" : "minutes"}</p>
                 </div>
             </div>
-            <p class="text-4xl">Total: {Formats.USDollar.format(cost)}</p>
+            {#if (hours == 0 && minutes == 0) || (hours < 0 || minutes < 0)}
+                <p class="text-4xl">Enter a valid time</p>
+            {:else if (Number(hours)*60 + Number(minutes) > data.maxHours*60)}
+                <p class="text-4xl">Time exceeds the spot's maximum of {data.maxHours} hours</p>
+            {:else}
+                <p class="text-4xl">Total: {Formats.USDollar.format(Math.floor(cost*100)/100)}</p>
+                {#if cost < 0.50}
+                    <p class="text-2xl">Cost must be at least 50¢ to purchase</p>
+                {/if}
+            {/if}
         </div>
         <div class="mb-10">
-            <Button on:click={() => checkout()}>Purchase</Button>
+            <Button on:click={() => checkout()} disabled={purchaseDisabled}>Purchase</Button>
         </div>
     </div>
 {:else}
@@ -67,7 +78,7 @@
                     <p class="text-7xl font-bold">{Formats.USDollar.format(costPerHour)}</p>
                     <p>/hour</p>
                 </div>
-                <p>Maximum time: <span class="text-black">{pluralize(2, "hour")}</span></p>
+                <p>Maximum time: <span class="text-black">{pluralize(data.maxHours, "hour")}</span></p>
             </div>
             <div class="mb-10">
                 <Button on:click={() => continued = true}>Continue</Button>
