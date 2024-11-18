@@ -83,7 +83,7 @@
   let:expiration
 >
   <TableItem>{code}</TableItem>
-  <TableItem>{expiration}</TableItem>
+  <TableItem>{new Date(expiration).toLocaleString()}</TableItem>
   <TableItem
     ><button aria-label={`Cancel invite code ${code}`} on:click={() => console.log("Cancel")}
       ><Fa icon={faCancel} /></button
