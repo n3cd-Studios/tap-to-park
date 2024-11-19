@@ -5,12 +5,12 @@
     import Button from "../components/form/Button.svelte";
     import Map from "../components/Map.svelte";
     import UserDropdown from "../components/userDropdown/UserDropdown.svelte";
-    import type { Coords, Spot } from "../lib/models";
+    import type { Coords, PartialSpot, Spot } from "../lib/models";
     import Fa from 'svelte-fa';
     import { faBan, faWheelchair } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
     import moment from "moment";
-    
+
     let map: L.Map;
     let spots: Marker<any>[] = [];
     let handicapFilter = false;
@@ -19,7 +19,7 @@
         handicapFilter = !handicapFilter;
         updateMarkers();
     }
-    
+
     const updateMarkers = async () => {
         const promisifyGeolocation = (): Promise<Coords> =>
             new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
@@ -33,19 +33,9 @@
             spots = [];
         }
 
-        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords" | "reservation" >[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
-        spots = nearbySpots.map(({ guid, coords, reservation }) => {
-            let markerColor = 'green';
-            const now = new Date();
-            if (reservation) {
-                const reservationEnd = new Date(reservation.end);
-                const minuteDifference = (reservationEnd.getTime() - now.getTime()) / (60 * 1000);
-                if (minuteDifference < 30) {
-                    markerColor = 'gold';
-                } else {
-                    markerColor = 'red';
-                }
-            }
+        const nearbySpots = await getWithDefault<PartialSpot[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
+        spots = nearbySpots.map(({ guid, coords, timeLeft = 0 }) => {
+            const markerColor = timeLeft <= 0 ? 'green' : (timeLeft > 30 ? 'red' : 'yellow');
             const marker = leaflet
             .marker([coords.latitude, coords.longitude], {
                 icon: leaflet.divIcon({

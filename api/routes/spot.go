@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"tap-to-park/database"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/skip2/go-qrcode"
@@ -17,14 +16,12 @@ import (
 type SpotRoutes struct{}
 
 type ReservationTimes struct {
-	Start time.Time `json:"start"`
-	End   time.Time `json:"end"`
 }
 
 type GetSpotsNearOutput struct {
 	Guid        string               `json:"guid"`
 	Coords      database.Coordinates `json:"coords"`
-	Reservation *ReservationTimes    `json:"reservation"`
+	TimeLeft 	int 				 `json:"timeLeft"`
 }
 
 // GetSpotsNear godoc
@@ -60,14 +57,11 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 	}
 
 	spots := []database.Spot{}
-	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).Limit(10)
-	if c.Query("handicap") == "true" {
-		query = query.Where("handicap = ?", true)
-	} else {
-		query = query.Where("handicap = ?", false)
-	}
-
-	result := query.Find(&spots)
+	result := database.Db.Model(&database.Spot{}).
+		Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).
+		Limit(10).
+		Where("handicap = ?", c.Query("handicap") == "true").
+		Find(&spots)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "Could not load the list of spots.")
 		return
@@ -75,18 +69,15 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 
 	spotsOutput := []GetSpotsNearOutput{}
 	for _, spot := range spots {
+		timeLeft := 0
 		reservation := spot.GetReservation()
-		var reservationTimes *ReservationTimes
 		if reservation != nil {
-			reservationTimes = &ReservationTimes{
-				Start: reservation.Start,
-				End:   reservation.End,
-			}
+			timeLeft = int(reservation.End.Sub(reservation.Start).Minutes())
 		}
 		spotsOutput = append(spotsOutput, GetSpotsNearOutput{
-			Guid:        spot.Guid,
-			Coords:      spot.Coords,
-			Reservation: reservationTimes,
+			Guid:   spot.Guid,
+			Coords: spot.Coords,
+			TimeLeft: timeLeft,
 		})
 	}
 
