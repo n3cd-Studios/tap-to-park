@@ -15,9 +15,13 @@ import (
 
 type SpotRoutes struct{}
 
+type ReservationTimes struct {
+}
+
 type GetSpotsNearOutput struct {
-	Guid   string               `json:"guid"`
-	Coords database.Coordinates `json:"coords"`
+	Guid        string               `json:"guid"`
+	Coords      database.Coordinates `json:"coords"`
+	TimeLeft 	int 				 `json:"timeLeft"`
 }
 
 // GetSpotsNear godoc
@@ -52,21 +56,32 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 		return
 	}
 
-	spots := []GetSpotsNearOutput{}
-	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).Limit(10)
-	if c.Query("handicap") == "true" {
-		query = query.Where("handicap = ?", true)
-	} else {
-		query = query.Where("handicap = ?", false)
-	}
-
-	result := query.Find(&spots)
+	spots := []database.Spot{}
+	result := database.Db.Model(&database.Spot{}).
+		Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).
+		Limit(10).
+		Where("handicap = ?", c.Query("handicap") == "true").
+		Find(&spots)
 	if result.Error != nil {
 		c.String(http.StatusNotFound, "Could not load the list of spots.")
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, spots)
+	spotsOutput := []GetSpotsNearOutput{}
+	for _, spot := range spots {
+		timeLeft := 0
+		reservation := spot.GetReservation()
+		if reservation != nil {
+			timeLeft = int(reservation.End.Sub(reservation.Start).Minutes())
+		}
+		spotsOutput = append(spotsOutput, GetSpotsNearOutput{
+			Guid:   spot.Guid,
+			Coords: spot.Coords,
+			TimeLeft: timeLeft,
+		})
+	}
+
+	c.IndentedJSON(http.StatusOK, spotsOutput)
 }
 
 type GetSpotOutput struct {

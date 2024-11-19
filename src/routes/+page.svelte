@@ -5,12 +5,12 @@
     import Button from "../components/form/Button.svelte";
     import Map from "../components/Map.svelte";
     import UserDropdown from "../components/userDropdown/UserDropdown.svelte";
-    import type { Coords, Spot } from "../lib/models";
+    import type { Coords, PartialSpot, Spot } from "../lib/models";
     import Fa from 'svelte-fa';
     import { faBan, faWheelchair } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
     import moment from "moment";
-    
+
     let map: L.Map;
     let spots: Marker<any>[] = [];
     let handicapFilter = false;
@@ -19,7 +19,7 @@
         handicapFilter = !handicapFilter;
         updateMarkers();
     }
-    
+
     const updateMarkers = async () => {
         const promisifyGeolocation = (): Promise<Coords> =>
             new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
@@ -33,10 +33,19 @@
             spots = [];
         }
 
-        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
-        spots = nearbySpots.map(({ guid, coords }) => {
+        const nearbySpots = await getWithDefault<PartialSpot[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
+        spots = nearbySpots.map(({ guid, coords, timeLeft = 0 }) => {
+            const markerColor = timeLeft <= 0 ? 'green' : (timeLeft > 30 ? 'red' : 'yellow');
             const marker = leaflet
-                .marker([coords.latitude, coords.longitude])
+            .marker([coords.latitude, coords.longitude], {
+                icon: leaflet.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background-color: ${markerColor}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff;"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8],
+                    popupAnchor: [0, -8]
+                })
+            })
                 .bindPopup(`Loading`)
                 .on("popupopen", async ({ popup }) => {
                     const spot = await get<Spot>({ route: `spots/${guid}` })
@@ -54,8 +63,12 @@
         });
     }
 
-    onMount(async () => {
-        await updateMarkers();
+    let timer: number;
+
+    onMount(() => {
+        updateMarkers();
+        timer = setInterval(() => { updateMarkers(); }, 60 * 1000); // update markers every minute
+        return () => { clearInterval(timer); };
     });
 
     let activeSpot = 0;

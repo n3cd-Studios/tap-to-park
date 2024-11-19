@@ -5,11 +5,14 @@ export interface Coords {
     longitude: number;
 };
 
+export type PartialSpot = Pick<Spot, "guid" | "coords" | "timeLeft">;
+
 export interface Spot {
     guid: string;
     coords: Coords;
     name: string;
     maxHours: number;
+    timeLeft?: number;
     handicap: boolean;
     price?: number;
     reservation?: Reservation;
