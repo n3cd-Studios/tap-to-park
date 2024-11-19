@@ -18,6 +18,7 @@
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/chart.js": "^2.9.41",
 		"@types/leaflet": "^1.9.12",
 		"@vitejs/plugin-basic-ssl": "^1.1.0",
 		"autoprefixer": "^10.4.20",
@@ -32,6 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"chart.js": "^4.4.6",
 		"moment": "^2.30.1",
 		"svelte-fa": "^4.0.3",
 		"svelte-persisted-store": "^0.11.0"

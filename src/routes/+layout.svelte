@@ -1,6 +1,8 @@
 
 <script>
     import "../app.css";
+    import "chart.js/auto";
+
     import Logo from "../assets/logo.png"
     import Toaster from "../components/toaster/Toaster.svelte";
 </script>

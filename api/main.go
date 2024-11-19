@@ -119,6 +119,13 @@ func main() {
 		organization.POST("/invites", routing.CreateInvite)
 	}
 
+	// Analytics routes
+	analytics := api.Group("/analytics", auth.AuthMiddleware(database.ADMIN))
+	{
+		routing := routes.AnalyticRoutes{}
+		analytics.GET("/top", routing.GetTopSpots)
+	}
+
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.Run(os.Getenv("BACKEND_HOST"))
 }
