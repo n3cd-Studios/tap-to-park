@@ -12,6 +12,8 @@
     import { toaster } from "../../components/toaster/toaster";
     import { goto } from "$app/navigation";
     import { IconType } from "$lib/utils";
+    import { Formats } from "$lib/lang";
+    import moment from "moment";
 
     let map: L.Map;
 
@@ -30,7 +32,7 @@
     let organization: Organization | null;
 
     const getSpot = (guid: string) =>
-        get<Spot>({ route: `spots/${guid}/info` });
+        get<Spot>({ route: `spots/${guid}` });
 
     let markers: [L.Marker, string][] = [];
 
@@ -56,11 +58,17 @@
             const marker = leaflet
                 .marker([coords.latitude, coords.longitude])
                 .bindPopup("Loading...")
-                .on("popupopen", ({ popup }) =>
-                    getSpot(guid).then((spot) =>
-                        popup.setContent(`${spot?.name}`),
-                    ),
-                )
+                .on("popupopen", async ({ popup }) => {
+                    const spot = await get<Spot>({ route: `spots/${guid}` })
+                    if (spot) {
+                        if (spot.reservation) popup.setContent(
+                           `<p>${spot.name} is <span class="text-red-800">reserved</span> with <span class="font-bold">${moment(spot.reservation.end).fromNow(true)}</span> remaining.</p>`)
+                        else popup.setContent(`
+                            <p>${spot.name} is <span class="text-green-800">available</span>.</p>
+                            <p>You can purchase this spot <a href="/${guid}">here</a>.</p>
+                        `)
+                    } else popup.setContent("Failed to load.");
+                })
                 .addTo(map);
                 
             markers.push([marker, guid])
