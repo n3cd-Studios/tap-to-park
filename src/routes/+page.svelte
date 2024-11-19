@@ -33,10 +33,29 @@
             spots = [];
         }
 
-        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords">[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
-        spots = nearbySpots.map(({ guid, coords }) => {
+        const nearbySpots = await getWithDefault<Pick<Spot, "guid" | "coords" | "reservation" >[]>({ route: "spots/near", params: { lat: latitude.toString(), lng: longitude.toString(), handicap: handicapFilter.toString() }}, []);
+        spots = nearbySpots.map(({ guid, coords, reservation }) => {
+            let markerColor = 'green';
+            const now = new Date();
+            if (reservation) {
+                const reservationEnd = new Date(reservation.end);
+                const minuteDifference = (reservationEnd.getTime() - now.getTime()) / (60 * 1000);
+                if (minuteDifference < 30) {
+                    markerColor = 'gold';
+                } else {
+                    markerColor = 'red';
+                }
+            }
             const marker = leaflet
-                .marker([coords.latitude, coords.longitude])
+            .marker([coords.latitude, coords.longitude], {
+                icon: leaflet.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background-color: ${markerColor}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff;"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8],
+                    popupAnchor: [0, -8]
+                })
+            })
                 .bindPopup(`Loading`)
                 .on("popupopen", async ({ popup }) => {
                     const spot = await get<Spot>({ route: `spots/${guid}` })
@@ -54,8 +73,12 @@
         });
     }
 
-    onMount(async () => {
-        await updateMarkers();
+    let timer: number;
+
+    onMount(() => {
+        updateMarkers();
+        timer = setInterval(() => { updateMarkers(); }, 60 * 1000); // update markers every minute
+        return () => { clearInterval(timer); };
     });
 
     let activeSpot = 0;

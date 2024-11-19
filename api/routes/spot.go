@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"tap-to-park/database"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/skip2/go-qrcode"
@@ -15,9 +16,15 @@ import (
 
 type SpotRoutes struct{}
 
+type ReservationTimes struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
+}
+
 type GetSpotsNearOutput struct {
-	Guid   string               `json:"guid"`
-	Coords database.Coordinates `json:"coords"`
+	Guid        string               `json:"guid"`
+	Coords      database.Coordinates `json:"coords"`
+	Reservation *ReservationTimes    `json:"reservation"`
 }
 
 // GetSpotsNear godoc
@@ -52,7 +59,7 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 		return
 	}
 
-	spots := []GetSpotsNearOutput{}
+	spots := []database.Spot{}
 	query := database.Db.Model(&database.Spot{}).Order(clause.OrderBy{Expression: clause.Expr{SQL: "coords <-> Point (?,?)", Vars: []interface{}{lat, lng}, WithoutParentheses: true}}).Limit(10)
 	if c.Query("handicap") == "true" {
 		query = query.Where("handicap = ?", true)
@@ -66,7 +73,24 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, spots)
+	spotsOutput := []GetSpotsNearOutput{}
+	for _, spot := range spots {
+		reservation := spot.GetReservation()
+		var reservationTimes *ReservationTimes
+		if reservation != nil {
+			reservationTimes = &ReservationTimes{
+				Start: reservation.Start,
+				End:   reservation.End,
+			}
+		}
+		spotsOutput = append(spotsOutput, GetSpotsNearOutput{
+			Guid:        spot.Guid,
+			Coords:      spot.Coords,
+			Reservation: reservationTimes,
+		})
+	}
+
+	c.IndentedJSON(http.StatusOK, spotsOutput)
 }
 
 type GetSpotOutput struct {
