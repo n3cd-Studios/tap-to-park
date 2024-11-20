@@ -40,19 +40,19 @@
                     popupAnchor: [0, -8]
                 })
             })
-                .bindPopup("Loading..")
-                .on("popupopen", async ({ popup }) => {
-                    const spot = await get<Spot>({ route: `spots/${guid}` })
-                    if (spot) {
-                        if (spot.reservation) popup.setContent(
-                           `<p>This spot is <span class="text-red-800">reserved</span>. It will become free in <span class="font-bold">${moment(spot.reservation.end).fromNow(true)}</span>.</p>`)
-                        else popup.setContent(`
-                            <p>This spot is <span class="text-green-800">available</span>, it costs <span class="font-bold">${Formats.USDollar.format(spot.price ?? 0)}</span></p>
-                            <p>You can purchase this spot <a href="/${guid}">here</a>.</p>
-                        `)
-                    } else popup.setContent("Failed to load.");
-                })
-                .addTo(map)
+              .bindPopup("Loading..")
+              .on("popupopen", async ({ popup }) => {
+                  const spot = await get<Spot>({ route: `spots/${guid}` })
+                  if (spot) {
+                      if (spot.reservation) popup.setContent(
+                          `<p>This spot is <span class="text-red-800">reserved</span>. It will become free in <span class="font-bold">${moment(spot.reservation.end).fromNow(true)}</span>.</p>`)
+                      else popup.setContent(`
+                          <p>This spot is <span class="text-green-800">available</span>, it costs <span class="font-bold">${Formats.USDollar.format(spot.price ?? 0)}</span></p>
+                          <p>You can purchase this spot <a href="/${guid}">here</a>.</p>
+                      `)
+                  } else popup.setContent("Failed to load.");
+              })
+              .addTo(map)
             return marker;
         });
     }

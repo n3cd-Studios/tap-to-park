@@ -1,11 +1,22 @@
 
 <script lang="ts">
     import type { User } from "$lib/models";
+    import Table from "../../components/table/Table.svelte";
+    import TableItem from "../../components/table/TableItem.svelte";
 
     export let data: User;
 </script>
 
-<p>
-    Hello, <span class="font-bold text-center">{data.email}</span>.
-    <a href="/auth/logout" aria-label="Log out of your account">Logout.</a>
-</p>
+<div class="m-10">
+    <Table
+        data={[]}
+        columns={["spot", "start", "end", "price"]}
+        loading={false}
+        let:guid
+        let:device
+        let:ip
+        let:expires
+        let:lastUsed
+    >
+    </Table>
+</div>

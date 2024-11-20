@@ -19,9 +19,10 @@ type ReservationTimes struct {
 }
 
 type GetSpotsNearOutput struct {
-	Guid        string               `json:"guid"`
-	Coords      database.Coordinates `json:"coords"`
-	TimeLeft 	int 				 `json:"timeLeft"`
+	Guid     string               `json:"guid"`
+	Coords   database.Coordinates `json:"coords"`
+	Handicap bool                 `json:"handicap"`
+	TimeLeft int                  `json:"timeLeft"`
 }
 
 // GetSpotsNear godoc
@@ -75,8 +76,9 @@ func (*SpotRoutes) GetSpotsNear(c *gin.Context) {
 			timeLeft = int(reservation.End.Sub(reservation.Start).Minutes())
 		}
 		spotsOutput = append(spotsOutput, GetSpotsNearOutput{
-			Guid:   spot.Guid,
-			Coords: spot.Coords,
+			Guid:     spot.Guid,
+			Coords:   spot.Coords,
+			Handicap: spot.Handicap,
 			TimeLeft: timeLeft,
 		})
 	}

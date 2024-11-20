@@ -1,13 +1,10 @@
-import { get, getWithDefault } from "$lib/api";
-import { authStore } from "$lib/auth";
+import { apiURL } from "$lib/api";
+import { getAuthHeader } from "$lib/auth";
 import type { Session } from "$lib/models";
-import { get as getStore } from "svelte/store";
 
-export const load = async ({}) => {
-    const sessions = await getWithDefault<Session[]>({
-        route: `auth/sessions`,
-        headers: { Authentication: `Bearer ${getStore(authStore).token}` },
-        method: "GET",
-    }, []);
+export const load = async ({ fetch }) => {
+  const sessions = await fetch(apiURL`auth/sessions`, { headers: getAuthHeader() })
+    .then(res => res.json() as Session[])
+    .catch(_ => []);
     return { sessions };
-} 
+}

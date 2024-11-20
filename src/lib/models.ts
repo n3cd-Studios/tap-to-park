@@ -5,7 +5,7 @@ export interface Coords {
     longitude: number;
 };
 
-export type PartialSpot = Pick<Spot, "guid" | "coords" | "timeLeft">;
+export type PartialSpot = Pick<Spot, "guid" | "coords" | "timeLeft" | "handicap">;
 
 export interface Spot {
     guid: string;
