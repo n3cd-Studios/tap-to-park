@@ -1,6 +1,6 @@
 
 import { persisted } from 'svelte-persisted-store'
-import { get } from "./api";
+import { apiURL, get } from "./api";
 import type { User } from "./models";
 import { get as storeGet } from 'svelte/store';
 
@@ -29,7 +29,10 @@ export const register = async (email: string, password: string, invite: string =
 }
 
 export const getAuthHeader = () => ({ "Authentication": `Bearer ${storeGet(authStore).token}` })
-export const getUserInfo = async () => get<User>({ route: "auth/info", headers: getAuthHeader() });
+export const getUserInfo = async (fetcher = fetch) =>
+  fetcher(apiURL`auth/info`, { headers: getAuthHeader() })
+    .then(async res => await res.json() as User)
+    .catch(_ => null);
 
 export const logout = () => {
     authStore.set({}); // clear

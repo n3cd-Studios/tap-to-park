@@ -5,7 +5,7 @@
     import Button from "../components/form/Button.svelte";
     import Map from "../components/Map.svelte";
     import UserDropdown from "../components/userDropdown/UserDropdown.svelte";
-    import type { Coords, PartialSpot, Spot } from "../lib/models";
+    import type { Coords, PartialSpot, Spot, User } from "../lib/models";
     import Fa from 'svelte-fa';
     import { faBan, faWheelchair } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
