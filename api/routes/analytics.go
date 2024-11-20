@@ -16,7 +16,7 @@ type AnalyticRoutes struct{}
 // @Tags		organization,analytics
 // @Accept		json
 // @Produce		json
-// @Success		200	{array} []map[string]interface
+// @Success		200	{array} []map[string]string
 // @Failure		400	{string} string	"You don't seem to have an organization."
 // @Failure		401	{string} string "Unauthorized."
 // @Failure		404	{string} string "Failed to generate analytic."
@@ -58,7 +58,7 @@ func (*AnalyticRoutes) GetTopSpots(c *gin.Context) {
 // @Tags		organization,analytics
 // @Accept		json
 // @Produce		json
-// @Success		200	{array} []map[string]interface
+// @Success		200	{array} []map[string]string
 // @Failure		400	{string} string	"You don't seem to have an organization."
 // @Failure		401	{string} string "Unauthorized."
 // @Failure		404	{string} string "Failed to generate analytic."
@@ -99,7 +99,7 @@ func (*AnalyticRoutes) GetPeakTimes(c *gin.Context) {
 // @Tags		organization,analytics
 // @Accept		json
 // @Produce		json
-// @Success		200	{array} []map[string]interface
+// @Success		200	{array} []map[string]string
 // @Failure		400	{string} string	"You don't seem to have an organization."
 // @Failure		401	{string} string "Unauthorized."
 // @Failure		404	{string} string "Failed to generate analytic."

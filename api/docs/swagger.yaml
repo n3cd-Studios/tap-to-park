@@ -154,6 +154,117 @@ info:
   title: Tap-To-Park API
   version: "1.0"
 paths:
+  /analytics/peak:
+    get:
+      consumes:
+      - application/json
+      description: Get the peak times for spots in an organization associated with
+        a User based on their Bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                additionalProperties:
+                  type: string
+                type: object
+              type: array
+            type: array
+        "400":
+          description: You don't seem to have an organization.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: Failed to generate analytic.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get peak times
+      tags:
+      - organization
+      - analytics
+  /analytics/revenue:
+    get:
+      consumes:
+      - application/json
+      description: Get the revenue by month from an organization associated with a
+        User based on their Bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                additionalProperties:
+                  type: string
+                type: object
+              type: array
+            type: array
+        "400":
+          description: You don't seem to have an organization.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: Failed to generate analytic.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get revenue by month
+      tags:
+      - organization
+      - analytics
+  /analytics/top:
+    get:
+      consumes:
+      - application/json
+      description: Get the top spots for an organization associated with a User based
+        on their Bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                additionalProperties:
+                  type: string
+                type: object
+              type: array
+            type: array
+        "400":
+          description: You don't seem to have an organization.
+          schema:
+            type: string
+        "401":
+          description: Unauthorized.
+          schema:
+            type: string
+        "404":
+          description: Failed to generate analytic.
+          schema:
+            type: string
+      security:
+      - BearerToken: []
+      summary: Get top spots
+      tags:
+      - organization
+      - analytics
   /auth/{type}:
     get:
       consumes:
