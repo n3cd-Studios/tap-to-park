@@ -5,7 +5,7 @@
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
     import { toaster } from "../../../components/toaster/toaster";
-    import { faGithub, faGoogle, faMicrosoft } from "@fortawesome/free-brands-svg-icons";
+    import { faGithub, faGoogle } from "@fortawesome/free-brands-svg-icons";
     import { UserRole } from "$lib/models";
 
     let email: string;

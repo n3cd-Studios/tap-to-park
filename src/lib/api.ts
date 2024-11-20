@@ -83,7 +83,10 @@ const getHelper = <T, R>(
     apiURL`${route}${params ? `?${new URLSearchParams(params).toString()}` : ""}`,
     { method, headers, body: JSON.stringify(body) },
   )
-    .then((r) => r.json() as T)
+    .then(async r => {
+      if (r.ok) return r.json() as T;
+      throw await r.text();
+    })
     .catch((message) => {
       toaster.push({ type: "error", message }, 3500);
       return defaultValue;
