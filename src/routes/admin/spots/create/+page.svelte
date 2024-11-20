@@ -7,6 +7,7 @@
     import Input from "../../../../components/form/Input.svelte";
     import Toggle from "../../../../components/form/Toggle.svelte";
     import { toaster } from "../../../../components/toaster/toaster";
+    import { promisifyGeolocation } from "$lib/utils";
 
     let name: string = '';
     let inputCoordinates = true;
@@ -20,9 +21,6 @@
         const response = await get({ route: "spots", method: "POST", headers: { "Authentication": `Bearer ${storeGet(authStore).token}` }, body: { name, coords: { latitude: latitude, longitude: longitude }, price, maxHours, handicap}});
         if (!response) throw "Failed to login.";
     }
-
-    const promisifyGeolocation = (): Promise<Coords> =>
-        new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
 
     const handleSpotCreation = async () => {
         if (!inputCoordinates){

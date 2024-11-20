@@ -10,19 +10,13 @@
     import { faBan, faWheelchair } from '@fortawesome/free-solid-svg-icons';
     import { Formats } from "$lib/lang";
     import moment from "moment";
+    import { promisifyGeolocation } from "$lib/utils";
 
     let map: L.Map;
     let spots: Marker<any>[] = [];
     let handicapFilter = false;
 
-    const toggleHandicap = () => {
-        handicapFilter = !handicapFilter;
-        updateMarkers();
-    }
-
     const updateMarkers = async () => {
-        const promisifyGeolocation = (): Promise<Coords> =>
-            new Promise((res, rej) => navigator.geolocation ? navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => res({ latitude, longitude })) : rej(null));
 
         const leaflet = await import("leaflet");
         const { latitude, longitude } = await promisifyGeolocation();
@@ -46,7 +40,7 @@
                     popupAnchor: [0, -8]
                 })
             })
-                .bindPopup(`Loading`)
+                .bindPopup("Loading..")
                 .on("popupopen", async ({ popup }) => {
                     const spot = await get<Spot>({ route: `spots/${guid}` })
                     if (spot) {
@@ -63,11 +57,9 @@
         });
     }
 
-    let timer: number;
-
     onMount(() => {
         updateMarkers();
-        timer = setInterval(() => { updateMarkers(); }, 60 * 1000); // update markers every minute
+        const timer = setInterval(() => { updateMarkers(); }, 60 * 1000); // update markers every minute
         return () => { clearInterval(timer); };
     });
 
@@ -98,7 +90,10 @@
                 <Button
                     aria-presed={handicapFilter}
                     aria-label="Toggle filter for handicap accessible spots"
-                    on:click={toggleHandicap}>
+                    on:click={() => {
+                      handicapFilter = !handicapFilter;
+                      updateMarkers();
+                    }}>
                     <div class="relative">
                         <Fa icon={faWheelchair} class="w-4 h-4" />
                         {#if handicapFilter}
