@@ -4,6 +4,7 @@
 	"private": true,
 	"scripts": {
 		"frontend": "vite dev --port 8081",
+		"build-frontend": "vite build",
 		"backend": "cd api && go run .",
 		"start": "concurrently --kill-others \"npm run backend\" \"vite build && vite preview --port 8081\"",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
