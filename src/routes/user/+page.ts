@@ -1,3 +1,4 @@
-import { getUserInfo } from '$lib/auth';
+import { getAuthHeader } from '$lib/auth';
+import type { User } from '$lib/models';
 
-export const load = () => getUserInfo();
+export const load = ({ fetch }) => fetch("auth/info", { headers: getAuthHeader() }) as User;
