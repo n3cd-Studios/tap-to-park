@@ -70,7 +70,7 @@ func (*AuthRoutes) Login(c *gin.Context) {
 	}
 
 	user := database.User{}
-	result := database.Db.Where("email = ?", input.Email).First(&user)
+	result := database.Db.Where("email = LOWER(?)", input.Email).First(&user)
 	if result.Error != nil {
 		c.String(http.StatusBadRequest, "Failed to login.")
 		return

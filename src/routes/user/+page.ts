@@ -1,3 +1,3 @@
-import { getUserInfo } from '$lib/auth';
+import { getAuthHeader, getUserInfo } from '$lib/auth';
 
-export const load = () => getUserInfo();
+export const load = ({ fetch }) => getUserInfo(fetch);

@@ -4,6 +4,7 @@
     import type { Spot } from "$lib/models";
     import moment from "moment";
     import Button from "../../components/form/Button.svelte";
+    import { getUserInfo } from "$lib/auth";
 
     export let data: Spot;
     let continued = false;
@@ -15,13 +16,14 @@
     const costPerHour = data.price ?? 0;
     const costPerMinute = costPerHour / 60;
     $: cost = (costPerHour * hours) + (costPerMinute * minutes);
-
     $: purchaseDisabled = (hours == 0 && minutes == 0) || (hours < 0 || minutes < 0) || (Number(hours)*60 + Number(minutes) > data.maxHours*60) || (cost < 0.50);
 
     const checkout = async () => {
+        const user = await getUserInfo();
         const session = await get<{ url: string }>({ route: `stripe/${data.guid}`, method: "POST", body: {
             start: moment().toISOString(),
-            end: moment().add(hours, "hours").add(minutes, "minutes").toISOString()
+            end: moment().add(hours, "hours").add(minutes, "minutes").toISOString(),
+            user: user?.guid
         }});
 
         if (session) window.location.href = session.url;

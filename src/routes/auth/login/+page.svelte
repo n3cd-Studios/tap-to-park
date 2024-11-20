@@ -5,7 +5,7 @@
     import Button from "../../../components/form/Button.svelte";
     import Input from "../../../components/form/Input.svelte";
     import { toaster } from "../../../components/toaster/toaster";
-    import { faGithub, faGoogle, faMicrosoft } from "@fortawesome/free-brands-svg-icons";
+    import { faGithub, faGoogle } from "@fortawesome/free-brands-svg-icons";
     import { UserRole } from "$lib/models";
 
     let email: string;
@@ -21,7 +21,7 @@
 
 <div class="h-full w-full flex flex-col justify-center items-center">
     <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleLogin} aria-labelledby="login-form">
-        <Input bind:value={email} name="Email" id="email" aira-label="Email address "/>
+        <Input bind:value={email} name="Email" id="email" aira-label="Email address"/>
         <Input bind:value={password} name="Password" type="password" id="password" aria-label="Password"/>
         <div class="flex flex-row justify-between">
             <div class="flex flex-row gap-1">

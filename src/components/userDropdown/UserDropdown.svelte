@@ -3,9 +3,9 @@
     import { faBars } from '@fortawesome/free-solid-svg-icons';
     import Button from '../form/Button.svelte';
     import { ButtonType } from "$lib/utils";
-    import { getUserInfo } from "$lib/auth";
     import { onMount } from "svelte";
-    import { UserRole } from '$lib/models';
+    import { UserRole, type User } from '$lib/models';
+    import { getUserInfo } from '$lib/auth';
 
     export let onLoginRedirect = '/auth/login';
     export let onRegisterRedirect = '/auth/register';
@@ -35,19 +35,15 @@
     let dropdownOptions: { label: string, route: string }[] = [];
 
     onMount(async () => {
-        try {
-            const user = await getUserInfo();
-            if (user && user.email) {
-                userEmail = user.email;
-                isLoggedIn = true;
-                isAdmin = user.role === UserRole.ADMIN;
-            } else {
-                isLoggedIn = false;
-            }
-            dropdownOptions = generateOptions();
-        } catch (error) {
-            console.error("Failed to fetch user info:", error);
+        const user = await getUserInfo();
+        if (user && user.email) {
+            userEmail = user.email;
+            isLoggedIn = true;
+            isAdmin = user.role === UserRole.ADMIN;
+        } else {
+            isLoggedIn = false;
         }
+        dropdownOptions = generateOptions();
     });
 
     const handleLoginButton = (event: MouseEvent) => {

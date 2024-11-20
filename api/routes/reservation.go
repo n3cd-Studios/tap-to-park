@@ -33,6 +33,29 @@ func (*ReservationRoutes) GetReservation(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, reservation)
 }
 
+// GetReservations godoc
+//
+// @Summary		Get a reservation by ID
+// @Description	Get a reservation for a Spot based on the Reservation's GUID
+// @Tags		reservation
+// @Accept		json
+// @Produce		json
+// @Success		200	{array} []database.Reservation
+// @Failure		404 {string} string "That reservation does not exist."
+// @Router		/reservation [get]
+// @Security 	BearerToken
+func (*ReservationRoutes) GetReservations(c *gin.Context) {
+
+	user := c.MustGet("user").(database.User)
+	reservation := []database.Reservation{}
+	if result := database.Db.Where("user_id = ?", user.ID).Find(&reservation); result.Error != nil {
+		c.IndentedJSON(http.StatusNotFound, "That reservation does not exist.")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, reservation)
+}
+
 type CreateFakeReservationInput struct {
 	SpotId 	 string 	`json:"spot_id" binding:"required"`
 	Email    string 	`json:"email" binding:"required"`

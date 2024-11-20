@@ -8,7 +8,7 @@ import (
 	"tap-to-park/database"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 )
 
 func Generate(user_id uint, device string, host string) (string, error) {

@@ -70,6 +70,13 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 		SpotID:              spot.ID,
 		StripeTransactionID: sess.ID,
 	}
+
+	// We can possibly assign this transaction to a user.
+	user_id, err := strconv.ParseUint(sess.Metadata["user_id"], 10, 64)
+	if err == nil {
+		reservation.UserID = uint(user_id)
+	}
+
 	if result := database.Db.Create(&reservation); result.Error != nil {
 		c.String(http.StatusBadRequest, "Something went wrong (did you resubmit the request?)")
 		return
@@ -104,6 +111,7 @@ func (*StripeRoutes) CancelPurchaseSpot(c *gin.Context) {
 type PurchaseSpotInput struct {
 	Start time.Time `json:"start" bindings:"required"`
 	End   time.Time `json:"end" bindings:"required"`
+	User  string `json:"user"`
 }
 
 // PurchaseSpot godoc
@@ -161,6 +169,15 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		return
 	}
 
+	// TODO: we could check if this is valid and pass an auth token, but why would someone want to randomly buy
+	// a spot for another user??
+	user := database.User{}
+	metadata := make(map[string]string)
+	metadata["hours"] = strconv.FormatFloat(hours, 'E', -1, 64)
+	if result := database.Db.Where("guid = ?", input.User).First(&user); result.Error == nil {
+		metadata["user_id"] = strconv.Itoa(int(user.ID))
+	}
+
 	domain := "http://" + os.Getenv("BACKEND_HOST")
 	params := &stripe.CheckoutSessionParams{
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
@@ -179,7 +196,7 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
 		SuccessURL: stripe.String(domain + "/api/stripe/" + spot.Guid + "/success?session_id={CHECKOUT_SESSION_ID}"),
 		CancelURL:  stripe.String(domain + "/api/stripe/" + spot.Guid + "/cancel"),
-		Metadata:   map[string]string{"hours": strconv.FormatFloat(hours, 'E', -1, 64)},
+		Metadata:   metadata,
 	}
 
 	sess, err := session.New(params)
