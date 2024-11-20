@@ -203,3 +203,58 @@ func (*OrganizationRoutes) GetInvites(c *gin.Context) {
 		Page:  page,
 	})
 }
+
+// GetTransactions godoc
+//
+// @Summary		Get the transactions for your organization
+// @Description	Get the transactions associated with a User's organization based on their Bearer token
+// @Tags		organization,transactions,reservations
+// @Accept		json
+// @Produce		json
+// @Param		size  query		number	false	"The size of a page"
+// @Param		page  query		number	false	"The page"
+// @Success		200	{array} []database.Reservation
+// @Failure		404 {string} string	"No reservations were found for your organization."
+// @Failure		500	{string} string	"Couldn't count all of the reservations in the organization."
+// @Failure		401	{string} string "Unauthorized."
+// @Router		/organization/reservations [get]
+// @Security 	BearerToken
+func (*OrganizationRoutes) GetReservations(c *gin.Context) {
+	user := c.MustGet("user").(database.User)
+
+	page, perr := strconv.ParseInt(c.Query("page"), 10, 64)
+	if perr != nil {
+		page = 0
+	}
+
+	size, perr := strconv.ParseInt(c.Query("size"), 10, 64)
+	if perr != nil {
+		size = 10
+	}
+
+	organization := database.Organization{}
+	if result := database.Db.Where("id = ?", user.OrganizationID).First(&organization); result.Error != nil {
+		c.String(http.StatusNotFound, "You don't seem to have an organization.")
+		return
+	}
+
+	count := int64(0)
+	var reservations []database.Reservation
+	if result := database.Db.Model(&database.Reservation{}).
+		Joins("JOIN spots ON spots.id = reservations.id").
+		Where("spots.organization_id", organization.ID).
+		Count(&count).
+		Offset(int(page * size)).
+		Limit(int(size)).
+		Find(&reservations);
+	   result.Error != nil {
+		c.String(http.StatusNotFound, "No reservations were found for your organization.")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, PaginatorOutput[database.Reservation]{
+		Items: reservations,
+		Pages: (count / size),
+		Page:  page,
+	})
+}

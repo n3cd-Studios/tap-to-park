@@ -10,6 +10,7 @@ import AuthRoute from "../../components/auth/AuthRoute.svelte";
             <div class="flex flex-col gap-2" role="menu" aria-label="Admin menu options">
                 <Hover href="/admin" aria-label="Navigate to admin dashboard">Dashboard</Hover>
                 <Hover href="/admin/invites" aria-label="Navigate to invite management">Invites</Hover>
+                <Hover href="/admin/analytics" aria-label="Navigate to analytics dashboard">Analytics</Hover>
             </div>
             <div role="menuitem" aria-label="Logout">
                 <Hover href="/auth/logout" aria-label="Log out of your account">Logout</Hover>

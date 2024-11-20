@@ -115,8 +115,18 @@ func main() {
 		organization.GET("/me", routing.GetOrganization)
 		organization.GET("/spots", routing.GetSpots)
 		organization.GET("/invites", routing.GetInvites)
+		organization.GET("/reservations", routing.GetReservations)
 		organization.POST("/invites", routing.CreateInvite)
 		organization.DELETE("/invites/:id", routing.DeleteInvite)
+	}
+
+	// Analytics routes
+	analytics := api.Group("/analytics", auth.AuthMiddleware(database.ADMIN))
+	{
+		routing := routes.AnalyticRoutes{}
+		analytics.GET("/top", routing.GetTopSpots)
+		analytics.GET("/peak", routing.GetPeakTimes)
+		analytics.GET("/revenue", routing.GetRevenueByMonth)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
