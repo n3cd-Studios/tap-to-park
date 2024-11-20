@@ -72,7 +72,7 @@ func (*StripeRoutes) SuccessfulPurchaseSpot(c *gin.Context) {
 	}
 
 	// We can possibly assign this transaction to a user.
-	user_id, err := strconv.ParseUint(sess.Metadata["user_id"], 10, 32)
+	user_id, err := strconv.ParseUint(sess.Metadata["user_id"], 10, 64)
 	if err == nil {
 		reservation.UserID = uint(user_id)
 	}
@@ -172,9 +172,10 @@ func (*StripeRoutes) PurchaseSpot(c *gin.Context) {
 	// TODO: we could check if this is valid and pass an auth token, but why would someone want to randomly buy
 	// a spot for another user??
 	user := database.User{}
-	metadata := map[string]string{"hours": strconv.FormatFloat(hours, 'E', -1, 64)}
+	metadata := make(map[string]string)
+	metadata["hours"] = strconv.FormatFloat(hours, 'E', -1, 64)
 	if result := database.Db.Where("guid = ?", input.User).First(&user); result.Error == nil {
-		metadata["user_id"] = strconv.FormatUint(uint64(user.ID), 64)
+		metadata["user_id"] = strconv.Itoa(int(user.ID))
 	}
 
 	domain := "http://" + os.Getenv("BACKEND_HOST")

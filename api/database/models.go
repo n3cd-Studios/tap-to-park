@@ -50,7 +50,7 @@ type Reservation struct {
 	Email               string    `gorm:"not null;" json:"email"`
 	StripeTransactionID string    `gorm:"not null;unique;" json:"-"`
 	SpotID              uint      `gorm:"not null;" json:"-"`
-	UserID              uint      `gorm:"" json:"-"`
+	UserID              uint      `gorm:"default:NULL" json:"-"`
 	// Transactions []Transaction `gorm:"not null;" json:"transactions"`
 }
 

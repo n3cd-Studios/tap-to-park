@@ -63,6 +63,7 @@ func main() {
 	reservations := api.Group("/reservations")
 	{
 		routing := routes.ReservationRoutes{}
+		reservations.GET("", auth.AuthMiddleware(database.USER, database.ADMIN), routing.GetReservations)
 		reservations.GET("/:id", routing.GetReservation)
 
 		// DO NOT USE IN PRODUCTION!
