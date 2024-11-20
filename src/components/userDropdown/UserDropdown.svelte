@@ -74,7 +74,7 @@
 <svelte:window on:click={onWindowClick} />
 <div bind:this={container}>
     <Button buttonType={ButtonType.DEFAULT} on:click={() => {dropdownOpen = !dropdownOpen;}}>
-        <span style="display: flex; align-items: center;">
+        <span class="flex items-center">
             <Fa icon={faBars} class="mr-2 fa-bounce" />
             {#if isLoggedIn}
                 {userEmail}
