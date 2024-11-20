@@ -22,61 +22,72 @@
         },
         10,
     );
-    paginator.subscribe(cb => (items = cb));
+    paginator.subscribe((cb) => (items = cb));
 
-
-    type TopSpot = { name: string, id: string, revenue: number };
+    type TopSpot = { name: string; id: string; revenue: number };
     let topSpots: TopSpot[] = [];
 
     onMount(async () => {
-      await paginator.load();
-      topSpots = await getWithDefault<TopSpot[]>({ route: "analytics/top", headers: getAuthHeader() }, [])
-    })
-
+        await paginator.load();
+        topSpots = await getWithDefault<TopSpot[]>(
+            { route: "analytics/top", headers: getAuthHeader() },
+            [],
+        );
+    });
 </script>
 
 <div class="w-1/2">
-    <Chart config={{
-        type: 'bar',
-        data: {
-          labels: topSpots.map(spot => spot.name),
-          datasets: [{
-            label: 'Revenue',
-            data: topSpots.map(spot => spot.revenue),
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-    }}/>
+    <Chart
+        config={{
+            type: "bar",
+            data: {
+                labels: topSpots.map((spot) => spot.name),
+                datasets: [
+                    {
+                        label: "Revenue",
+                        data: topSpots.map((spot) => spot.revenue),
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        }}
+    />
 </div>
-<Table
-    columns={["email", "start", "end", "duration"]}
-    data={items}
-    {loading}
-    let:email
-    let:start
-    let:end
-    let:price
->
-    <TableItem>{email}</TableItem>
-    <TableItem>{Formats.Date(start)}</TableItem>
-    <TableItem>{Formats.Date(end)}</TableItem>
-    <TableItem
-        >{pluralize(moment(moment(start).diff(moment(end))).hours(), "hour")} for
-        {Formats.USDollar.format(price / 100)}</TableItem
+<div class="flex flex-col gap-2 mt-2">
+    <Table
+        columns={["email", "start", "end", "duration"]}
+        data={items}
+        {loading}
+        let:email
+        let:start
+        let:end
+        let:price
     >
-</Table>
-<div class="flex flex-row justify-center gap-2">
-    <Button on:click={() => paginator.last()} aria-label="Go to previous page"
-        >{"<"}</Button
-    >
-    <Button on:click={() => paginator.next()} aria-label="Go to next page"
-        >{">"}</Button
-    >
+        <TableItem>{email}</TableItem>
+        <TableItem>{Formats.Date(start)}</TableItem>
+        <TableItem>{Formats.Date(end)}</TableItem>
+        <TableItem
+            >{pluralize(
+                moment(moment(start).diff(moment(end))).hours(),
+                "hour",
+            )} for
+            {Formats.USDollar.format(price / 100)}</TableItem
+        >
+    </Table>
+    <div class="flex flex-row justify-center gap-2">
+        <Button
+            on:click={() => paginator.last()}
+            aria-label="Go to previous page">{"<"}</Button
+        >
+        <Button on:click={() => paginator.next()} aria-label="Go to next page"
+            >{">"}</Button
+        >
+    </div>
 </div>
