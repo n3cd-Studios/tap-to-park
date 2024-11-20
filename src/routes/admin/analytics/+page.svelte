@@ -25,40 +25,78 @@
     paginator.subscribe((cb) => (items = cb));
 
     type TopSpot = { name: string; id: string; revenue: number };
+    type PeakTime = { amount: number, time: number, revenue: number };
+    type RevenueByMonth = { month: number, revenue: number };
+
     let topSpots: TopSpot[] = [];
+    let peakTimes: PeakTime[] = [];
+    let revenueByMonth: RevenueByMonth[] = [];
 
     onMount(async () => {
         await paginator.load();
-        topSpots = await getWithDefault<TopSpot[]>(
-            { route: "analytics/top", headers: getAuthHeader() },
-            [],
-        );
+        topSpots = await getWithDefault<TopSpot[]>({ route: "analytics/top", headers: getAuthHeader() }, []);
+        peakTimes = await getWithDefault<PeakTime[]>({ route: "analytics/peak", headers: getAuthHeader() }, []);
+        revenueByMonth = await getWithDefault<RevenueByMonth[]>({ route: "analytics/revenue", headers: getAuthHeader() }, []);
     });
 </script>
 
-<div class="w-1/2">
-    <Chart
-        config={{
-            type: "bar",
-            data: {
-                labels: topSpots.map((spot) => spot.name),
-                datasets: [
-                    {
-                        label: "Revenue",
-                        data: topSpots.map((spot) => spot.revenue),
-                        borderWidth: 1,
-                    },
-                ],
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                    },
+<div class="flex flex-row gap-2">
+    <div class="bg-white w-full rounded-lg p-3">
+        <Chart
+            config={{
+                type: "bar",
+                data: {
+                    labels: revenueByMonth.map((revenue) => Formats.Month(revenue.month - 1)),
+                    datasets: [
+                        {
+                            label: "Revenue",
+                            data: revenueByMonth.map((revenue) => revenue.revenue),
+                            borderWidth: 1,
+                        },
+                    ],
+                }
+            }}
+        />
+    </div>
+    <div class="bg-white w-full rounded-lg p-3">
+        <Chart
+            config={{
+                type: "bar",
+                data: {
+                    labels: topSpots.map((spot) => spot.name),
+                    datasets: [
+                        {
+                            label: "Revenue",
+                            data: topSpots.map((spot) => spot.revenue),
+                            borderWidth: 1,
+                        },
+                    ],
+                }
+            }}
+        />
+    </div>
+    <div class="bg-white w-full rounded-lg p-3">
+        <Chart
+            config={{
+                type: "bar",
+                data: {
+                    labels: peakTimes.map((time) => Formats.Time(time.time)),
+                    datasets: [
+                        {
+                            label: "Transactions",
+                            data: peakTimes.map((time) => time.amount),
+                            borderWidth: 1,
+                        },
+                        {
+                            label: "Revenue",
+                            data: peakTimes.map((time) => time.revenue / 100),
+                            borderWidth: 1,
+                        },
+                    ],
                 },
-            },
-        }}
-    />
+            }}
+        />
+    </div>
 </div>
 <div class="flex flex-col gap-2 mt-2">
     <Table

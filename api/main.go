@@ -124,6 +124,8 @@ func main() {
 	{
 		routing := routes.AnalyticRoutes{}
 		analytics.GET("/top", routing.GetTopSpots)
+		analytics.GET("/peak", routing.GetPeakTimes)
+		analytics.GET("/revenue", routing.GetRevenueByMonth)
 	}
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
