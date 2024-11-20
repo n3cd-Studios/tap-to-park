@@ -21,7 +21,7 @@
 
 <div class="h-full w-full flex flex-col justify-center items-center">
     <form class="p-10 bg-white rounded-xl w-1/3" on:submit|preventDefault={handleLogin} aria-labelledby="login-form">
-        <Input bind:value={email} name="Email" id="email" aira-label="Email address "/>
+        <Input bind:value={email} name="Email" id="email" aira-label="Email address"/>
         <Input bind:value={password} name="Password" type="password" id="password" aria-label="Password"/>
         <div class="flex flex-row justify-between">
             <div class="flex flex-row gap-1">
