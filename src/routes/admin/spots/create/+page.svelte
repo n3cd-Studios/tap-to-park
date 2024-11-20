@@ -30,12 +30,9 @@
             latitude = String(coords.latitude);
             longitude = String(coords.longitude);
         }
-        await createSpot(name, Number(latitude), Number(longitude), Number(price), Number(maxHours), Boolean(isHandicapped))
-            .then( () => {
-                toaster.push({ type: "success", message: `Spot "${name}" created successfully` }, 5000);
-                name = ''; latitude =''; longitude=''; price=''; maxHours=''; isHandicapped=false; // clear form inputs
-            })
-            .catch(() => toaster.push({ type: "error", message: "Failed to create spot." }, 5000));
+        await createSpot(name, Number(latitude), Number(longitude), Number(price), Number(maxHours), Boolean(isHandicapped));
+        toaster.push({ type: "success", message: `Spot "${name}" created successfully` }, 5000);
+        name = ''; latitude =''; longitude=''; price=''; maxHours=''; isHandicapped=false; // clear form inputs
     };
 </script>
 
@@ -50,7 +47,7 @@
         <Input bind:value={price} type="number" step="0.01" name="Default Price" id="default-price" required aria-label="Default price for the spot"/>
         <Input bind:value={maxHours} type="number" name="Maximum Reservation Hours" id="max-reservation-hours" required aria-label="Maximum reservation hours"/>
         <Toggle bind:checked={isHandicapped} name="Handicapped"/>
-            <div class="flex flex-row justify-between" aria-live="polite">  
+            <div class="flex flex-row justify-between" aria-live="polite">
             <Button type="button" on:click={() => inputCoordinates = !inputCoordinates} class="text-blue-800 underline" aria-label={inputCoordinates ? "Switch to use current location" : "Switch to specify coordinates"}>
                 {inputCoordinates ? "Use My Current Location" : "Specify Coordinates"}
             </Button>

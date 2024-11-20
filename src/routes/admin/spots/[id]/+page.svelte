@@ -30,11 +30,7 @@
     let schedule: number[][] = daysOfWeek.map((_) => times.map(_ => 0));
 
     onMount(async () => {
-        if (!data) {
-            toaster.push({ type: "error", message: "Failed to load spot information." });
-            return;
-        }
-
+        if (!data) return;
         const pricing = data.table;
         schedule.forEach((inner, x) => {
             inner.forEach((_, y) => schedule[x][y] = pricing[daysOfWeek[x]][y]);

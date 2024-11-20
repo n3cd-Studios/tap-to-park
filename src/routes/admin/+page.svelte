@@ -42,13 +42,8 @@
             headers: getAuthHeader(),
             method: "GET",
         });
-        if (!organization) {
-            toaster.push({
-                type: "error",
-                message: "Failed to load spots for organization.",
-            });
-            return;
-        }
+
+        if (!organization) return;
 
         await paginator.load();
         loading = false;
@@ -70,11 +65,11 @@
                     } else popup.setContent("Failed to load.");
                 })
                 .addTo(map);
-                
+
             markers.push([marker, guid])
         });
     });
-    
+
 </script>
 
 <div class="flex flex-col gap-2">

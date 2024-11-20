@@ -1,4 +1,5 @@
 import { env } from "$env/dynamic/public";
+import { toaster } from "../components/toaster/toaster";
 
 // The params that can be passed to a get function
 export interface GetParams {
@@ -83,7 +84,10 @@ const getHelper = <T, R>(
     { method, headers, body: JSON.stringify(body) },
   )
     .then((r) => r.json() as T)
-    .catch((_) => defaultValue);
+    .catch((message) => {
+      toaster.push({ type: "error", message }, 3500);
+      return defaultValue;
+    });
 
 export const apiURL = (strings: TemplateStringsArray, ...placeholders: string[]) =>
   `${env.PUBLIC_API_URL ?? "http://localhost:8080"}/api/${strings.map((val, index) => `${val}${placeholders[index] ?? ""}`).join("")}`;
