@@ -58,7 +58,7 @@
             {/if}
         </div>
         <div class="mb-10">
-            <Button on:click={() => checkout()} aria-label="Purchase the selected spot">Purchase</Button>
+            <Button on:click={() => checkout()} disabled={purchaseDisabled}  aria-label="Purchase the selected spot">Purchase</Button>
         </div>
     </div>
 {:else}
