@@ -19,8 +19,7 @@
     const generateOptions = (): { label: string, route: string }[] => {
         if (isLoggedIn) {
             return [
-                { label: 'User Profile', route: '/user' },
-                { label: 'Settings & Privacy', route: '/auth/settings' },
+                { label: 'User Settings', route: '/user' },
                 ...(isAdmin ? [{ label: 'Admin Dashboard', route: '/admin' }] : []),
                 { label: 'Logout', route: '/auth/logout' }
             ];
