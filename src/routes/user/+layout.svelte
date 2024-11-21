@@ -4,6 +4,7 @@
     import AuthRoute from "../../components/auth/AuthRoute.svelte";
 </script>
 
+<Metadata title="User" description="Tap-To-Park user dashboard" />
 <AuthRoute roles={[ UserRole.USER, UserRole.ADMIN ]}>
     <div class="flex flex-col justify-around mt-10 sm:flex-row gap-2" role="main" aria-label="User dashboard">
         <div class="flex flex-col justify-between mx-3 sm:ml-10 bg-white pl-6 pr-14 py-3 rounded-t-2xl" aria-label="User navigation">

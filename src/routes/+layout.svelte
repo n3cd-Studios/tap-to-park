@@ -5,8 +5,10 @@
 
     import Logo from "../assets/logo.png"
     import Toaster from "../components/toaster/Toaster.svelte";
+    import Metadata from "../components/Metadata.svelte";
 </script>
 
+<Metadata title="Home" description="Welcome to Tap-To-Park. Start parking today." />
 <div class="flex flex-col h-screen font-nunito">
     <div class="my-16 bg-white w-full flex justify-center items-center">
         <a href="/" aria-label="Go to homepage">
