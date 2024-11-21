@@ -77,9 +77,6 @@
         <div class="w-96 h-96 rounded-lg border-white border-4" aria-label="Map showing nearby parking spots">
             <Map bind:map={map}/>
         </div>
-        <div class="absolute top-6 right-12">
-            <UserDropdown onLoginRedirect="/auth/login" />
-        </div>
         <div class="flex flex-row justify-between">
             <div class="flex gap-2">
                 <Button

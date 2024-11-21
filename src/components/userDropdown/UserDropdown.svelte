@@ -9,6 +9,7 @@
 
     export let onLoginRedirect = '/auth/login';
     export let onRegisterRedirect = '/auth/register';
+    export let currentPage;
 
     let isLoggedIn = false;
     let userEmail: string | null = null;
@@ -16,13 +17,23 @@
     let dropdownOpen = false;
     let container: HTMLDivElement;
 
+    $: dropdownOptions = generateOptions();
+
     const generateOptions = (): { label: string, route: string }[] => {
-        if (isLoggedIn) {
+        if (isLoggedIn && currentPage == "userPage") {
+            return [
+                { label: 'Home', route: '/' },
+                ...(isAdmin ? [{ label: 'Admin Dashboard', route: '/admin' }] : []),
+                { label: 'Logout', route: '/auth/logout' }
+            ];
+        } else if (isLoggedIn) {
             return [
                 { label: 'User Settings', route: '/user' },
                 ...(isAdmin ? [{ label: 'Admin Dashboard', route: '/admin' }] : []),
                 { label: 'Logout', route: '/auth/logout' }
             ];
+        } else if (currentPage == "loginPage") {
+            return [{ label: 'Register', route: onRegisterRedirect }];
         } else {
             return [
                 { label: 'Login', route: onLoginRedirect },
