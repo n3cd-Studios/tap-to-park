@@ -46,15 +46,6 @@
         dropdownOptions = generateOptions();
     });
 
-    const handleLoginButton = (event: MouseEvent) => {
-        dropdownOpen = !dropdownOpen;
-        if (isLoggedIn) {
-            dropdownOpen = !dropdownOpen;
-        } else {
-            location.href = onLoginRedirect;
-        }
-    };
-
     const handleDropdownSelection = (route: string) => {
         location.href = route;
     };
