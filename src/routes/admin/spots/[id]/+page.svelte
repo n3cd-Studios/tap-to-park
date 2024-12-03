@@ -71,6 +71,11 @@
       toaster.push({ type: "error", message: `Deleted ${name}.` });
       await goto("/admin");
     }
+
+    const copyLink = () => {
+        navigator.clipboard.writeText(`${window.location.origin}/${data.guid}`);
+        toaster.push({ type: "success", message: `Link copied` }, 5000);
+    }
 </script>
 
 <Modal
@@ -93,7 +98,8 @@
         <Button on:click={handleSave} aria-label="Save">Save</Button>
         <div class="flex flex-col justify-center h-full">
             <p class="text-gray-700 text-sm font-bold">Spot QR Code</p>
-            <img class="rounded-lg mt-2 w-2/3" src={apiURL`spots/${data.guid}/qr`} alt={`QR Code for managing ${name}`}/>
+            <img class="rounded-lg mt-2 mb-2 w-2/3" src={apiURL`spots/${data.guid}/qr`} alt={`QR Code for managing ${name}`}/>
+            <Button aria-label="Copy link" on:click={() => copyLink()}>Copy link</Button>
         </div>
         <Button buttonType={ButtonType.NEGATIVE} aria-label="Delete this item" on:click={() => deleting = true}>Delete</Button>
     </div>
