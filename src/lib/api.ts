@@ -88,7 +88,7 @@ const getHelper = <T, R>(
       throw await r.text();
     })
     .catch((message) => {
-      toaster.push({ type: "error", message }, 3500);
+      //toaster.push({ type: "error", message }, 3500);
       return defaultValue;
     });
 
