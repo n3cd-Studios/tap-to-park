@@ -50,7 +50,7 @@
                     datasets: [
                         {
                             label: "Revenue",
-                            data: revenueByMonth.map((revenue) => revenue.revenue),
+                            data: revenueByMonth.map((revenue) => revenue.revenue / 100),
                             borderWidth: 1,
                         },
                     ],
