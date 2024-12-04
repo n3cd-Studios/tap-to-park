@@ -8,7 +8,7 @@ export const Formats = {
         style: 'currency',
         currency: 'USD',
     }),
-    Date: (date: string | moment.Moment | number) => moment(date).format("Y-MM-DD HH:mm A"),
+    Date: (date: string | moment.Moment | number) => moment(date).format("Y-MM-DD h:mm A"),
     Month: (n: number) => moment().month(n).format("MMMM"),
     Time: (n: number) => `${n % 12 >= 10 ? "":"0"}${n % 12}:00 ${n / 12 >= 1 ? "PM":"AM"}`,
 }

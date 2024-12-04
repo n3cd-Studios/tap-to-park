@@ -5,8 +5,10 @@
     import moment from "moment";
     import Button from "../../components/form/Button.svelte";
     import { getUserInfo } from "$lib/auth";
+    import { afterUpdate } from "svelte";
 
     export let data: Spot;
+    let isLoading = true;
     let continued = false;
 
     let hours = 0;
@@ -29,6 +31,9 @@
         if (session) window.location.href = session.url;
     }
 
+    afterUpdate(() => {
+        isLoading = false;
+    });
 </script>
 
 {#if continued}
@@ -74,18 +79,24 @@
         </div>
     {:else}
         <div class="h-full flex flex-col justify-between items-center" aria-live="polite">
-            <div class="mt-10 flex flex-col justify-around h-1/2 items-center text-white text-lg font-bold" role="status">
-                <p>This space is <span class="text-green-800">avaliable</span>.</p>
-                <p>Claim this spot at the rate of:</p>
-                <div class="flex flex-row items-baseline">
-                    <p class="text-7xl font-bold">{Formats.USDollar.format(costPerHour)}</p>
-                    <p>/hour</p>
+            {#if !isLoading}
+                <div class="mt-10 flex flex-col justify-around h-1/2 items-center text-white text-lg font-bold" role="status">
+                    <p>This space is <span class="text-green-800">avaliable</span>.</p>
+                    <p>Claim this spot at the rate of:</p>
+                    <div class="flex flex-row items-baseline">
+                        <p class="text-7xl font-bold">{Formats.USDollar.format(costPerHour)}</p>
+                        <p>/hour</p>
+                    </div>
+                    <p>Maximum time: <span class="text-black">{pluralize(data.maxHours, "hour")}</span></p>
                 </div>
-                <p>Maximum time: <span class="text-black">{pluralize(data.maxHours, "hour")}</span></p>
-            </div>
-            <div class="mb-10">
-                <Button on:click={() => continued = true} aria-label="Continue to claim this spot">Continue</Button>
-            </div>
+                <div class="mb-10">
+                    <Button on:click={() => continued = true} aria-label="Continue to claim this spot">Continue</Button>
+                </div>
+                {:else}
+                    <div class="mt-10 flex flex-col justify-around h-1/2 items-center text-white text-lg font-bold" role="status">
+                        <p>Loading...</p>
+                    </div>
+            {/if}
         </div>
     {/if}
 {/if}
